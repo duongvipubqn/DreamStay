@@ -7,7 +7,7 @@ STT	Họ và Tên	Mã Sinh Viên	Nhiệm vụ
 1	Trần Đức Dương	24DH260027	Xây dựng cấu trúc dự án, thiết kế giao diện (UI/UX), lập trình logic chức năng và quản trị cơ sở dữ liệu.
 2	Bùi Thị Thúy Hoa	24DH260056	Xây dựng nội dung báo cáo, thực hiện tài liệu hướng dẫn sử dụng và kiểm thử hệ thống.
 2. Mô tả dự án
-Ứng dụng "Quản lý Khách sạn Mộng Mơ" là phần mềm quản lý toàn diện dành cho doanh nghiệp kinh doanh dịch vụ lưu trú. Dự án được chuyển đổi và nâng cấp từ nền tảng Web (HTML/CSS/JS) sang ứng dụng Desktop chuyên nghiệp, tối ưu hóa hiệu suất vận hành và tính bảo mật dữ liệu.
+Ứng dụng "DreamStay" là phần mềm quản lý toàn diện dành cho doanh nghiệp kinh doanh dịch vụ lưu trú. Dự án được chuyển đổi và nâng cấp từ nền tảng Web (HTML/CSS/JS) sang ứng dụng Desktop chuyên nghiệp, tối ưu hóa hiệu suất vận hành và tính bảo mật dữ liệu.
 Các phân hệ chức năng chính:
 Giao diện người dùng (Front-end): Trang chủ tích hợp hệ thống trình chiếu hình ảnh (Slideshow) giới thiệu không gian khách sạn, bộ lọc tìm kiếm phòng thông minh theo địa điểm, loại phòng và mức giá.
 Hệ thống xác thực: Chức năng đăng ký và đăng nhập bảo mật dành riêng cho nhân viên quản trị hệ thống.
