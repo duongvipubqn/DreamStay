@@ -2,7 +2,7 @@ import sqlite3
 
 class Database:
     def __init__(self):
-        self.conn = sqlite3.connect("khach_san_mong_mo.db")
+        self.conn = sqlite3.connect("dreamstay.db")
         self.cursor = self.conn.cursor()
         self.create_tables()
 

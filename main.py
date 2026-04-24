@@ -59,21 +59,19 @@ class HotelApp(ctk.CTk):
     def show_register(self):
         self.switch_page("Register")
 
-    def show_main(self, name):
-        self.switch_page("Quản lý")
-        self.pages["Quản lý"].update_user(name)
-
     def logout(self):
         from tkinter import messagebox
         self.current_user = None
         self.header.user_btn.configure(text="ĐĂNG NHẬP", width=90, height=32, corner_radius=6, font=("Segoe UI", 12, "bold"))
+        self.header.update_menu(False)
         self.switch_page("Trang chủ")
         messagebox.showinfo("Thông báo", "Sếp đã đăng xuất an toàn!")
 
     def show_main(self, name):
         self.current_user = name
         self.header.user_btn.configure(text="👤", width=40, corner_radius=20, font=("Segoe UI", 18))
-        self.switch_page("Quản lý")
+        self.header.update_menu(True)
+        self.switch_page("Trang chủ")
         self.pages["Quản lý"].update_user(name)
 
 if __name__ == "__main__":

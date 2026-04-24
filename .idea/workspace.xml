@@ -4,29 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9cdb2f87-344b-4405-978f-d2b8a129c4a8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/Hotel Management.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Hotel Management.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+    <list default="true" id="9cdb2f87-344b-4405-978f-d2b8a129c4a8" name="Changes" comment="24/4/2026 Sửa chức năng xem phòng, quản lý và hồ sơ">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/contact_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/contact_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/crud_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/crud_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/event_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/event_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/header.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/header.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/home_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/home_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/login_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/login_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/main_layout.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/main_layout.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/profile_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/profile_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/reception.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/reception.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/register_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/register_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/room_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/room_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/statistics.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/statistics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/utility_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/utility_frame.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,6 +20,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="duongvipubqn &lt;duongvipubqn@gmail.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="McpProjectServerCommands">
@@ -99,7 +83,6 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.10" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />

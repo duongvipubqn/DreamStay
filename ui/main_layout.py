@@ -13,13 +13,6 @@ class MainFrame(ctk.CTkFrame):
         self.sidebar = ctk.CTkFrame(self, width=260, fg_color=COLOR_NAVY, corner_radius=0)
         self.sidebar.pack(side="left", fill="y")
 
-        ctk.CTkLabel(self.sidebar, text="HỆ THỐNG QUẢN TRỊ", font=("Segoe UI", 16, "bold"),
-                     text_color=COLOR_GOLD).pack(pady=20)
-
-        self.user_label = ctk.CTkLabel(self.sidebar, text="Admin: ...", font=("Segoe UI", 12),
-                                       text_color="#888")
-        self.user_label.pack(pady=(0, 20))
-
         self.content = ctk.CTkFrame(self, fg_color="transparent")
         self.content.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
@@ -34,6 +27,8 @@ class MainFrame(ctk.CTkFrame):
                                     "Trạng thái"]),
             "Thống Kê": StatisticsFrame(self.content)
         }
+
+        ctk.CTkLabel(self.sidebar, text="", height=20).pack()
 
         for name in self.frames.keys():
             btn = ctk.CTkButton(self.sidebar, text=f"  {name}",
@@ -63,4 +58,4 @@ class MainFrame(ctk.CTkFrame):
             self.frames[name].load_data()
 
     def update_user(self, name):
-        self.user_label.configure(text=f"Admin: {name}")
+        pass

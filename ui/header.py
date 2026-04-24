@@ -20,7 +20,16 @@ class Header(ctk.CTkFrame):
         self.menu_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.menu_frame.pack(side="right", padx=20)
 
-        menus = ["Trang chủ", "Phòng", "Tiện ích", "Sự kiện", "Liên hệ", "Quản lý"]
+        self.update_menu(False)
+
+    def update_menu(self, is_logged_in):
+        for widget in self.menu_frame.winfo_children():
+            widget.destroy()
+
+        menus = ["Trang chủ", "Phòng", "Tiện ích", "Sự kiện", "Liên hệ"]
+        if is_logged_in:
+            menus.append("Quản lý")
+
         for menu in menus:
             btn = ctk.CTkButton(self.menu_frame, text=menu, font=("Segoe UI", 13, "bold"),
                                 fg_color="transparent", text_color="white",

@@ -1,5 +1,8 @@
 import customtkinter as ctk
 from config import *
+from PIL import Image
+import os
+from database import db
 
 
 class RoomView(ctk.CTkScrollableFrame):
@@ -11,26 +14,71 @@ class RoomView(ctk.CTkScrollableFrame):
 
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=50)
-        for col in range(2):
+        for col in range(3):
             self.grid_frame.grid_columnconfigure(col, weight=1)
 
-        rooms = [
-            ("Deluxe Hướng Biển", "9.200.000đ", "Bồn tắm riêng, Hướng nhìn đẹp"),
-            ("Suite Cao Cấp", "15.200.000đ", "Khu tiếp khách, Máy pha cà phê"),
-            ("Presidential Suite", "62.000.000đ", "Bể bơi riêng, Phòng họp riêng")
-        ]
-
-        for i, (name, price, info) in enumerate(rooms):
-            card = ctk.CTkFrame(self.grid_frame, fg_color=COLOR_WHITE, corner_radius=10, border_width=1,
-                                border_color=COLOR_BORDER)
-            card.grid(row=i // 2, column=i % 2, padx=20, pady=20, sticky="nsew")
-
-            ctk.CTkLabel(card, text="", height=30).pack()
-            ctk.CTkLabel(card, text=name, font=("Segoe UI", 20, "bold"), text_color=COLOR_GOLD).pack()
-            ctk.CTkLabel(card, text=f"Từ {price} / đêm", font=("Segoe UI", 14), text_color=COLOR_GOLD).pack(pady=5)
-            ctk.CTkLabel(card, text=info, font=("Segoe UI", 12), text_color=COLOR_TEXT).pack(pady=10)
-            ctk.CTkButton(card, text="XEM CHI TIẾT", fg_color="transparent", border_width=1, border_color=COLOR_GOLD,
-                          text_color=COLOR_GOLD).pack(pady=15)
+        self.image_map = {
+            "Deluxe Hướng Biển": "deluxe-huong-bien.png",
+            "Suite Cao Cấp": "suite-cao-cap.png",
+            "Villa Gia Đình Cổ Điển": "villa-gia-dinh-co-dien.png",
+            "Standard Hướng Vườn": "standard-huong-vuon.png",
+            "Presidential Suite": "presidential-suite.png"
+        }
 
     def load_data(self):
-        pass
+        for widget in self.grid_frame.winfo_children():
+            widget.destroy()
+
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        img_dir = os.path.join(os.path.dirname(current_dir), "images")
+
+        db.cursor.execute("SELECT room_id, location, room_type, status, capacity, price FROM rooms")
+        rooms_db = db.cursor.fetchall()
+
+        if not rooms_db:
+            ctk.CTkLabel(self.grid_frame, text="Hiện chưa có phòng nào trong hệ thống.",
+                         font=("Segoe UI", 16), text_color=COLOR_GOLD).grid(row=0, column=0, columnspan=2, pady=50)
+            return
+
+        for i, (r_id, loc, r_type, status, cap, price) in enumerate(rooms_db):
+            # Tạo card với chiều rộng cố định để không bị giãn quá to khi có ít phòng
+            card = ctk.CTkFrame(self.grid_frame, fg_color=COLOR_WHITE, corner_radius=15, border_width=1,
+                                border_color=COLOR_BORDER)
+            card.grid(row=i // 3, column=i % 3, padx=15, pady=15,
+                      sticky="n")  # Đổi từ nsew sang n để không bị kéo giãn bậy
+
+            img_name = self.image_map.get(r_type, "default.png")
+            img_path = os.path.join(img_dir, img_name)
+
+            # Chỉnh lại size ảnh một chút để vừa vặn với layout 3 cột
+            if os.path.exists(img_path):
+                try:
+                    pil_img = Image.open(img_path)
+                    ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(350, 220))
+                    ctk.CTkLabel(card, image=ctk_img, text="").pack(pady=10, padx=10)
+                except:
+                    ctk.CTkLabel(card, text="[ Lỗi tải ảnh ]", width=350, height=220).pack()
+            else:
+                ctk.CTkLabel(card, text="[ Hình ảnh chưa cập nhật ]", width=350, height=220).pack()
+
+            header_f = ctk.CTkFrame(card, fg_color="transparent")
+            header_f.pack(fill="x", padx=20)
+
+            ctk.CTkLabel(header_f, text=f"Mã: {r_id}", font=("Segoe UI", 11, "bold"), text_color="#888").pack(
+                side="left")
+            status_color = "#2ecc71" if status == "Trống" else "#e74c3c"
+            ctk.CTkLabel(header_f, text=status.upper(), font=("Segoe UI", 10, "bold"), text_color=status_color).pack(
+                side="right")
+
+            ctk.CTkLabel(card, text=r_type, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(5, 0))
+            ctk.CTkLabel(card, text=f"📍 {loc} | 👥 {cap}", font=("Segoe UI", 12), text_color="#aaa").pack()
+            ctk.CTkLabel(card, text=f"{price:,.0f} VNĐ / đêm", font=("Segoe UI", 16, "bold"),
+                         text_color=COLOR_GOLD).pack(pady=10)
+
+            btn_state = "normal" if status == "Trống" else "disabled"
+            btn_text = "ĐẶT PHÒNG NGAY" if status == "Trống" else "ĐÃ ĐẶT"
+
+            ctk.CTkButton(card, text=btn_text, state=btn_state,
+                          fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
+                          text_color="white", font=("Segoe UI", 12, "bold"), height=38, width=310).pack(pady=(0, 20),
+                                                                                                        padx=20)

@@ -4,81 +4,143 @@ from config import *
 from database import db
 
 
+class FormModal(ctk.CTkToplevel):
+    def __init__(self, parent, title, columns, table_name, callback, initial_data=None):
+        super().__init__(parent)
+        self.title(title)
+        self.geometry("500x700")
+        self.configure(fg_color=COLOR_CREAM)
+        self.transient(parent)
+        self.grab_set()
+        self.resizable(False, False)
+
+        self.table_name = table_name
+        self.callback = callback
+        self.columns = columns
+        self.entries = {}
+
+        scroll_f = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        scroll_f.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Đã xóa label tiêu đề bên trong theo yêu cầu
+
+        for col in columns:
+            f = ctk.CTkFrame(scroll_f, fg_color="transparent")
+            f.pack(fill="x", pady=8, padx=20)
+
+            ctk.CTkLabel(f, text=col, font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT).pack(anchor="w")
+
+            if any(x in col for x in
+                   ["Địa điểm", "Thành phố", "Loại", "Trạng thái", "Sức Chứa", "Chức vụ", "Tình Trạng"]):
+                vals = LOCATIONS if "Địa" in col or "Thành" in col else (ROOM_TYPES if "Loại" in col else (
+                    ROOM_STATUSES if self.table_name == "rooms" else EMPLOYEE_STATUSES))
+                if "Sức Chứa" in col: vals = CAPACITIES
+                if "Chức vụ" in col: vals = POSITIONS
+
+                entry = ctk.CTkOptionMenu(f, values=vals, fg_color=COLOR_WHITE, text_color=COLOR_TEXT,
+                                          button_color=COLOR_GOLD, button_hover_color=COLOR_GOLD_HOVER,
+                                          dropdown_fg_color=COLOR_NAVY, dropdown_text_color=COLOR_TEXT,
+                                          dynamic_resizing=False, height=45)
+            else:
+                entry = ctk.CTkEntry(f, fg_color=COLOR_WHITE, border_color=COLOR_BORDER, text_color=COLOR_TEXT,
+                                     height=45)
+
+            entry.pack(fill="x", pady=(5, 0))
+            self.entries[col] = entry
+
+        if initial_data:
+            for i, col in enumerate(columns):
+                entry = self.entries[col]
+                if isinstance(entry, ctk.CTkOptionMenu):
+                    entry.set(initial_data[i])
+                else:
+                    entry.insert(0, initial_data[i])
+
+        ctk.CTkButton(scroll_f, text="LƯU THAY ĐỔI", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
+                      text_color="white", font=("Segoe UI", 14, "bold"), height=50,
+                      command=self.submit).pack(fill="x", pady=30, padx=20)
+
+    def submit(self):
+        vals = [self.entries[col].get() for col in self.columns]
+        if "" in vals:
+            return messagebox.showwarning("Chú ý", "Vui lòng nhập đủ tin!")
+        self.callback(vals)
+        self.destroy()
+
+
 class CRUDFrame(ctk.CTkFrame):
     def __init__(self, master, title, table_name, columns):
-        super().__init__(master, fg_color=COLOR_WHITE, corner_radius=15, border_width=1, border_color=COLOR_BORDER)
+        super().__init__(master, fg_color="transparent")
         self.table_name = table_name
         self.columns = columns
         self.all_data = []
-        self.entries = {}
 
-        ctk.CTkLabel(self, text=title, font=("Segoe UI", 24, "bold"), text_color=COLOR_TEXT).pack(pady=(15, 5))
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.pack(fill="x", pady=(0, 20))
+        ctk.CTkLabel(header, text=title, font=("Segoe UI", 28, "bold"), text_color=COLOR_TEXT).pack(side="left")
+        ctk.CTkButton(header, text="+ THÊM MỚI", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
+                      text_color="white", font=("Segoe UI", 13, "bold"), width=150, height=40,
+                      command=self.open_add_modal).pack(side="right")
 
-        self.toolbar = ctk.CTkFrame(self, fg_color="transparent")
-        self.toolbar.pack(fill="x", padx=20, pady=10)
-
+        toolbar = ctk.CTkFrame(self, fg_color=COLOR_WHITE, height=60, corner_radius=10)
+        toolbar.pack(fill="x", pady=(0, 20))
+        toolbar.pack_propagate(False)
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.filter_data)
-        ctk.CTkEntry(self.toolbar, placeholder_text="Tìm kiếm nhanh...", width=250, textvariable=self.search_var,
-                     fg_color=COLOR_NAVY, text_color=COLOR_TEXT).pack(side="left")
-
-        self.form_frame = ctk.CTkFrame(self, fg_color=COLOR_NAVY, border_width=1, border_color=COLOR_BORDER)
-        self.form_frame.pack(pady=10, fill="x", padx=20)
-
-        for i, col in enumerate(columns):
-            row, col_idx = i // 3, i % 3
-            ctk.CTkLabel(self.form_frame, text=col, font=("Segoe UI", 10, "bold"), text_color=COLOR_GOLD).grid(
-                row=row * 2, column=col_idx, padx=10, sticky="w")
-            entry = self.create_input(col)
-            entry.grid(row=row * 2 + 1, column=col_idx, padx=10, pady=(0, 10), sticky="ew")
-            self.entries[col] = entry
-
-        self.btn_panel = ctk.CTkFrame(self, fg_color="transparent")
-        self.btn_panel.pack(pady=10)
-        ctk.CTkButton(self.btn_panel, text="LƯU / CẬP NHẬT", fg_color=COLOR_GOLD, text_color="white",
-                      command=self.update).pack(side="left", padx=5)
-        ctk.CTkButton(self.btn_panel, text="XÓA", fg_color="#e74c3c", text_color="white", command=self.delete).pack(
-            side="left", padx=5)
+        ctk.CTkEntry(toolbar, placeholder_text="Tìm kiếm nhanh...", width=300, textvariable=self.search_var,
+                     fg_color=COLOR_NAVY, border_color=COLOR_BORDER, text_color=COLOR_TEXT).pack(side="left", padx=15,
+                                                                                                 pady=10)
 
         self.tree = self.setup_treeview()
 
-    def create_input(self, col_name):
-        if any(x in col_name for x in ["Địa điểm", "Thành phố", "Loại", "Trạng thái", "Sức Chứa", "Chức vụ"]):
-            vals = LOCATIONS if "Địa" in col_name or "Thành" in col_name else (ROOM_TYPES if "Loại" in col_name else (
-                ROOM_STATUSES if self.table_name == "rooms" else EMPLOYEE_STATUSES))
-            if "Sức Chứa" in col_name: vals = CAPACITIES
-            if "Chức vụ" in col_name: vals = POSITIONS
-            return ctk.CTkOptionMenu(self.form_frame, values=vals, fg_color=COLOR_WHITE, text_color=COLOR_TEXT,
-                                     button_color=COLOR_GOLD, dynamic_resizing=False)
-        return ctk.CTkEntry(self.form_frame, fg_color=COLOR_WHITE, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
+        actions = ctk.CTkFrame(self, fg_color="transparent")
+        actions.pack(fill="x", pady=10)
+        ctk.CTkButton(actions, text="SỬA DÒNG CHỌN", fg_color="#3498db", text_color="white",
+                      width=150, height=35, command=self.open_edit_modal).pack(side="right", padx=5)
+        ctk.CTkButton(actions, text="XÓA DÒNG CHỌN", fg_color="#e74c3c", text_color="white",
+                      width=150, height=35, command=self.delete).pack(side="right", padx=5)
 
     def setup_treeview(self):
-        f = ctk.CTkFrame(self, fg_color="transparent")
-        f.pack(fill="both", expand=True, padx=20, pady=10)
-
+        f = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=15, border_width=1, border_color=COLOR_BORDER)
+        f.pack(fill="both", expand=True)
         style = ttk.Style()
-        style.theme_use("default")
-        style.configure("Treeview",
-                        background=COLOR_NAVY,
-                        foreground=COLOR_TEXT,
-                        rowheight=25,
-                        fieldbackground=COLOR_NAVY,
-                        bordercolor=COLOR_BORDER,
-                        borderwidth=1)
-        style.map('Treeview', background=[('selected', COLOR_GOLD)], foreground=[('selected', 'white')])
-        style.configure("Treeview.Heading",
-                        background=COLOR_WHITE,
-                        foreground=COLOR_GOLD,
-                        relief="flat")
-        style.map("Treeview.Heading", background=[('active', COLOR_GOLD)], foreground=[('active', 'white')])
-
+        style.configure("Treeview", background=COLOR_NAVY, foreground=COLOR_TEXT, rowheight=35,
+                        fieldbackground=COLOR_NAVY, borderwidth=0)
+        style.map('Treeview', background=[('selected', COLOR_GOLD)])
+        style.configure("Treeview.Heading", background=COLOR_WHITE, foreground=COLOR_GOLD,
+                        font=("Segoe UI", 10, "bold"))
         t = ttk.Treeview(f, columns=self.columns, show="headings")
         for col in self.columns:
             t.heading(col, text=col.upper())
-            t.column(col, width=100, anchor="center")
-        t.pack(fill="both", expand=True)
-        t.bind("<ButtonRelease-1>", self.on_select)
+            t.column(col, anchor="center", width=120)
+        t.pack(fill="both", expand=True, padx=2, pady=2)
         return t
+
+    def open_add_modal(self):
+        title = "Thêm phòng mới" if self.table_name == "rooms" else "Thêm mới dữ liệu"
+        FormModal(self.winfo_toplevel(), title, self.columns, self.table_name, self.save_to_db)
+
+    def open_edit_modal(self):
+        item = self.tree.selection()
+        if not item: return messagebox.showwarning("Chú ý", "Hãy chọn dòng cần sửa!")
+        vals = self.tree.item(item, "values")
+        title = "Cập nhật phòng" if self.table_name == "rooms" else "Cập nhật dữ liệu"
+        FormModal(self.winfo_toplevel(), title, self.columns, self.table_name, self.save_to_db, initial_data=vals)
+
+    def save_to_db(self, vals):
+        try:
+            db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
+            col_names = [d[0] for d in db.cursor.description]
+            db.cursor.execute(f"SELECT * FROM {self.table_name} WHERE {col_names[0]}=?", (vals[0],))
+            if db.cursor.fetchone():
+                set_str = ", ".join([f"{n}=?" for n in col_names])
+                db.cursor.execute(f"UPDATE {self.table_name} SET {set_str} WHERE {col_names[0]}=?", (*vals, vals[0]))
+            else:
+                db.cursor.execute(f"INSERT INTO {self.table_name} VALUES ({', '.join(['?'] * len(vals))})", vals)
+            db.conn.commit()
+            self.load_data()
+        except Exception as e:
+            messagebox.showerror("Lỗi", str(e))
 
     def filter_data(self, *args):
         search_text = self.search_var.get().lower()
@@ -93,32 +155,13 @@ class CRUDFrame(ctk.CTkFrame):
         self.all_data = db.cursor.fetchall()
         for row in self.all_data: self.tree.insert("", "end", values=row)
 
-    def on_select(self, event):
-        item = self.tree.selection()
-        if not item: return
-        vals = self.tree.item(item, "values")
-        for i, col in enumerate(self.columns):
-            entry = self.entries[col]
-            if isinstance(entry, ctk.CTkOptionMenu): entry.set(vals[i])
-            else: entry.delete(0, 'end'); entry.insert(0, vals[i])
-
-    def update(self):
-        item = self.tree.selection()
-        if not item: return
-        old_id = self.tree.item(item, "values")[0]
-        vals = [self.entries[col].get() for col in self.columns]
-        db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
-        col_names = [d[0] for d in db.cursor.description]
-        set_str = ", ".join([f"{n}=?" for n in col_names])
-        db.cursor.execute(f"UPDATE {self.table_name} SET {set_str} WHERE {col_names[0]}=?", (*vals, old_id))
-        db.conn.commit(); self.load_data()
-
     def delete(self):
         item = self.tree.selection()
         if not item: return
         row_id = self.tree.item(item, "values")[0]
         db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
         id_col = db.cursor.description[0][0]
-        if messagebox.askyesno("Xác nhận", "Xóa dòng này?"):
+        if messagebox.askyesno("Xác nhận", "Xóa vĩnh viễn?"):
             db.cursor.execute(f"DELETE FROM {self.table_name} WHERE {id_col}=?", (row_id,))
-            db.conn.commit(); self.load_data()
+            db.conn.commit();
+            self.load_data()
