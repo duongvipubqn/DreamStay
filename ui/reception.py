@@ -9,13 +9,12 @@ class ReceptionFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_WHITE, corner_radius=15, border_width=1, border_color=COLOR_BORDER)
 
-        ctk.CTkLabel(self, text="Quầy Lễ Tân (Check-in/out)", font=("Georgia", 24, "bold"),
-                     text_color=COLOR_NAVY).pack(pady=15)
+        ctk.CTkLabel(self, text="Quầy Lễ Tân (Check-in/out)", font=("Segoe UI", 24, "bold"),
+                     text_color=COLOR_TEXT).pack(pady=15)
 
         self.control_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.control_frame.pack(pady=10, fill="x", padx=20)
 
-        # Dropdown chọn khách và phòng
         self.combo_customer = ctk.CTkOptionMenu(self.control_frame, values=["Trống"], fg_color=COLOR_WHITE,
                                                 text_color=COLOR_TEXT, button_color=COLOR_GOLD,
                                                 button_hover_color=COLOR_GOLD_HOVER, dynamic_resizing=False)
@@ -29,16 +28,32 @@ class ReceptionFrame(ctk.CTkFrame):
         ctk.CTkButton(self.control_frame, text="NHẬN PHÒNG", fg_color=COLOR_GOLD, font=("Segoe UI", 12, "bold"),
                       command=self.check_in).grid(row=0, column=2, padx=10)
 
-        ctk.CTkButton(self.control_frame, text="THANH TOÁN", fg_color=COLOR_NAVY, font=("Segoe UI", 12, "bold"),
+        ctk.CTkButton(self.control_frame, text="THANH TOÁN", fg_color=COLOR_GOLD, text_color="white",
+                      font=("Segoe UI", 12, "bold"),
                       command=self.check_out).grid(row=0, column=3, padx=10)
 
-        # Bảng Treeview
         self.setup_treeview()
 
     def setup_treeview(self):
         f = ctk.CTkFrame(self, fg_color="transparent")
         f.pack(fill="both", expand=True, padx=20, pady=20)
         cols = ("ID", "Khách Hàng", "Số Phòng", "Ngày Nhận", "Giá/Đêm")
+
+        style = ttk.Style()
+        style.theme_use("default")
+        style.configure("Treeview",
+                        background=COLOR_NAVY,
+                        foreground=COLOR_TEXT,
+                        rowheight=25,
+                        fieldbackground=COLOR_NAVY,
+                        bordercolor=COLOR_BORDER,
+                        borderwidth=1)
+        style.map('Treeview', background=[('selected', COLOR_GOLD)], foreground=[('selected', 'white')])
+        style.configure("Treeview.Heading",
+                        background=COLOR_WHITE,
+                        foreground=COLOR_GOLD,
+                        relief="flat")
+
         self.tree = ttk.Treeview(f, columns=cols, show="headings")
         for c in cols:
             self.tree.heading(c, text=c)
@@ -75,10 +90,31 @@ class ReceptionFrame(ctk.CTkFrame):
 
     def check_out(self):
         item = self.tree.selection()
-        if not item: return
-        b_id, cus, rm, date, price = self.tree.item(item, "values")
-        db.cursor.execute("DELETE FROM bookings WHERE id=?", (b_id,))
-        db.cursor.execute("UPDATE rooms SET status='Trống' WHERE room_id=?", (rm,))
-        db.conn.commit()
-        messagebox.showinfo("Thành công", f"Đã trả phòng {rm}!")
-        self.load_data()
+        if not item:
+            return messagebox.showwarning("Chú ý", "Vui lòng chọn một lượt đặt phòng!")
+
+        b_id, cus, rm, date_in, price = self.tree.item(item, "values")
+
+        db.cursor.execute("SELECT location FROM rooms WHERE room_id=?", (rm,))
+        loc_res = db.cursor.fetchone()
+        loc = loc_res[0] if loc_res else "Không xác định"
+
+        date_out = datetime.now().strftime("%Y-%m-%d")
+
+        try:
+            db.cursor.execute(
+                "INSERT INTO revenue_history (date, amount, location) VALUES (?, ?, ?)",
+                (date_out, float(price), loc)
+            )
+
+            db.cursor.execute("UPDATE customers SET total_spending = total_spending + ? WHERE full_name=?",
+                              (float(price), cus))
+
+            db.cursor.execute("DELETE FROM bookings WHERE id=?", (b_id,))
+            db.cursor.execute("UPDATE rooms SET status='Trống' WHERE room_id=?", (rm,))
+
+            db.conn.commit()
+            messagebox.showinfo("Thành công", f"Đã thanh toán {price} VNĐ cho phòng {rm}!")
+            self.load_data()
+        except Exception as e:
+            messagebox.showerror("Lỗi hệ thống", f"Không thể thanh toán: {str(e)}")

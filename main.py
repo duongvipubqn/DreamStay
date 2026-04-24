@@ -9,6 +9,7 @@ from ui.contact_frame import ContactFrame
 from ui.main_layout import MainFrame
 from ui.login_frame import LoginFrame
 from ui.register_frame import RegisterFrame
+from ui.forgot_frame import ForgotFrame
 from ui.profile_frame import ProfileFrame
 
 
@@ -21,15 +22,12 @@ class HotelApp(ctk.CTk):
 
         self.current_user = None
 
-        # Header cố định trên cùng
         self.header = Header(self, self.switch_page)
         self.header.pack(side="top", fill="x")
 
-        # Container chứa các trang
         self.container = ctk.CTkFrame(self, fg_color="transparent")
         self.container.pack(fill="both", expand=True)
 
-        # Khởi tạo danh sách các trang
         self.pages = {
             "Trang chủ": HomeFrame(self.container),
             "Phòng": RoomView(self.container),
@@ -39,14 +37,13 @@ class HotelApp(ctk.CTk):
             "Quản lý": MainFrame(self.container),
             "Login": LoginFrame(self.container),
             "Register": RegisterFrame(self.container),
-            "Hồ sơ": ProfileFrame(self.container)  # THÊM DÒNG NÀY
+            "Forgot": ForgotFrame(self.container),
+            "Hồ sơ": ProfileFrame(self.container)
         }
 
         self.switch_page("Trang chủ")
 
     def switch_page(self, name):
-        # Nếu nhấn vào Quản lý, kiểm tra xem đã login chưa (Ở đây tạm thời cho qua)
-        # Nếu chưa login có thể sửa thành: if name == "Quản lý": name = "Login"
 
         for page in self.pages.values():
             page.pack_forget()
@@ -56,7 +53,6 @@ class HotelApp(ctk.CTk):
             if hasattr(self.pages[name], 'load_data'):
                 self.pages[name].load_data()
 
-    # Các hàm điều hướng trung gian
     def show_login(self):
         self.switch_page("Login")
 
@@ -65,17 +61,18 @@ class HotelApp(ctk.CTk):
 
     def show_main(self, name):
         self.switch_page("Quản lý")
-        # Cập nhật tên sếp trên sidebar của MainFrame
         self.pages["Quản lý"].update_user(name)
 
     def logout(self):
         from tkinter import messagebox
         self.current_user = None
+        self.header.user_btn.configure(text="ĐĂNG NHẬP", width=90, height=32, corner_radius=6, font=("Segoe UI", 12, "bold"))
         self.switch_page("Trang chủ")
         messagebox.showinfo("Thông báo", "Sếp đã đăng xuất an toàn!")
 
     def show_main(self, name):
-        self.current_user = name  # Lưu tên sếp khi login thành công
+        self.current_user = name
+        self.header.user_btn.configure(text="👤", width=40, corner_radius=20, font=("Segoe UI", 18))
         self.switch_page("Quản lý")
         self.pages["Quản lý"].update_user(name)
 

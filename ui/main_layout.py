@@ -7,29 +7,22 @@ from .statistics import StatisticsFrame
 
 class MainFrame(ctk.CTkFrame):
     def __init__(self, master):
-        # Đã đổi CYBER_BG thành COLOR_CREAM
         super().__init__(master, fg_color=COLOR_CREAM)
-        self.master = master  # Đây là self.container trong main.py
+        self.master = master
 
-        # --- SIDEBAR (Màu Navy đậm chuẩn Mộng Mơ) ---
         self.sidebar = ctk.CTkFrame(self, width=260, fg_color=COLOR_NAVY, corner_radius=0)
         self.sidebar.pack(side="left", fill="y")
 
-        # Logo / Header Sidebar
-        self.logo_label = ctk.CTkLabel(self.sidebar, text="KháchSạnMộngMơ",
-                                       font=("Georgia", 22, "bold"),
-                                       text_color=COLOR_GOLD)
-        self.logo_label.pack(pady=(30, 10))
+        ctk.CTkLabel(self.sidebar, text="HỆ THỐNG QUẢN TRỊ", font=("Segoe UI", 16, "bold"),
+                     text_color=COLOR_GOLD).pack(pady=20)
 
-        self.lbl_user = ctk.CTkLabel(self.sidebar, text="Chào mừng trở lại!",
-                                     font=("Segoe UI", 12), text_color="white")
-        self.lbl_user.pack(pady=(0, 30))
+        self.user_label = ctk.CTkLabel(self.sidebar, text="Admin: ...", font=("Segoe UI", 12),
+                                       text_color="#888")
+        self.user_label.pack(pady=(0, 20))
 
-        # Vùng chứa nội dung module quản lý
         self.content = ctk.CTkFrame(self, fg_color="transparent")
         self.content.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
-        # Cấu hình các Frame con (Đã port toàn bộ cột từ SQL của sếp)
         self.frames = {
             "Lễ Tân": ReceptionFrame(self.content),
             "Phòng": CRUDFrame(self.content, "Hệ Thống Quản Lý Phòng", "rooms",
@@ -42,9 +35,8 @@ class MainFrame(ctk.CTkFrame):
             "Thống Kê": StatisticsFrame(self.content)
         }
 
-        # Tạo nút điều hướng Sidebar
         for name in self.frames.keys():
-            btn = ctk.CTkButton(self.sidebar, text=name,
+            btn = ctk.CTkButton(self.sidebar, text=f"  {name}",
                                 fg_color="transparent",
                                 text_color="#ccc",
                                 hover_color="#3a3a50",
@@ -52,22 +44,16 @@ class MainFrame(ctk.CTkFrame):
                                 height=45,
                                 font=("Segoe UI", 13, "bold"),
                                 command=lambda n=name: self.switch(n))
-            btn.pack(pady=5, padx=20, fill="x")
+            btn.pack(pady=2, padx=15, fill="x")
 
-        # FIX LỖI: Gọi hàm show_login thông qua master.master (tức là quay lại HotelApp)
-        self.btn_logout = ctk.CTkButton(self.sidebar, text="THOÁT",
-                                        fg_color="#444",
-                                        hover_color="#555",
-                                        text_color="white",
-                                        font=("Segoe UI", 12, "bold"),
-                                        command=self.logout_clicked)
-        self.btn_logout.pack(side="bottom", pady=30, padx=30, fill="x")
+        ctk.CTkButton(self.sidebar, text="  Đăng Xuất",
+                      fg_color="transparent", text_color="#e74c3c",
+                      anchor="w", height=45, font=("Segoe UI", 13, "bold"),
+                      command=self.logout_clicked).pack(side="bottom", pady=20, padx=15, fill="x")
 
         self.switch("Lễ Tân")
 
     def logout_clicked(self):
-        # Vì MainFrame con của Container, Container con của App chính
-        # Ta cần gọi ngược lên App chính
         self.master.master.show_login()
 
     def switch(self, name):
@@ -77,4 +63,4 @@ class MainFrame(ctk.CTkFrame):
             self.frames[name].load_data()
 
     def update_user(self, name):
-        self.lbl_user.configure(text=f"Sếp: {name.upper()}")
+        self.user_label.configure(text=f"Admin: {name}")

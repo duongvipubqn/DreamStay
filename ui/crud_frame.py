@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 from config import *
 from database import db
 
+
 class CRUDFrame(ctk.CTkFrame):
     def __init__(self, master, title, table_name, columns):
         super().__init__(master, fg_color=COLOR_WHITE, corner_radius=15, border_width=1, border_color=COLOR_BORDER)
@@ -11,46 +12,66 @@ class CRUDFrame(ctk.CTkFrame):
         self.all_data = []
         self.entries = {}
 
-        ctk.CTkLabel(self, text=title, font=("Georgia", 24, "bold"), text_color=COLOR_NAVY).pack(pady=(15, 5))
+        ctk.CTkLabel(self, text=title, font=("Segoe UI", 24, "bold"), text_color=COLOR_TEXT).pack(pady=(15, 5))
 
-        # Toolbar tìm kiếm
         self.toolbar = ctk.CTkFrame(self, fg_color="transparent")
         self.toolbar.pack(fill="x", padx=20, pady=10)
 
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.filter_data)
-        ctk.CTkEntry(self.toolbar, placeholder_text="Tìm kiếm nhanh...", width=250, textvariable=self.search_var).pack(side="left")
+        ctk.CTkEntry(self.toolbar, placeholder_text="Tìm kiếm nhanh...", width=250, textvariable=self.search_var,
+                     fg_color=COLOR_NAVY, text_color=COLOR_TEXT).pack(side="left")
 
-        # Form nhập liệu
-        self.form_frame = ctk.CTkFrame(self, fg_color="#fcfcfc", border_width=1, border_color=COLOR_BORDER)
+        self.form_frame = ctk.CTkFrame(self, fg_color=COLOR_NAVY, border_width=1, border_color=COLOR_BORDER)
         self.form_frame.pack(pady=10, fill="x", padx=20)
 
         for i, col in enumerate(columns):
             row, col_idx = i // 3, i % 3
-            ctk.CTkLabel(self.form_frame, text=col, font=("Segoe UI", 10, "bold"), text_color=COLOR_TEXT).grid(row=row*2, column=col_idx, padx=10, sticky="w")
+            ctk.CTkLabel(self.form_frame, text=col, font=("Segoe UI", 10, "bold"), text_color=COLOR_GOLD).grid(
+                row=row * 2, column=col_idx, padx=10, sticky="w")
             entry = self.create_input(col)
-            entry.grid(row=row*2 + 1, column=col_idx, padx=10, pady=(0, 10), sticky="ew")
+            entry.grid(row=row * 2 + 1, column=col_idx, padx=10, pady=(0, 10), sticky="ew")
             self.entries[col] = entry
 
-        # Nút bấm
         self.btn_panel = ctk.CTkFrame(self, fg_color="transparent")
         self.btn_panel.pack(pady=10)
-        ctk.CTkButton(self.btn_panel, text="LƯU / CẬP NHẬT", fg_color=COLOR_GOLD, text_color="white", command=self.update).pack(side="left", padx=5)
-        ctk.CTkButton(self.btn_panel, text="XÓA", fg_color="#e74c3c", text_color="white", command=self.delete).pack(side="left", padx=5)
+        ctk.CTkButton(self.btn_panel, text="LƯU / CẬP NHẬT", fg_color=COLOR_GOLD, text_color="white",
+                      command=self.update).pack(side="left", padx=5)
+        ctk.CTkButton(self.btn_panel, text="XÓA", fg_color="#e74c3c", text_color="white", command=self.delete).pack(
+            side="left", padx=5)
 
         self.tree = self.setup_treeview()
 
     def create_input(self, col_name):
         if any(x in col_name for x in ["Địa điểm", "Thành phố", "Loại", "Trạng thái", "Sức Chứa", "Chức vụ"]):
-            vals = LOCATIONS if "Địa" in col_name or "Thành" in col_name else (ROOM_TYPES if "Loại" in col_name else (ROOM_STATUSES if self.table_name == "rooms" else EMPLOYEE_STATUSES))
+            vals = LOCATIONS if "Địa" in col_name or "Thành" in col_name else (ROOM_TYPES if "Loại" in col_name else (
+                ROOM_STATUSES if self.table_name == "rooms" else EMPLOYEE_STATUSES))
             if "Sức Chứa" in col_name: vals = CAPACITIES
             if "Chức vụ" in col_name: vals = POSITIONS
-            return ctk.CTkOptionMenu(self.form_frame, values=vals, fg_color=COLOR_WHITE, text_color=COLOR_TEXT, button_color=COLOR_GOLD, dynamic_resizing=False)
+            return ctk.CTkOptionMenu(self.form_frame, values=vals, fg_color=COLOR_WHITE, text_color=COLOR_TEXT,
+                                     button_color=COLOR_GOLD, dynamic_resizing=False)
         return ctk.CTkEntry(self.form_frame, fg_color=COLOR_WHITE, border_color=COLOR_BORDER, text_color=COLOR_TEXT)
 
     def setup_treeview(self):
         f = ctk.CTkFrame(self, fg_color="transparent")
         f.pack(fill="both", expand=True, padx=20, pady=10)
+
+        style = ttk.Style()
+        style.theme_use("default")
+        style.configure("Treeview",
+                        background=COLOR_NAVY,
+                        foreground=COLOR_TEXT,
+                        rowheight=25,
+                        fieldbackground=COLOR_NAVY,
+                        bordercolor=COLOR_BORDER,
+                        borderwidth=1)
+        style.map('Treeview', background=[('selected', COLOR_GOLD)], foreground=[('selected', 'white')])
+        style.configure("Treeview.Heading",
+                        background=COLOR_WHITE,
+                        foreground=COLOR_GOLD,
+                        relief="flat")
+        style.map("Treeview.Heading", background=[('active', COLOR_GOLD)], foreground=[('active', 'white')])
+
         t = ttk.Treeview(f, columns=self.columns, show="headings")
         for col in self.columns:
             t.heading(col, text=col.upper())

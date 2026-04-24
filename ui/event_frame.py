@@ -6,7 +6,7 @@ class EventFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
 
-        ctk.CTkLabel(self, text="Sự Kiện & Khuyến Mãi", font=("Georgia", 32, "bold"), text_color=COLOR_NAVY).pack(
+        ctk.CTkLabel(self, text="Sự Kiện & Khuyến Mãi", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(
             pady=30)
 
         self.main_event = ctk.CTkFrame(self, fg_color=COLOR_NAVY, corner_radius=15)
@@ -16,7 +16,7 @@ class EventFrame(ctk.CTkScrollableFrame):
         f.pack(side="left", padx=40, pady=40)
 
         ctk.CTkLabel(f, text="✨ THỬ THÁCH ✨", font=("Segoe UI", 14, "bold"), text_color=COLOR_GOLD).pack(anchor="w")
-        ctk.CTkLabel(f, text="GIẤC MƠ VƯỢT THỜI GIAN", font=("Georgia", 28, "bold"), text_color="white").pack(
+        ctk.CTkLabel(f, text="GIẤC MƠ VƯỢT THỜI GIAN", font=("Segoe UI", 28, "bold"), text_color="white").pack(
             anchor="w", pady=5)
 
         desc = "Hãy quay video trải nghiệm tại khách sạn để có cơ hội\nnhận 03 đêm nghỉ dưỡng tại Presidential Suite trị giá 100M+."
@@ -25,6 +25,7 @@ class EventFrame(ctk.CTkScrollableFrame):
         ctk.CTkButton(f, text="ĐĂNG KÝ THAM GIA NGAY", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
                       text_color="white", font=("Segoe UI", 13, "bold"), height=40).pack(anchor="w", pady=10)
 
-        ctk.CTkLabel(self.main_event, text="🏆", font=("Segoe UI", 120)).pack(side="right", padx=60)
+        ctk.CTkLabel(self.main_event, text="🏆", font=("Segoe UI", 120), text_color=COLOR_GOLD).pack(side="right",
+                                                                                                    padx=60)
 
     def load_data(self): pass

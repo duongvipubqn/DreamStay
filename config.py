@@ -1,18 +1,15 @@
 import customtkinter as ctk
 
-# --- CẤU HÌNH GIAO DIỆN MỘNG MƠ (LUXURY STYLE) ---
-ctk.set_appearance_mode("light") # Chuyển sang chế độ sáng
+ctk.set_appearance_mode("dark")
 
-# Palette màu chính
-COLOR_NAVY = "#2c2c3e"      # Sidebar/Header
-COLOR_GOLD = "#b49162"      # Nút bấm, điểm nhấn
-COLOR_GOLD_HOVER = "#a38257"
-COLOR_CREAM = "#fdfaf6"     # Nền chính
-COLOR_WHITE = "#ffffff"     # Nền các bảng/form
-COLOR_TEXT = "#3a3a3a"      # Màu chữ chính
-COLOR_BORDER = "#e8e8e8"    # Viền nhạt
+COLOR_CREAM = "#1a1a2e"
+COLOR_WHITE = "#252538"
+COLOR_NAVY = "#131324"
+COLOR_TEXT = "#ffffff"
+COLOR_BORDER = "#3d3d5c"
+COLOR_GOLD = "#c5a059"
+COLOR_GOLD_HOVER = "#b38f4d"
 
-# Dữ liệu hằng số (Giữ nguyên từ bản HTML)
 LOCATIONS = [
     "Hạ Long", "Đà Lạt", "Hồ Chí Minh", "Cần Thơ", "Hà Nội", "Huế",
     "Hải Phòng", "Phú Quốc", "Nha Trang", "Quy Nhơn", "Vũng Tàu",

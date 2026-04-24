@@ -9,12 +9,12 @@ class RegisterFrame(ctk.CTkFrame):
         super().__init__(master, fg_color=COLOR_CREAM)
         self.master = master
 
-        self.panel = ctk.CTkFrame(self, width=450, height=750, fg_color=COLOR_WHITE,
+        self.panel = ctk.CTkFrame(self, width=450, height=650, fg_color=COLOR_WHITE,
                                   corner_radius=15, border_width=1, border_color=COLOR_BORDER)
         self.panel.place(relx=0.5, rely=0.5, anchor="center")
 
-        ctk.CTkLabel(self.panel, text="Tạo Tài Khoản", font=("Georgia", 32, "bold"),
-                     text_color=COLOR_NAVY).pack(pady=(30, 5))
+        ctk.CTkLabel(self.panel, text="Tạo Tài Khoản", font=("Segoe UI", 32, "bold"),
+                     text_color="white").pack(pady=(40, 5))
         ctk.CTkLabel(self.panel, text="Đăng ký tài khoản quản lý nhân viên.", font=("Segoe UI", 13),
                      text_color=COLOR_TEXT).pack(pady=(0, 20))
 
@@ -26,7 +26,7 @@ class RegisterFrame(ctk.CTkFrame):
 
         for ph, key in data:
             entry = ctk.CTkEntry(self.panel, placeholder_text=ph, width=320, height=45,
-                                 fg_color="#f9f9f9", border_color=COLOR_BORDER, text_color=COLOR_TEXT,
+                                 fg_color="#1a1a2e", border_color=COLOR_BORDER, text_color=COLOR_TEXT,
                                  show="*" if key in ["pass", "confirm"] else "")
             entry.pack(pady=6)
             self.fields[key] = entry

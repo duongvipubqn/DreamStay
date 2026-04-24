@@ -7,7 +7,6 @@ class Database:
         self.create_tables()
 
     def create_tables(self):
-        # Thêm cột username vào bảng users
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
