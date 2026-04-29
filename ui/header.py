@@ -1,5 +1,7 @@
 import customtkinter as ctk
 from config import *
+import colorsys
+
 
 class Header(ctk.CTkFrame):
     def __init__(self, master, switch_func):
@@ -7,9 +9,17 @@ class Header(ctk.CTkFrame):
         self.pack_propagate(False)
         self.switch_func = switch_func
         self.app = master
+        self.hue = 0
 
-        ctk.CTkLabel(self, text="KháchSạnMộngMơ", font=("Segoe UI", 20, "bold"),
-                     text_color=COLOR_GOLD).pack(side="left", padx=30)
+        self.brand_container = ctk.CTkFrame(self, fg_color="transparent")
+        self.brand_container.pack(side="left", padx=30)
+
+        self.letters = []
+        for char in "DreamStay":
+            lbl = ctk.CTkLabel(self.brand_container, text=char,
+                               font=("Edwardian Script ITC", 50))
+            lbl.pack(side="left", padx=0)
+            self.letters.append(lbl)
 
         self.user_btn = ctk.CTkButton(self, text="ĐĂNG NHẬP", width=90, height=32, corner_radius=6,
                                       fg_color="white", text_color=COLOR_NAVY,
@@ -21,6 +31,21 @@ class Header(ctk.CTkFrame):
         self.menu_frame.pack(side="right", padx=20)
 
         self.update_menu(False)
+        self.animate_rainbow()
+
+    def animate_rainbow(self):
+        self.hue += 0.005
+        if self.hue > 1.0: self.hue = 0
+
+        for i, lbl in enumerate(self.letters):
+            char_hue = (self.hue + (i * 0.05)) % 1.0
+
+            rgb = colorsys.hsv_to_rgb(char_hue, 0.4, 1.0)
+            color_hex = '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255))
+
+            lbl.configure(text_color=color_hex)
+
+        self.after(30, self.animate_rainbow)
 
     def update_menu(self, is_logged_in):
         for widget in self.menu_frame.winfo_children():

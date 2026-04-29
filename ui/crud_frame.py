@@ -1,8 +1,8 @@
 import customtkinter as ctk
-from tkinter import ttk, messagebox
+import csv
+from tkinter import filedialog, ttk, messagebox
 from config import *
 from database import db
-
 
 class FormModal(ctk.CTkToplevel):
     def __init__(self, parent, title, columns, table_name, callback, initial_data=None):
@@ -22,16 +22,13 @@ class FormModal(ctk.CTkToplevel):
         scroll_f = ctk.CTkScrollableFrame(self, fg_color="transparent")
         scroll_f.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Đã xóa label tiêu đề bên trong theo yêu cầu
-
         for col in columns:
             f = ctk.CTkFrame(scroll_f, fg_color="transparent")
             f.pack(fill="x", pady=8, padx=20)
 
             ctk.CTkLabel(f, text=col, font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT).pack(anchor="w")
 
-            if any(x in col for x in
-                   ["Địa điểm", "Thành phố", "Loại", "Trạng thái", "Sức Chứa", "Chức vụ", "Tình Trạng"]):
+            if any(x in col for x in ["Địa điểm", "Thành phố", "Loại", "Trạng thái", "Sức Chứa", "Chức vụ", "Tình Trạng"]):
                 vals = LOCATIONS if "Địa" in col or "Thành" in col else (ROOM_TYPES if "Loại" in col else (
                     ROOM_STATUSES if self.table_name == "rooms" else EMPLOYEE_STATUSES))
                 if "Sức Chứa" in col: vals = CAPACITIES
@@ -42,8 +39,7 @@ class FormModal(ctk.CTkToplevel):
                                           dropdown_fg_color=COLOR_NAVY, dropdown_text_color=COLOR_TEXT,
                                           dynamic_resizing=False, height=45)
             else:
-                entry = ctk.CTkEntry(f, fg_color=COLOR_WHITE, border_color=COLOR_BORDER, text_color=COLOR_TEXT,
-                                     height=45)
+                entry = ctk.CTkEntry(f, fg_color=COLOR_WHITE, border_color=COLOR_BORDER, text_color=COLOR_TEXT, height=45)
 
             entry.pack(fill="x", pady=(5, 0))
             self.entries[col] = entry
@@ -67,7 +63,6 @@ class FormModal(ctk.CTkToplevel):
         self.callback(vals)
         self.destroy()
 
-
 class CRUDFrame(ctk.CTkFrame):
     def __init__(self, master, title, table_name, columns):
         super().__init__(master, fg_color="transparent")
@@ -85,11 +80,18 @@ class CRUDFrame(ctk.CTkFrame):
         toolbar = ctk.CTkFrame(self, fg_color=COLOR_WHITE, height=60, corner_radius=10)
         toolbar.pack(fill="x", pady=(0, 20))
         toolbar.pack_propagate(False)
+
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.filter_data)
         ctk.CTkEntry(toolbar, placeholder_text="Tìm kiếm nhanh...", width=300, textvariable=self.search_var,
-                     fg_color=COLOR_NAVY, border_color=COLOR_BORDER, text_color=COLOR_TEXT).pack(side="left", padx=15,
-                                                                                                 pady=10)
+                     fg_color=COLOR_NAVY, border_color=COLOR_BORDER, text_color=COLOR_TEXT).pack(side="left", padx=15, pady=10)
+
+        ctk.CTkButton(toolbar, text="XUẤT CSV", fg_color="#27ae60", hover_color="#219150",
+                      width=100, height=32, font=("Segoe UI", 11, "bold"),
+                      command=self.export_csv).pack(side="right", padx=5)
+        ctk.CTkButton(toolbar, text="NHẬP CSV", fg_color="#8e44ad", hover_color="#732d91",
+                      width=100, height=32, font=("Segoe UI", 11, "bold"),
+                      command=self.import_csv).pack(side="right", padx=10)
 
         self.tree = self.setup_treeview()
 
@@ -107,8 +109,7 @@ class CRUDFrame(ctk.CTkFrame):
         style.configure("Treeview", background=COLOR_NAVY, foreground=COLOR_TEXT, rowheight=35,
                         fieldbackground=COLOR_NAVY, borderwidth=0)
         style.map('Treeview', background=[('selected', COLOR_GOLD)])
-        style.configure("Treeview.Heading", background=COLOR_WHITE, foreground=COLOR_GOLD,
-                        font=("Segoe UI", 10, "bold"))
+        style.configure("Treeview.Heading", background=COLOR_WHITE, foreground=COLOR_GOLD, font=("Segoe UI", 10, "bold"))
         t = ttk.Treeview(f, columns=self.columns, show="headings")
         for col in self.columns:
             t.heading(col, text=col.upper())
@@ -163,5 +164,39 @@ class CRUDFrame(ctk.CTkFrame):
         id_col = db.cursor.description[0][0]
         if messagebox.askyesno("Xác nhận", "Xóa vĩnh viễn?"):
             db.cursor.execute(f"DELETE FROM {self.table_name} WHERE {id_col}=?", (row_id,))
-            db.conn.commit();
+            db.conn.commit()
             self.load_data()
+
+    def export_csv(self):
+        path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+        if not path: return
+        try:
+            with open(path, mode="w", encoding="utf-8-sig", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(self.columns)
+                writer.writerows(self.all_data)
+            messagebox.showinfo("Thành công", f"Đã xuất dữ liệu ra: {path}")
+        except Exception as e:
+            messagebox.showerror("Lỗi", f"Không thể xuất file: {str(e)}")
+
+    def import_csv(self):
+        path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+        if not path: return
+        try:
+            with open(path, mode="r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                header = next(reader)
+                count = 0
+                for row in reader:
+                    if len(row) == len(self.columns):
+                        db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
+                        id_col = db.cursor.description[0][0]
+                        db.cursor.execute(f"SELECT 1 FROM {self.table_name} WHERE {id_col}=?", (row[0],))
+                        if not db.cursor.fetchone():
+                            db.cursor.execute(f"INSERT INTO {self.table_name} VALUES ({','.join(['?']*len(row))})", row)
+                            count += 1
+                db.conn.commit()
+                self.load_data()
+                messagebox.showinfo("Thành công", f"Đã nhập thành công {count} dòng dữ liệu mới!")
+        except Exception as e:
+            messagebox.showerror("Lỗi", f"Không thể đọc file: {str(e)}")

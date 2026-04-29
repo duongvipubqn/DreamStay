@@ -3,12 +3,11 @@ from config import *
 from PIL import Image
 import os
 
-
 class HomeFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
 
-        self.hero_section = ctk.CTkFrame(self, fg_color="#1a1a2e", corner_radius=0, height=700)
+        self.hero_section = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0, height=700)
         self.hero_section.pack(fill="x")
         self.hero_section.pack_propagate(False)
 
@@ -23,16 +22,20 @@ class HomeFrame(ctk.CTkScrollableFrame):
         self.bg_2 = ctk.CTkLabel(self.hero_section, text="", fg_color="transparent")
         self.bg_2.place(relx=1, rely=0, relwidth=1, relheight=1)
 
-        self.title_label = ctk.CTkLabel(self.hero_section, text="Sự Sang Trọng Vượt Thời Gian",
-                                        font=("Segoe UI", 54, "bold"), text_color="white",
-                                        fg_color="transparent", bg_color="transparent")
-        self.title_label.place(relx=0.5, rely=0.35, anchor="center")
+        # 1. Tạo một cái bảng (Frame) để chứa chữ
+        self.text_plate = ctk.CTkFrame(self.hero_section, fg_color="#2c2c3e", corner_radius=15)
+        self.text_plate.place(relx=0.5, rely=0.4, anchor="center")
 
-        self.subtitle_label = ctk.CTkLabel(self.hero_section,
+        self.title_label = ctk.CTkLabel(self.text_plate, text="Sự Sang Trọng Vượt Thời Gian",
+                                        font=("Segoe UI", 54, "bold"), text_color="white",
+                                        fg_color="transparent")
+        self.title_label.pack(padx=40, pady=(20, 5))
+
+        self.subtitle_label = ctk.CTkLabel(self.text_plate,
                                            text="Chào mừng đến Khách sạn Mộng Mơ, nơi mọi khoảnh khắc là một giấc mơ.",
                                            font=("Segoe UI", 18), text_color="#f0f0f0",
-                                           fg_color="transparent", bg_color="transparent")
-        self.subtitle_label.place(relx=0.5, rely=0.45, anchor="center")
+                                           fg_color="transparent")
+        self.subtitle_label.pack(padx=40, pady=(0, 20))
 
         self.search_bar = ctk.CTkFrame(self.hero_section, fg_color="#2c2c3e", corner_radius=12)
         self.search_bar.place(relx=0.5, rely=0.7, anchor="center")
@@ -64,7 +67,7 @@ class HomeFrame(ctk.CTkScrollableFrame):
         self.create_gallery_section()
 
         self.hero_section.bind("<Configure>", self.on_resize)
-        self.after(5000, self.rotate_image)
+        self.anim_id = self.after(5000, self.rotate_image)
 
     def load_all_images_raw(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -93,7 +96,7 @@ class HomeFrame(ctk.CTkScrollableFrame):
         next_idx = (self.current_idx + 1) % len(self.images_ctk)
         self.bg_2.configure(image=self.images_ctk[next_idx])
         self.bg_2.place(relx=1, rely=0)
-        self.animate(1.0, next_idx)
+        self.anim_id = self.animate(1.0, next_idx)
 
     def animate(self, pos, nxt_idx):
         if pos <= 0:
@@ -101,15 +104,23 @@ class HomeFrame(ctk.CTkScrollableFrame):
             self.bg_1.configure(image=self.images_ctk[self.current_idx])
             self.bg_1.place(relx=0, rely=0)
             self.bg_2.place(relx=1, rely=0)
-            self.after(5000, self.rotate_image)
+
+            self.title_label.lift()
+            self.subtitle_label.lift()
+            self.search_bar.lift()
+
+            self.anim_id = self.after(5000, self.rotate_image)
             return
+
         pos -= 0.05
         self.bg_1.place(relx=pos - 1, rely=0)
         self.bg_2.place(relx=pos, rely=0)
+
         self.title_label.lift()
         self.subtitle_label.lift()
         self.search_bar.lift()
-        self.after(15, lambda: self.animate(pos, nxt_idx))
+
+        self.anim_id = self.after(15, lambda: self.animate(pos, nxt_idx))
 
     def create_about_section(self):
         about_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -122,7 +133,7 @@ class HomeFrame(ctk.CTkScrollableFrame):
         content_frame = ctk.CTkFrame(about_frame, fg_color="transparent")
         content_frame.pack(side="left", fill="both", expand=True)
 
-        ctk.CTkLabel(content_frame, text="Khách Sạn Mộng Mơ", font=("Segoe UI", 42, "bold"),
+        ctk.CTkLabel(content_frame, text="DreamStay", font=("Segoe UI", 42, "bold"),
                      text_color=COLOR_TEXT).pack(anchor="w")
         ctk.CTkLabel(content_frame, text="Khám Phá Di Sản Của Sự Tinh Tế", font=("Segoe UI", 18),
                      text_color=COLOR_GOLD).pack(anchor="w", pady=(5, 20))
@@ -162,6 +173,11 @@ class HomeFrame(ctk.CTkScrollableFrame):
                                        fg_color=COLOR_WHITE, corner_radius=10,
                                        height=250)
             placeholder.grid(row=i // 3, column=i % 3, padx=10, pady=10, sticky="nsew")
+
+    def destroy(self):
+        if hasattr(self, "anim_id") and self.anim_id:
+            self.after_cancel(self.anim_id)
+        super().destroy()
 
     def load_data(self):
         pass

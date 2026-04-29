@@ -50,7 +50,6 @@ class RoomView(ctk.CTkScrollableFrame):
             img_name = self.image_map.get(r_type, "default.png")
             img_path = os.path.join(img_dir, img_name)
 
-            # Chỉnh lại size ảnh một chút để vừa vặn với layout 3 cột
             if os.path.exists(img_path):
                 try:
                     pil_img = Image.open(img_path)

@@ -16,7 +16,7 @@ from ui.profile_frame import ProfileFrame
 class HotelApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("KHÁCH SẠN MỘNG MƠ")
+        self.title("DreamStay")
         self.geometry("1300x850")
         self.configure(fg_color=COLOR_CREAM)
 
