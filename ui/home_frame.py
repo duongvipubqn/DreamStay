@@ -70,7 +70,7 @@ class HomeFrame(ctk.CTkScrollableFrame):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         img_dir = os.path.join(os.path.dirname(current_dir), "images")
         for i in range(13):
-            img_path = os.path.join(img_dir, f"penacony-{i}.png")
+            img_path = os.path.join(img_dir, f"main-background-{i}.png")
             if os.path.exists(img_path):
                 try:
                     raw = Image.open(img_path)

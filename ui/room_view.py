@@ -18,11 +18,11 @@ class RoomView(ctk.CTkScrollableFrame):
             self.grid_frame.grid_columnconfigure(col, weight=1)
 
         self.image_map = {
-            "Deluxe Hướng Biển": "deluxe-huong-bien.png",
-            "Suite Cao Cấp": "suite-cao-cap.png",
-            "Villa Gia Đình Cổ Điển": "villa-gia-dinh-co-dien.png",
-            "Standard Hướng Vườn": "standard-huong-vuon.png",
-            "Presidential Suite": "presidential-suite.png"
+            "Deluxe Hướng Biển": "room-deluxe-ocean.png",
+            "Suite Cao Cấp": "room-luxury-suite.png",
+            "Villa Gia Đình Cổ Điển": "room-classic-villa.png",
+            "Standard Hướng Vườn": "room-standard-garden.png",
+            "Presidential Suite": "room-presidential.png"
         }
 
     def load_data(self):
