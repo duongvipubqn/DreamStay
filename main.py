@@ -11,7 +11,7 @@ from ui.login_frame import LoginFrame
 from ui.register_frame import RegisterFrame
 from ui.forgot_frame import ForgotFrame
 from ui.profile_frame import ProfileFrame
-
+from ui.about_frame import AboutFrame
 
 class HotelApp(ctk.CTk):
     def __init__(self):
@@ -30,6 +30,7 @@ class HotelApp(ctk.CTk):
 
         self.pages = {
             "Trang chủ": HomeFrame(self.container),
+            "Giới thiệu": AboutFrame(self.container),
             "Phòng": RoomView(self.container),
             "Tiện ích": UtilityFrame(self.container),
             "Sự kiện": EventFrame(self.container),

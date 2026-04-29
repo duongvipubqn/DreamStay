@@ -4,13 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9cdb2f87-344b-4405-978f-d2b8a129c4a8" name="Changes" comment="Bổ sung và chỉnh sửa file ảnh">
+    <list default="true" id="9cdb2f87-344b-4405-978f-d2b8a129c4a8" name="Changes" comment="Sửa giao diện và logo">
+      <change afterPath="$PROJECT_DIR$/ui/about_frame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/crud_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/crud_frame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/header.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/header.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/home_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/home_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/room_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/room_view.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -134,7 +133,7 @@
       <workItem from="1777083600750" duration="599000" />
       <workItem from="1777424603785" duration="1671000" />
       <workItem from="1777426432729" duration="3780000" />
-      <workItem from="1777442813194" duration="3664000" />
+      <workItem from="1777442813194" duration="5847000" />
     </task>
     <task id="LOCAL-00001" summary="Bổ sung và chỉnh sửa file ảnh">
       <option name="closed" value="true" />
@@ -144,7 +143,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777428088879</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Sửa giao diện và logo">
+      <option name="closed" value="true" />
+      <created>1777447056988</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1777447056988</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -152,10 +159,11 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Bổ sung và chỉnh sửa file ảnh" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bổ sung và chỉnh sửa file ảnh" />
+    <MESSAGE value="Sửa giao diện và logo" />
+    <option name="LAST_COMMIT_MESSAGE" value="Sửa giao diện và logo" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Hotel_Management$main.coverage" NAME="main Coverage Results" MODIFIED="1776847898948" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/DreamStay$main.coverage" NAME="main Coverage Results" MODIFIED="1777446888744" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/DreamStay$main.coverage" NAME="main Coverage Results" MODIFIED="1777448295178" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
