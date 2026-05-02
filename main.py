@@ -18,6 +18,7 @@ class HotelApp(ctk.CTk):
         super().__init__()
         self.title("DreamStay")
         self.geometry("1300x850")
+        self.state('zoomed')
         self.configure(fg_color=COLOR_CREAM)
 
         self.current_user = None

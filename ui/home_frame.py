@@ -7,7 +7,7 @@ class HomeFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         ctk.CTkScrollableFrame.__init__(self, master, fg_color=COLOR_CREAM, corner_radius=0)
 
-        self.hero_section = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0, height=700)
+        self.hero_section = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
         self.hero_section.pack(fill="x")
         self.hero_section.pack_propagate(False)
 
@@ -73,8 +73,21 @@ class HomeFrame(ctk.CTkScrollableFrame):
 
     def on_resize(self, event):
         if not self.raw_images: return
-        w, h = event.width, event.height
-        self.images_ctk = [ctk.CTkImage(raw, raw, size=(w, h)) for raw in self.raw_images]
+
+        self.winfo_toplevel().update_idletasks()
+
+        window_width = self.winfo_toplevel().winfo_width()
+        window_height = self.winfo_toplevel().winfo_height()
+
+        available_height = window_height - 70
+
+        self.hero_section.configure(width=window_width, height=available_height)
+
+        self.images_ctk = []
+        for raw in self.raw_images:
+            self.images_ctk.append(ctk.CTkImage(light_image=raw, dark_image=raw,
+                                                size=(window_width, available_height)))
+
         if self.images_ctk:
             self.bg_1.configure(image=self.images_ctk[self.current_idx])
 

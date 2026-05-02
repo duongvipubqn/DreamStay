@@ -6,17 +6,32 @@ import os
 
 class UtilityFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
-        super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
+        ctk.CTkScrollableFrame.__init__(self, master, fg_color=COLOR_CREAM, corner_radius=0)
 
-        ctk.CTkLabel(self, text="Tiện Ích & Dịch Vụ", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(pady=30)
+        ctk.CTkLabel(self, text="Tiện Ích & Dịch Vụ", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(
+            pady=30)
 
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=50)
+
         for col in range(3):
             self.grid_frame.grid_columnconfigure(col, weight=1)
 
+    def load_data(self):
+        for widget in self.grid_frame.winfo_children():
+            widget.destroy()
+
+        self.winfo_toplevel().update_idletasks()
+        window_width = self.winfo_toplevel().winfo_width()
+        if window_width < 100: window_width = 1300
+
+        card_width = (window_width - 150) // 3
+        img_w = int(card_width * 0.9)
+        img_h = int(img_w * 0.62)
+
         utils = [
-            ("Hồ Bơi Vô Cực", "Thư giãn và đắm mình trong làn nước mát với tầm nhìn bao trọn bờ biển.", "util-pool.png"),
+            ("Hồ Bơi Vô Cực", "Thư giãn và đắm mình trong làn nước mát với tầm nhìn bao trọn bờ biển.",
+             "util-pool.png"),
             ("Nhà Hàng The Golden", "Khám phá tinh hoa ẩm thực Á-Âu với các món ăn từ nguyên liệu tươi ngon nhất.",
              "util-restaurant.png"),
             ("Mộng Mơ Spa", "Tái tạo năng lượng với các liệu pháp spa và massage chuyên nghiệp.", "util-spa.png"),
@@ -37,18 +52,17 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             if os.path.exists(img_path):
                 try:
                     pil_img = Image.open(img_path)
-                    ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(350, 220))
-                    ctk.CTkLabel(card, image=ctk_img, text="").pack(pady=10, padx=10)
+                    ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(img_w, img_h))
+                    ctk.CTkLabel(card, image=ctk_img, text="").pack(pady=10, padx=10, fill="x")
                 except:
-                    ctk.CTkLabel(card, text="[ Lỗi tải ảnh ]", height=220).pack()
+                    ctk.CTkLabel(card, text="[ Lỗi tải ảnh ]", width=img_w, height=img_h).pack()
             else:
-                ctk.CTkLabel(card, text="[ Ảnh chưa cập nhật ]", height=220).pack()
+                ctk.CTkLabel(card, text="[ Ảnh chưa cập nhật ]", width=img_w, height=img_h).pack()
 
             ctk.CTkLabel(card, text=name, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(10, 0))
-            ctk.CTkLabel(card, text=desc, font=("Segoe UI", 12), text_color=COLOR_TEXT, wraplength=250).pack(pady=15,
-                                                                                                             padx=15)
+            ctk.CTkLabel(card, text=desc, font=("Segoe UI", 12), text_color=COLOR_TEXT, wraplength=img_w).pack(pady=15,
+                                                                                                               padx=15)
 
             ctk.CTkButton(card, text="XEM CHI TIẾT", fg_color="transparent", border_width=1, border_color=COLOR_GOLD,
-                          text_color=COLOR_GOLD, hover_color="#3a3a50", width=200, height=35).pack(pady=(0, 20))
-
-    def load_data(self): pass
+                          text_color=COLOR_GOLD, hover_color="#3a3a50",
+                          font=("Segoe UI", 12, "bold"), height=35, width=200).pack(pady=(0, 20))

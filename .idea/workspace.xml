@@ -4,12 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9cdb2f87-344b-4405-978f-d2b8a129c4a8" name="Changes" comment="Sửa giao diện và logo">
-      <change afterPath="$PROJECT_DIR$/ui/about_frame.py" afterDir="false" />
+    <list default="true" id="9cdb2f87-344b-4405-978f-d2b8a129c4a8" name="Changes" comment="Thêm file README.md">
+      <change beforePath="$PROJECT_DIR$/.idea/DreamStay.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DreamStay.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Interactive_in-memory_rebase_at_4_24_2026_5_27_PM_[Changes]1/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Interactive_in-memory_rebase_at_4_24_2026_5_27_PM__Changes_1.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/header.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/header.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/home_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/home_frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/room_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/room_view.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/utility_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/utility_frame.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +34,18 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;duongvipubqn&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:duongvipubqn/DreamStay.git&quot;,
+    &quot;accountId&quot;: &quot;80e3c61c-445c-4330-a6b5-e09b99fea48b&quot;
+  }
+}</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -89,7 +104,7 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.14" />
+      <option name="SDK_NAME" value="Python 3.10 (DreamStay)" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -110,7 +125,6 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-3bd3a6803838-JavaScript-PY-261.22158.340" />
         <option value="bundled-python-sdk-b63d5a1f7c97-b61e75351b1f-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.22158.340" />
       </set>
     </attachedChunks>
