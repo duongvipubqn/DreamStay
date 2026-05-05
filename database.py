@@ -6,6 +6,10 @@ class Database:
         self.conn = sqlite3.connect("dreamstay.db")
         self.cursor = self.conn.cursor()
         self.create_tables()
+        self.seed_manager()
+
+    def hash_password(self, password):
+        return hashlib.sha256(password.encode()).hexdigest()
 
     def create_tables(self):
         self.cursor.execute("""
@@ -16,7 +20,7 @@ class Database:
                 email TEXT UNIQUE,
                 phone TEXT,
                 password TEXT,
-                role TEXT DEFAULT 'staff'
+                role TEXT DEFAULT 'user'
             )""")
 
         self.cursor.execute("""
@@ -69,7 +73,14 @@ class Database:
 
         self.conn.commit()
 
-    def hash_password(self, password):
-        return hashlib.sha256(password.encode()).hexdigest()
+    def seed_manager(self):
+        self.cursor.execute("SELECT * FROM users WHERE role='manager'")
+        if not self.cursor.fetchone():
+            hashed_pw = self.hash_password("admin123")
+            self.cursor.execute("""
+                INSERT INTO users (full_name, username, email, phone, password, role)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, ("Tổng Quản Lý", "admin", "admin@dreamstay.com", "0000000000", hashed_pw, "manager"))
+            self.conn.commit()
 
 db = Database()

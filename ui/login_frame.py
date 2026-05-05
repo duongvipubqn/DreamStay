@@ -55,9 +55,9 @@ class LoginFrame(ctk.CTkFrame):
     def login(self):
         u, p = self.user_entry.get(), self.pass_entry.get()
         hashed_pw = db.hash_password(p)
-        db.cursor.execute("SELECT full_name FROM users WHERE username=? AND password=?", (u, hashed_pw))
+        db.cursor.execute("SELECT full_name, role FROM users WHERE username=? AND password=?", (u, hashed_pw))
         res = db.cursor.fetchone()
         if res:
-            self.master.master.show_main(res[0])
+            self.master.master.login_success(res[0], res[1])
         else:
             messagebox.showerror("Từ chối", "Tài khoản hoặc mật khẩu không đúng!")

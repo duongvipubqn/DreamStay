@@ -47,12 +47,13 @@ class Header(ctk.CTkFrame):
 
         self.after(30, self.animate_rainbow)
 
-    def update_menu(self, is_logged_in):
+    def update_menu(self, is_logged_in, role=None):
         for widget in self.menu_frame.winfo_children():
             widget.destroy()
 
         menus = ["Trang chủ", "Giới thiệu", "Phòng", "Tiện ích", "Sự kiện", "Liên hệ"]
-        if is_logged_in:
+
+        if is_logged_in and role in ['staff', 'manager']:
             menus.append("Quản lý")
 
         for menu in menus:

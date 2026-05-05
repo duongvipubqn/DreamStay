@@ -1,8 +1,9 @@
 import customtkinter as ctk
 from config import *
-from .reception import ReceptionFrame
-from .crud_frame import CRUDFrame
-from .statistics import StatisticsFrame
+from ui.reception import ReceptionFrame
+from ui.crud_frame import CRUDFrame
+from ui.statistics import StatisticsFrame
+from tkinter import messagebox
 
 
 class MainFrame(ctk.CTkFrame):
@@ -41,6 +42,12 @@ class MainFrame(ctk.CTkFrame):
                                 command=lambda n=name: self.switch(n))
             btn.pack(pady=2, padx=15, fill="x")
 
+        self.staff_reg_btn = ctk.CTkButton(self.sidebar, text="  Cấp TK Nhân Viên",
+                                           fg_color=COLOR_GOLD, text_color="white",
+                                           hover_color=COLOR_GOLD_HOVER,
+                                           anchor="w", height=45, font=("Segoe UI", 13, "bold"),
+                                           command=self.open_staff_registration)
+
         ctk.CTkButton(self.sidebar, text="  Đăng Xuất",
                       fg_color="transparent", text_color="#e74c3c",
                       anchor="w", height=45, font=("Segoe UI", 13, "bold"),
@@ -57,5 +64,61 @@ class MainFrame(ctk.CTkFrame):
         if hasattr(self.frames[name], 'load_data'):
             self.frames[name].load_data()
 
-    def update_user(self, name):
-        pass
+    def update_user(self, name, role):
+        self.current_role = role
+        if role == "manager":
+            self.staff_reg_btn.pack(pady=2, padx=15, fill="x", before=self.sidebar.winfo_children()[-1])
+        else:
+            self.staff_reg_btn.pack_forget()
+
+    def open_staff_registration(self):
+        modal = ctk.CTkToplevel(self)
+        modal.title("Cấp tài khoản nhân viên")
+        modal.geometry("450x600")
+        modal.configure(fg_color=COLOR_CREAM)
+        modal.transient(self)
+        modal.grab_set()
+        modal.resizable(False, False)
+
+        ctk.CTkLabel(modal, text="ĐĂNG KÝ NHÂN VIÊN MỚI", font=("Segoe UI", 22, "bold"), text_color=COLOR_GOLD).pack(
+            pady=30)
+
+        entries = {}
+        fields = [
+            ("Họ và Tên", "name"),
+            ("Tên đăng nhập", "user"),
+            ("Email liên hệ", "email"),
+            ("Số điện thoại", "phone"),
+            ("Mật khẩu cấp", "pw")
+        ]
+
+        for label, key in fields:
+            f = ctk.CTkFrame(modal, fg_color="transparent")
+            f.pack(fill="x", padx=40, pady=8)
+            ctk.CTkLabel(f, text=label, font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT).pack(anchor="w")
+            e = ctk.CTkEntry(f, show="*" if key == "pw" else "", height=40, fg_color=COLOR_WHITE,
+                             border_color=COLOR_BORDER)
+            e.pack(fill="x", pady=5)
+            entries[key] = e
+
+        def confirm_save():
+            vals = {k: v.get() for k, v in entries.items()}
+            if "" in vals.values():
+                return messagebox.showwarning("Chú ý", "Không được để trống thông tin!")
+
+            try:
+                from database import db
+                hashed_pw = db.hash_password(vals["pw"])
+                db.cursor.execute("""
+                                  INSERT INTO users (full_name, username, email, phone, password, role)
+                                  VALUES (?, ?, ?, ?, ?, ?)
+                                  """, (vals["name"], vals["user"], vals["email"], vals["phone"], hashed_pw, "staff"))
+                db.conn.commit()
+                messagebox.showinfo("Thành công", f"Đã cấp tài khoản cho nhân viên: {vals['name']}")
+                modal.destroy()
+            except Exception as e:
+                messagebox.showerror("Lỗi", "Tên đăng nhập hoặc Email đã tồn tại trên hệ thống!")
+
+        ctk.CTkButton(modal, text="XÁC NHẬN CẤP TÀI KHOẢN", fg_color=COLOR_GOLD,
+                      hover_color=COLOR_GOLD_HOVER, height=45, font=("Segoe UI", 13, "bold"),
+                      command=confirm_save).pack(pady=40, padx=40, fill="x")
