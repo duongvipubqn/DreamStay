@@ -4,6 +4,7 @@ from config import *
 from ui.header import Header
 from ui.home_frame import HomeFrame
 from ui.room_view import RoomView
+from ui.room_detail_frame import RoomDetailFrame
 from ui.utility_frame import UtilityFrame
 from ui.event_frame import EventFrame
 from ui.contact_frame import ContactFrame
@@ -36,6 +37,7 @@ class HotelApp(ctk.CTk):
             "Trang chủ": HomeFrame(self.container),
             "Giới thiệu": AboutFrame(self.container),
             "Phòng": RoomView(self.container),
+            "Chi tiết phòng": RoomDetailFrame(self.container),
             "Tiện ích": UtilityFrame(self.container),
             "Sự kiện": EventFrame(self.container),
             "Liên hệ": ContactFrame(self.container),
@@ -59,15 +61,17 @@ class HotelApp(ctk.CTk):
             except:
                 pass
 
-    def switch_page(self, name):
-
+    def switch_page(self, name, filters=None):
         for page in self.pages.values():
             page.pack_forget()
 
         if name in self.pages:
             self.pages[name].pack(fill="both", expand=True)
             if hasattr(self.pages[name], 'load_data'):
-                self.pages[name].load_data()
+                if name == "Phòng":
+                    self.pages[name].load_data(filters)
+                else:
+                    self.pages[name].load_data()
 
     def show_login(self):
         self.switch_page("Login")

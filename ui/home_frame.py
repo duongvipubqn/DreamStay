@@ -38,23 +38,28 @@ class HomeFrame(ctk.CTkScrollableFrame):
         self.inner_padding.pack(padx=30, pady=(0, 25))
 
         filters = [
-            ("Địa điểm", LOCATIONS),
-            ("Loại phòng", ROOM_TYPES),
-            ("Số khách", CAPACITIES),
+            ("Địa điểm", ["Mọi địa điểm"] + LOCATIONS),
+            ("Loại phòng", ["Mọi loại phòng"] + ROOM_TYPES),
+            ("Số khách", ["Mọi số khách"] + CAPACITIES),
             ("Mức giá (VNĐ)", ["Mọi mức giá", "Dưới 3tr", "3tr - 6tr", "Trên 10tr"])
         ]
 
+        self.filter_vars = {}
         for label, vals in filters:
             f = ctk.CTkFrame(self.inner_padding, fg_color="transparent")
             f.pack(side="left", padx=10)
             ctk.CTkLabel(f, text=label, font=("Segoe UI", 11, "bold"), text_color="#aaa").pack(anchor="w")
-            ctk.CTkOptionMenu(f, values=vals, fg_color=COLOR_WHITE, text_color=COLOR_TEXT,
+
+            var = ctk.StringVar(value=vals[0])
+            self.filter_vars[label] = var
+            ctk.CTkOptionMenu(f, values=vals, variable=var, fg_color=COLOR_WHITE, text_color=COLOR_TEXT,
                               button_color=COLOR_GOLD, width=150, height=35, dynamic_resizing=False).pack(pady=(5, 0))
 
         self.btn_check = ctk.CTkButton(self.inner_padding, text="KIỂM TRA\nPHÒNG",
                                        font=("Segoe UI", 12, "bold"),
                                        fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                                       text_color="white", width=120, height=55)
+                                       text_color="white", width=120, height=55,
+                                       command=self.apply_filter)
         self.btn_check.pack(side="left", padx=(15, 0))
 
         self.hero_section.bind("<Configure>", self.on_resize)
@@ -124,3 +129,12 @@ class HomeFrame(ctk.CTkScrollableFrame):
         super().destroy()
 
     def load_data(self): pass
+
+    def apply_filter(self):
+        data = {
+            "location": self.filter_vars["Địa điểm"].get(),
+            "type": self.filter_vars["Loại phòng"].get(),
+            "capacity": self.filter_vars["Số khách"].get(),
+            "price": self.filter_vars["Mức giá (VNĐ)"].get()
+        }
+        self.winfo_toplevel().switch_page("Phòng", filters=data)
