@@ -54,7 +54,8 @@ class LoginFrame(ctk.CTkFrame):
 
     def login(self):
         u, p = self.user_entry.get(), self.pass_entry.get()
-        db.cursor.execute("SELECT full_name FROM users WHERE username=? AND password=?", (u, p))
+        hashed_pw = db.hash_password(p)
+        db.cursor.execute("SELECT full_name FROM users WHERE username=? AND password=?", (u, hashed_pw))
         res = db.cursor.fetchone()
         if res:
             self.master.master.show_main(res[0])

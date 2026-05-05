@@ -1,4 +1,5 @@
 import sqlite3
+import hashlib
 
 class Database:
     def __init__(self):
@@ -67,5 +68,8 @@ class Database:
             )""")
 
         self.conn.commit()
+
+    def hash_password(self, password):
+        return hashlib.sha256(password.encode()).hexdigest()
 
 db = Database()

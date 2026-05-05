@@ -55,8 +55,9 @@ class RegisterFrame(ctk.CTkFrame):
         if "" in d.values(): return messagebox.showwarning("Lỗi", "Vui lòng nhập đủ tin!")
         if d["pass"] != d["confirm"]: return messagebox.showerror("Lỗi", "Mật khẩu không khớp!")
         try:
+            hashed_pw = db.hash_password(d["pass"])
             db.cursor.execute("INSERT INTO users (full_name, username, email, phone, password) VALUES (?,?,?,?,?)",
-                              (d["name"], d["username"], d["email"], d["phone"], d["pass"]))
+                              (d["name"], d["username"], d["email"], d["phone"], hashed_pw))
             db.conn.commit()
             messagebox.showinfo("Xong", "Tạo tài khoản thành công!")
             self.master.master.show_login()
