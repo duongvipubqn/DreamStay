@@ -3,7 +3,9 @@ import hashlib
 
 class Database:
     def __init__(self):
-        self.conn = sqlite3.connect("dreamstay.db")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        db_path = os.path.join(base_dir, "dreamstay.db")
+        self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
         self.create_tables()
         self.seed_manager()

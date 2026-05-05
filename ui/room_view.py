@@ -42,7 +42,8 @@ class RoomView(ctk.CTkScrollableFrame):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         img_dir = os.path.join(os.path.dirname(current_dir), "images")
 
-        db.cursor.execute("SELECT room_id, location, room_type, status, capacity, price FROM rooms")
+        db.cursor.execute(
+            "SELECT room_id, location, room_type, status, capacity, price FROM rooms WHERE status IN ('Trống', 'Đã đặt')")
         rooms_db = db.cursor.fetchall()
 
         for i, (r_id, loc, r_type, status, cap, price) in enumerate(rooms_db):
