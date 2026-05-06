@@ -58,13 +58,23 @@ class Database:
             )""")
 
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS bookings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                customer_name TEXT,
-                room_id TEXT,
-                checkin_date TEXT,
-                price_per_night REAL
-            )""")
+                            CREATE TABLE IF NOT EXISTS bookings
+                            (
+                                id
+                                INTEGER
+                                PRIMARY
+                                KEY
+                                AUTOINCREMENT,
+                                customer_name
+                                TEXT,
+                                room_id
+                                TEXT,
+                                checkin_date
+                                TEXT,
+                                checkout_date TEXT,
+                                                            total_price REAL,
+                                                            status TEXT DEFAULT 'Pending'
+                    )""")
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS revenue_history (
@@ -85,5 +95,15 @@ class Database:
                 VALUES (?, ?, ?, ?, ?, ?)
             """, ("Tổng Quản Lý", "admin", "admin@dreamstay.com", "0000000000", hashed_pw, "manager"))
             self.conn.commit()
+
+    def is_room_available(self, room_id, start_date, end_date):
+        self.cursor.execute("""
+                            SELECT COUNT(*)
+                            FROM bookings
+                            WHERE room_id = ?
+                              AND status != 'Cancelled'
+            AND NOT (checkout_date <= ? OR checkin_date >= ?)
+                            """, (room_id, start_date, end_date))
+        return self.cursor.fetchone()[0] == 0
 
 db = Database()
