@@ -6,6 +6,7 @@ from ui.home_frame import HomeFrame
 from ui.room_view import RoomView
 from ui.room_detail_frame import RoomDetailFrame
 from ui.utility_frame import UtilityFrame
+from ui.utility_detail_frame import UtilityDetailFrame
 from ui.event_frame import EventFrame
 from ui.contact_frame import ContactFrame
 from ui.main_layout import MainFrame
@@ -39,6 +40,7 @@ class HotelApp(ctk.CTk):
             "Phòng": RoomView(self.container),
             "Chi tiết phòng": RoomDetailFrame(self.container),
             "Tiện ích": UtilityFrame(self.container),
+            "Chi tiết tiện ích": UtilityDetailFrame(self.container),
             "Sự kiện": EventFrame(self.container),
             "Liên hệ": ContactFrame(self.container),
             "Quản lý": MainFrame(self.container),

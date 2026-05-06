@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="a4760946-fed6-45ae-bcb7-fc319c04ca07" name="Changes" comment="Thêm chức năng lọc phòng">
+    <list default="true" id="a4760946-fed6-45ae-bcb7-fc319c04ca07" name="Changes" comment="Thêm chức năng đặt phòng theo lịch">
+      <change afterPath="$PROJECT_DIR$/ui/utility_detail_frame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dreamstay.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/room_detail_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/room_detail_frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/utility_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/utility_frame.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +84,7 @@
       <updated>1777948295194</updated>
       <workItem from="1777948299954" duration="4004000" />
       <workItem from="1777962109092" duration="3706000" />
-      <workItem from="1778029892604" duration="2162000" />
+      <workItem from="1778029892604" duration="3618000" />
     </task>
     <task id="LOCAL-00001" summary="Mã hóa mật khẩu">
       <option name="closed" value="true" />
@@ -117,7 +118,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777964595448</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Thêm chức năng đặt phòng theo lịch">
+      <option name="closed" value="true" />
+      <created>1778032231532</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1778032231532</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -138,7 +147,8 @@
     <MESSAGE value="Mã hóa mật khẩu" />
     <MESSAGE value="Chia tài khoản thành 3 cấp bậc: Khách hàng, Nhân viên và Quản lý" />
     <MESSAGE value="Thêm chức năng lọc phòng" />
-    <option name="LAST_COMMIT_MESSAGE" value="Thêm chức năng lọc phòng" />
+    <MESSAGE value="Thêm chức năng đặt phòng theo lịch" />
+    <option name="LAST_COMMIT_MESSAGE" value="Thêm chức năng đặt phòng theo lịch" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/DreamStay$room_view.coverage" NAME="room_view Coverage Results" MODIFIED="1778030809646" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ui" />
@@ -146,7 +156,7 @@
     <SUITE FILE_PATH="coverage/DreamStay$header.coverage" NAME="header Coverage Results" MODIFIED="1777950437338" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ui" />
     <SUITE FILE_PATH="coverage/DreamStay$register_frame.coverage" NAME="register_frame Coverage Results" MODIFIED="1777962611889" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ui" />
     <SUITE FILE_PATH="coverage/DreamStay$room_detail_frame.coverage" NAME="room_detail_frame Coverage Results" MODIFIED="1778031558635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ui" />
-    <SUITE FILE_PATH="coverage/DreamStay$main.coverage" NAME="main Coverage Results" MODIFIED="1778031836996" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/DreamStay$main.coverage" NAME="main Coverage Results" MODIFIED="1778033175795" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/DreamStay$database.coverage" NAME="database Coverage Results" MODIFIED="1777962300753" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

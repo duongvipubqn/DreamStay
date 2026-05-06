@@ -89,14 +89,14 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
         self.entry_out.insert(0, tomorrow.strftime("%d/%m/%Y"))
         self.entry_out.configure(state="readonly")
 
-        self.calculate_total()
-
         calc_f = ctk.CTkFrame(booking_f, fg_color="transparent")
         calc_f.pack(fill="x", padx=20, pady=(0, 15))
 
         self.lbl_total = ctk.CTkLabel(calc_f, text="Vui lòng chọn ngày để tính tiền", font=("Segoe UI", 16, "italic"),
                                       text_color="#888")
         self.lbl_total.pack(side="right")
+
+        self.calculate_total()
 
         self.btn_book = ctk.CTkButton(self.right_p, text="XÁC NHẬN ĐẶT PHÒNG NGAY", fg_color=COLOR_GOLD,
                                       hover_color=COLOR_GOLD_HOVER, height=50, width=300,
