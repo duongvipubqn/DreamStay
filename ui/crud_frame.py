@@ -28,7 +28,8 @@ class FormModal(ctk.CTkToplevel):
 
             ctk.CTkLabel(f, text=col, font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT).pack(anchor="w")
 
-            if any(x in col for x in ["Địa điểm", "Thành phố", "Loại", "Trạng thái", "Sức Chứa", "Chức vụ", "Tình Trạng"]):
+            if any(x in col for x in
+                   ["Địa điểm", "Thành phố", "Loại", "Trạng thái", "Sức Chứa", "Chức vụ", "Tình Trạng"]):
                 vals = LOCATIONS if "Địa" in col or "Thành" in col else (ROOM_TYPES if "Loại" in col else (
                     ROOM_STATUSES if self.table_name == "rooms" else EMPLOYEE_STATUSES))
                 if "Sức Chứa" in col: vals = CAPACITIES
@@ -39,7 +40,8 @@ class FormModal(ctk.CTkToplevel):
                                           dropdown_fg_color=COLOR_NAVY, dropdown_text_color=COLOR_TEXT,
                                           dynamic_resizing=False, height=45)
             else:
-                entry = ctk.CTkEntry(f, fg_color=COLOR_WHITE, border_color=COLOR_BORDER, text_color=COLOR_TEXT, height=45)
+                entry = ctk.CTkEntry(f, fg_color=COLOR_WHITE, border_color=COLOR_BORDER, text_color=COLOR_TEXT,
+                                     height=45)
 
             entry.pack(fill="x", pady=(5, 0))
             self.entries[col] = entry
@@ -63,6 +65,7 @@ class FormModal(ctk.CTkToplevel):
         self.callback(vals)
         self.destroy()
 
+
 class CRUDFrame(ctk.CTkFrame):
     def __init__(self, master, title, table_name, columns):
         super().__init__(master, fg_color="transparent")
@@ -71,45 +74,59 @@ class CRUDFrame(ctk.CTkFrame):
         self.all_data = []
 
         header = ctk.CTkFrame(self, fg_color="transparent")
-        header.pack(fill="x", pady=(0, 20))
+        header.pack(fill="x", pady=(0, 15))
         ctk.CTkLabel(header, text=title, font=("Segoe UI", 28, "bold"), text_color=COLOR_TEXT).pack(side="left")
-        ctk.CTkButton(header, text="+ THÊM MỚI", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      text_color="white", font=("Segoe UI", 13, "bold"), width=150, height=40,
-                      command=self.open_add_modal).pack(side="right")
 
-        toolbar = ctk.CTkFrame(self, fg_color=COLOR_WHITE, height=60, corner_radius=10)
+        toolbar = ctk.CTkFrame(self, fg_color=COLOR_WHITE, height=70, corner_radius=15, border_width=1,
+                               border_color=COLOR_BORDER)
         toolbar.pack(fill="x", pady=(0, 20))
         toolbar.pack_propagate(False)
 
+        search_f = ctk.CTkFrame(toolbar, fg_color="transparent")
+        search_f.pack(side="left", padx=15, fill="y")
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.filter_data)
-        ctk.CTkEntry(toolbar, placeholder_text="Tìm kiếm nhanh...", width=300, textvariable=self.search_var,
-                     fg_color=COLOR_NAVY, border_color=COLOR_BORDER, text_color=COLOR_TEXT).pack(side="left", padx=15, pady=10)
+        ctk.CTkEntry(search_f, placeholder_text="Tìm kiếm nhanh...", width=250, textvariable=self.search_var,
+                     fg_color=COLOR_NAVY, border_color=COLOR_BORDER, text_color=COLOR_TEXT).pack(pady=15)
 
-        ctk.CTkButton(toolbar, text="XUẤT CSV", fg_color="#27ae60", hover_color="#219150",
-                      width=100, height=32, font=("Segoe UI", 11, "bold"),
-                      command=self.export_csv).pack(side="right", padx=5)
-        ctk.CTkButton(toolbar, text="NHẬP CSV", fg_color="#8e44ad", hover_color="#732d91",
-                      width=100, height=32, font=("Segoe UI", 11, "bold"),
-                      command=self.import_csv).pack(side="right", padx=10)
+        btn_f = ctk.CTkFrame(toolbar, fg_color="transparent")
+        btn_f.pack(side="right", padx=15)
+
+        ctk.CTkButton(btn_f, text="+ THÊM", fg_color="#27ae60", hover_color="#219150",
+                      width=90, height=35, font=("Segoe UI", 11, "bold"),
+                      command=self.open_add_modal).pack(side="left", padx=5)
+
+        ctk.CTkButton(btn_f, text="✎ SỬA", fg_color="#3498db", hover_color="#2980b9",
+                      width=90, height=35, font=("Segoe UI", 11, "bold"),
+                      command=self.open_edit_modal).pack(side="left", padx=5)
+
+        ctk.CTkButton(btn_f, text="🗑 XÓA", fg_color="#e74c3c", hover_color="#c0392b",
+                      width=90, height=35, font=("Segoe UI", 11, "bold"),
+                      command=self.delete).pack(side="left", padx=5)
+
+        ctk.CTkLabel(btn_f, text="|", text_color=COLOR_BORDER).pack(side="left", padx=10)
+
+        ctk.CTkButton(btn_f, text="NHẬP CSV", fg_color="#8e44ad", hover_color="#732d91",
+                      width=100, height=35, font=("Segoe UI", 11, "bold"),
+                      command=self.import_csv).pack(side="left", padx=5)
+
+        ctk.CTkButton(btn_f, text="XUẤT CSV", fg_color="#f39c12", hover_color="#d35400",
+                      width=100, height=35, font=("Segoe UI", 11, "bold"),
+                      command=self.export_csv).pack(side="left", padx=5)
 
         self.tree = self.setup_treeview()
-
-        actions = ctk.CTkFrame(self, fg_color="transparent")
-        actions.pack(fill="x", pady=10)
-        ctk.CTkButton(actions, text="SỬA DÒNG CHỌN", fg_color="#3498db", text_color="white",
-                      width=150, height=35, command=self.open_edit_modal).pack(side="right", padx=5)
-        ctk.CTkButton(actions, text="XÓA DÒNG CHỌN", fg_color="#e74c3c", text_color="white",
-                      width=150, height=35, command=self.delete).pack(side="right", padx=5)
 
     def setup_treeview(self):
         f = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=15, border_width=1, border_color=COLOR_BORDER)
         f.pack(fill="both", expand=True)
         style = ttk.Style()
+        style.theme_use("default")
         style.configure("Treeview", background=COLOR_NAVY, foreground=COLOR_TEXT, rowheight=35,
                         fieldbackground=COLOR_NAVY, borderwidth=0)
         style.map('Treeview', background=[('selected', COLOR_GOLD)])
-        style.configure("Treeview.Heading", background=COLOR_WHITE, foreground=COLOR_GOLD, font=("Segoe UI", 10, "bold"))
+        style.configure("Treeview.Heading", background=COLOR_WHITE, foreground=COLOR_GOLD,
+                        font=("Segoe UI", 10, "bold"))
+
         t = ttk.Treeview(f, columns=self.columns, show="headings")
         for col in self.columns:
             t.heading(col, text=col.upper())
@@ -158,11 +175,11 @@ class CRUDFrame(ctk.CTkFrame):
 
     def delete(self):
         item = self.tree.selection()
-        if not item: return
+        if not item: return messagebox.showwarning("Chú ý", "Hãy chọn dòng cần xóa!")
         row_id = self.tree.item(item, "values")[0]
         db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
         id_col = db.cursor.description[0][0]
-        if messagebox.askyesno("Xác nhận", "Xóa vĩnh viễn?"):
+        if messagebox.askyesno("Xác nhận", "Sếp có chắc muốn xóa vĩnh viễn dòng này không?"):
             db.cursor.execute(f"DELETE FROM {self.table_name} WHERE {id_col}=?", (row_id,))
             db.conn.commit()
             self.load_data()
@@ -193,7 +210,8 @@ class CRUDFrame(ctk.CTkFrame):
                         id_col = db.cursor.description[0][0]
                         db.cursor.execute(f"SELECT 1 FROM {self.table_name} WHERE {id_col}=?", (row[0],))
                         if not db.cursor.fetchone():
-                            db.cursor.execute(f"INSERT INTO {self.table_name} VALUES ({','.join(['?']*len(row))})", row)
+                            db.cursor.execute(f"INSERT INTO {self.table_name} VALUES ({','.join(['?'] * len(row))})",
+                                              row)
                             count += 1
                 db.conn.commit()
                 self.load_data()

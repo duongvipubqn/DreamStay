@@ -27,5 +27,6 @@ EMPLOYEE_STATUSES = ["Đang làm", "Nghỉ phép", "Đã nghỉ"]
 
 POSITIONS = [
     "Tổng Giám đốc (CEO)", "Giám đốc Vận hành (COO)", "Quản lý Khách sạn",
-    "Trưởng phòng Nhân sự", "Lễ tân", "Buồng phòng", "Bảo vệ", "Kỹ thuật"
+    "Trưởng phòng Nhân sự", "Lễ tân", "Đầu bếp", "Buồng phòng", "Lao công",
+    "Bảo vệ", "Kỹ thuật"
 ]
