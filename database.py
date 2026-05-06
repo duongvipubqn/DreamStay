@@ -84,6 +84,24 @@ class Database:
                 location TEXT
             )""")
 
+        self.cursor.execute("""
+                            CREATE TABLE IF NOT EXISTS user_coupons
+                            (
+                                id
+                                INTEGER
+                                PRIMARY
+                                KEY
+                                AUTOINCREMENT,
+                                username
+                                TEXT,
+                                code
+                                TEXT,
+                                description
+                                TEXT,
+                                discount_percent
+                                INTEGER
+                            )""")
+
         self.conn.commit()
 
     def seed_manager(self):

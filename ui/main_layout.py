@@ -4,6 +4,7 @@ from ui.reception import ReceptionFrame
 from ui.crud_frame import CRUDFrame
 from ui.statistics import StatisticsFrame
 from tkinter import messagebox
+from database import db
 
 
 class MainFrame(ctk.CTkFrame):
@@ -48,6 +49,12 @@ class MainFrame(ctk.CTkFrame):
                                            anchor="w", height=45, font=("Segoe UI", 13, "bold"),
                                            command=self.open_staff_registration)
 
+        self.voucher_grant_btn = ctk.CTkButton(self.sidebar, text="  Tặng Voucher",
+                                               fg_color="#27ae60", text_color="white",
+                                               hover_color="#219150",
+                                               anchor="w", height=45, font=("Segoe UI", 13, "bold"),
+                                               command=self.open_voucher_modal)
+
         ctk.CTkButton(self.sidebar, text="  Đăng Xuất",
                       fg_color="transparent", text_color="#e74c3c",
                       anchor="w", height=45, font=("Segoe UI", 13, "bold"),
@@ -68,8 +75,10 @@ class MainFrame(ctk.CTkFrame):
         self.current_role = role
         if role == "manager":
             self.staff_reg_btn.pack(pady=2, padx=15, fill="x", before=self.sidebar.winfo_children()[-1])
+            self.voucher_grant_btn.pack(pady=2, padx=15, fill="x", before=self.sidebar.winfo_children()[-1])
         else:
             self.staff_reg_btn.pack_forget()
+            self.voucher_grant_btn.pack_forget()
 
     def open_staff_registration(self):
         modal = ctk.CTkToplevel(self)
@@ -107,7 +116,6 @@ class MainFrame(ctk.CTkFrame):
                 return messagebox.showwarning("Chú ý", "Không được để trống thông tin!")
 
             try:
-                from database import db
                 hashed_pw = db.hash_password(vals["pw"])
                 db.cursor.execute("""
                                   INSERT INTO users (full_name, username, email, phone, password, role)
@@ -122,3 +130,61 @@ class MainFrame(ctk.CTkFrame):
         ctk.CTkButton(modal, text="XÁC NHẬN CẤP TÀI KHOẢN", fg_color=COLOR_GOLD,
                       hover_color=COLOR_GOLD_HOVER, height=45, font=("Segoe UI", 13, "bold"),
                       command=confirm_save).pack(pady=40, padx=40, fill="x")
+
+    def open_voucher_modal(self):
+        modal = ctk.CTkToplevel(self)
+        modal.title("Tặng Voucher cho khách hàng")
+        modal.geometry("450x550")
+        modal.configure(fg_color=COLOR_CREAM)
+        modal.transient(self)
+        modal.grab_set()
+
+        ctk.CTkLabel(modal, text="🎁 TẶNG VOUCHER MỚI", font=("Segoe UI", 22, "bold"), text_color=COLOR_GOLD).pack(
+            pady=30)
+
+        # Lấy danh sách username từ DB
+        db.cursor.execute("SELECT username FROM users WHERE role='user'")
+        user_list = [r[0] for r in db.cursor.fetchall()]
+        if not user_list: user_list = ["Chưa có khách hàng"]
+
+        f_user = ctk.CTkFrame(modal, fg_color="transparent")
+        f_user.pack(fill="x", padx=40, pady=8)
+        ctk.CTkLabel(f_user, text="Chọn khách hàng nhận:", font=("Segoe UI", 12, "bold")).pack(anchor="w")
+        user_cb = ctk.CTkOptionMenu(f_user, values=user_list, height=40, fg_color=COLOR_WHITE, text_color=COLOR_TEXT,
+                                    button_color=COLOR_GOLD)
+        user_cb.pack(fill="x", pady=5)
+
+        entries = {}
+        fields = [("Mã Voucher (VD: GIAM50)", "code"), ("Nội dung (VD: Tri ân sếp)", "desc"),
+                  ("% Giảm giá (1-100)", "percent")]
+
+        for label, key in fields:
+            f = ctk.CTkFrame(modal, fg_color="transparent")
+            f.pack(fill="x", padx=40, pady=8)
+            ctk.CTkLabel(f, text=label, font=("Segoe UI", 12, "bold")).pack(anchor="w")
+            e = ctk.CTkEntry(f, height=40, fg_color=COLOR_WHITE, border_color=COLOR_BORDER)
+            e.pack(fill="x", pady=5)
+            entries[key] = e
+
+        def confirm_grant():
+            target = user_cb.get()
+            code = entries["code"].get()
+            desc = entries["desc"].get()
+            perc = entries["percent"].get()
+
+            if target == "Chưa có khách hàng" or not code or not perc:
+                return messagebox.showwarning("Lỗi", "Vui lòng nhập đủ thông tin!")
+
+            try:
+                db.cursor.execute("""
+                                  INSERT INTO user_coupons (username, code, description, discount_percent)
+                                  VALUES (?, ?, ?, ?)
+                                  """, (target, code.upper(), desc, int(perc)))
+                db.conn.commit()
+                messagebox.showinfo("Thành công", f"Đã tặng voucher {code} cho {target}!")
+                modal.destroy()
+            except Exception as e:
+                messagebox.showerror("Lỗi", f"Lỗi hệ thống: {str(e)}")
+
+        ctk.CTkButton(modal, text="XÁC NHẬN TẶNG", fg_color="#27ae60", hover_color="#219150",
+                      height=45, font=("Segoe UI", 13, "bold"), command=confirm_grant).pack(pady=40, padx=40, fill="x")
