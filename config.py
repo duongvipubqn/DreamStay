@@ -30,3 +30,9 @@ POSITIONS = [
     "Trưởng phòng Nhân sự", "Lễ tân", "Đầu bếp", "Buồng phòng", "Lao công",
     "Bảo vệ", "Kỹ thuật"
 ]
+
+USER_LIMITS = {
+    1: {"max_days": 7, "max_rooms": 3, "label": "Đồng"},
+    2: {"max_days": 14, "max_rooms": 5, "label": "Bạc"},
+    3: {"max_days": 30, "max_rooms": 10, "label": "Vàng"}
+}

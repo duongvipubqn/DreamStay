@@ -23,7 +23,8 @@ class Database:
                 email TEXT UNIQUE,
                 phone TEXT,
                 password TEXT,
-                role TEXT DEFAULT 'user'
+                role TEXT DEFAULT 'user',
+                user_level INTEGER DEFAULT 1
             )""")
 
         self.cursor.execute("""
@@ -78,10 +79,10 @@ class Database:
 
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS revenue_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                date TEXT,
-                amount REAL,
-                location TEXT
+                                                           id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                           date TEXT,
+                                                           amount REAL,
+                                                           location TEXT
             )""")
 
         self.cursor.execute("""
@@ -123,5 +124,22 @@ class Database:
             AND NOT (checkout_date <= ? OR checkin_date >= ?)
                             """, (room_id, start_date, end_date))
         return self.cursor.fetchone()[0] == 0
+
+    def get_user_level_info(self, full_name):
+        self.cursor.execute("SELECT user_level FROM users WHERE full_name=?", (full_name,))
+        res = self.cursor.fetchone()
+        level = res[0] if res else 1
+        from config import USER_LIMITS
+        return level, USER_LIMITS.get(level)
+
+    def count_active_bookings(self, full_name):
+        # Đếm các booking chưa hoàn thành (đang chờ, đã xác nhận hoặc đang ở)
+        self.cursor.execute("""
+                            SELECT COUNT(*)
+                            FROM bookings
+                            WHERE customer_name = ?
+                              AND status IN ('Pending', 'Confirmed', 'Stay-in')
+                            """, (full_name,))
+        return self.cursor.fetchone()[0]
 
 db = Database()

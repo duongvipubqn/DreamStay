@@ -1,9 +1,11 @@
 import customtkinter as ctk
+import os
 from config import *
 from PIL import Image
-import os
 from database import db
-
+from datetime import datetime, timedelta
+from tkinter import messagebox
+from tkcalendar import Calendar
 
 class RoomView(ctk.CTkScrollableFrame):
     def __init__(self, master):
@@ -139,7 +141,9 @@ class RoomView(ctk.CTkScrollableFrame):
             btn_text = "ĐẶT PHÒNG" if status == "Trống" else "HẾT PHÒNG"
             ctk.CTkButton(btn_frame, text=btn_text, state=btn_state,
                           fg_color=COLOR_GOLD, text_color="white", hover_color=COLOR_GOLD_HOVER,
-                          font=("Segoe UI", 11, "bold"), height=35, width=80).pack(side="left", expand=True, fill="x")
+                          font=("Segoe UI", 11, "bold"), height=35, width=80,
+                          command=lambda r=rooms[i]: self.open_booking_modal(r)).pack(side="left", expand=True,
+                                                                                      fill="x")
 
         if end_idx < len(rooms):
             self.loading_task = self.after(10, lambda: self.render_batch(rooms, end_idx, img_dir, img_w, img_h))
@@ -150,3 +154,97 @@ class RoomView(ctk.CTkScrollableFrame):
             detail_page = app.pages["Chi tiết phòng"]
             detail_page.set_room(data, img_path)
             app.switch_page("Chi tiết phòng")
+
+    def open_booking_modal(self, room_data):
+        app = self.winfo_toplevel()
+        if not app.current_user:
+            return messagebox.showwarning("Thông báo", "Sếp vui lòng đăng nhập để đặt phòng!")
+
+        modal = ctk.CTkToplevel(self)
+        modal.title(f"Đặt phòng nhanh: {room_data[2]}")
+        modal.geometry("400x600")
+        modal.configure(fg_color=COLOR_CREAM)
+        modal.grab_set()
+
+        ctk.CTkLabel(modal, text="ĐẶT PHÒNG NHANH", font=("Segoe UI", 20, "bold"), text_color=COLOR_GOLD).pack(pady=20)
+
+        info_f = ctk.CTkFrame(modal, fg_color=COLOR_NAVY, corner_radius=10)
+        info_f.pack(fill="x", padx=30, pady=10)
+        ctk.CTkLabel(info_f, text=f"Phòng: {room_data[2]}", font=("Segoe UI", 14, "bold")).pack(pady=5)
+        ctk.CTkLabel(info_f, text=f"Giá: {room_data[5]:,.0f} VNĐ/đêm", font=("Segoe UI", 12)).pack(pady=2)
+
+        date_f = ctk.CTkFrame(modal, fg_color="transparent")
+        date_f.pack(pady=20)
+
+        ctk.CTkLabel(date_f, text="Ngày nhận:").grid(row=0, column=0, padx=10)
+        en_in = ctk.CTkEntry(date_f, width=120, state="readonly")
+        en_in.grid(row=1, column=0, padx=10, pady=5)
+        en_in.configure(state="normal")
+        en_in.insert(0, datetime.now().strftime("%d/%m/%Y"))
+        en_in.configure(state="readonly")
+
+        ctk.CTkLabel(date_f, text="Ngày trả:").grid(row=0, column=1, padx=10)
+        en_out = ctk.CTkEntry(date_f, width=120, state="readonly")
+        en_out.grid(row=1, column=1, padx=10, pady=5)
+        tomorrow = datetime.now() + timedelta(days=1)
+        en_out.configure(state="normal")
+        en_out.insert(0, tomorrow.strftime("%d/%m/%Y"))
+        en_out.configure(state="readonly")
+
+        # Hàm chọn ngày (Dùng lại logic từ trang chi tiết)
+        def pick_date(entry):
+            top_cal = ctk.CTkToplevel(modal)
+            cal = Calendar(top_cal, selectmode='day', date_pattern='dd/mm/yyyy')
+            cal.pack(pady=10, padx=10)
+
+            def set_val():
+                entry.configure(state="normal")
+                entry.delete(0, "end")
+                entry.insert(0, cal.get_date())
+                entry.configure(state="readonly")
+                top_cal.destroy()
+                update_price()
+
+            ctk.CTkButton(top_cal, text="OK", command=set_val).pack(pady=5)
+
+        en_in.bind("<Button-1>", lambda e: pick_date(en_in))
+        en_out.bind("<Button-1>", lambda e: pick_date(en_out))
+
+        lbl_money = ctk.CTkLabel(modal, text="Tổng: 0 VNĐ", font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD)
+        lbl_money.pack(pady=10)
+
+        def update_price():
+            try:
+                d1 = datetime.strptime(en_in.get(), "%d/%m/%Y")
+                d2 = datetime.strptime(en_out.get(), "%d/%m/%Y")
+                days = (d2 - d1).days
+                if days > 0:
+                    total = days * room_data[5]
+                    lbl_money.configure(text=f"Tổng ({days} đêm): {total:,.0f} VNĐ")
+                else:
+                    lbl_money.configure(text="Ngày không hợp lệ", text_color="red")
+            except:
+                pass
+
+        update_price()
+
+        def confirm():
+            d_in = datetime.strptime(en_in.get(), "%d/%m/%Y").strftime("%Y-%m-%d")
+            d_out = datetime.strptime(en_out.get(), "%d/%m/%Y").strftime("%Y-%m-%d")
+
+            if not db.is_room_available(room_data[0], d_in, d_out):
+                return messagebox.showerror("Hết chỗ", "Ngày này đã có người đặt!")
+
+            days = (datetime.strptime(d_out, "%Y-%m-%d") - datetime.strptime(d_in, "%Y-%m-%d")).days
+            total = days * room_data[5]
+
+            db.cursor.execute(
+                "INSERT INTO bookings (customer_name, room_id, checkin_date, checkout_date, total_price, status) VALUES (?,?,?,?,?,?)",
+                (app.current_user, room_data[0], d_in, d_out, total, "Pending"))
+            db.conn.commit()
+            messagebox.showinfo("Thành công", "Đã gửi yêu cầu đặt phòng!")
+            modal.destroy()
+
+        ctk.CTkButton(modal, text="XÁC NHẬN ĐẶT", fg_color=COLOR_GOLD, height=45, command=confirm).pack(pady=30,
+                                                                                                        padx=40,
+                                                                                                        fill="x")

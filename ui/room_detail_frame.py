@@ -155,14 +155,28 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
             return messagebox.showwarning("Thông báo", "Sếp vui lòng đăng nhập để đặt phòng!")
 
         total = self.calculate_total()
-        if total is None:
-            return messagebox.showwarning("Chú ý", "Vui lòng chọn ngày nhận và trả phòng hợp lệ!")
+        if total is None: return
 
-        d_in = datetime.strptime(self.entry_in.get(), "%d/%m/%Y").strftime("%Y-%m-%d")
-        d_out = datetime.strptime(self.entry_out.get(), "%d/%m/%Y").strftime("%Y-%m-%d")
+        d_in_dt = datetime.strptime(self.entry_in.get(), "%d/%m/%Y")
+        d_out_dt = datetime.strptime(self.entry_out.get(), "%d/%m/%Y")
+        stay_days = (d_out_dt - d_in_dt).days
+
+        level, limits = db.get_user_level_info(app.current_user)
+        active_bookings = db.count_active_bookings(app.current_user)
+
+        if stay_days > limits["max_days"]:
+            return messagebox.showerror("Từ chối",
+                                        f"Tài khoản bậc {limits['label']} chỉ được thuê tối đa {limits['max_days']} ngày!")
+
+        if active_bookings >= limits["max_rooms"]:
+            return messagebox.showerror("Từ chối",
+                                        f"Sếp đã đạt giới hạn {limits['max_rooms']} phòng đang đặt. Vui lòng thanh toán bớt!")
+
+        d_in = d_in_dt.strftime("%Y-%m-%d")
+        d_out = d_out_dt.strftime("%Y-%m-%d")
 
         if not db.is_room_available(self.room_data[0], d_in, d_out):
-            return messagebox.showerror("Hết chỗ", "Rất tiếc, khoảng thời gian này đã có người đặt phòng này rồi!")
+            return messagebox.showerror("Hết chỗ", "Khoảng thời gian này đã có người đặt!")
 
         try:
             db.cursor.execute("""
