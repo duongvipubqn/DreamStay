@@ -3,18 +3,19 @@ import os
 from config import *
 from ui.header import Header
 from ui.home_frame import HomeFrame
+from ui.about_frame import AboutFrame
 from ui.room_view import RoomView
 from ui.room_detail_frame import RoomDetailFrame
 from ui.utility_frame import UtilityFrame
 from ui.utility_detail_frame import UtilityDetailFrame
 from ui.event_frame import EventFrame
+from ui.event_detail_frame import EventDetailFrame
 from ui.contact_frame import ContactFrame
 from ui.main_layout import MainFrame
 from ui.login_frame import LoginFrame
 from ui.register_frame import RegisterFrame
 from ui.forgot_frame import ForgotFrame
 from ui.profile_frame import ProfileFrame
-from ui.about_frame import AboutFrame
 
 class HotelApp(ctk.CTk):
     def __init__(self):
@@ -42,6 +43,7 @@ class HotelApp(ctk.CTk):
             "Tiện ích": UtilityFrame(self.container),
             "Chi tiết tiện ích": UtilityDetailFrame(self.container),
             "Sự kiện": EventFrame(self.container),
+            "Chi tiết sự kiện": EventDetailFrame(self.container),
             "Liên hệ": ContactFrame(self.container),
             "Quản lý": MainFrame(self.container),
             "Login": LoginFrame(self.container),

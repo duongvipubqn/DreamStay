@@ -3,9 +3,9 @@ from config import *
 from PIL import Image
 import os
 
-class HomeFrame(ctk.CTkScrollableFrame):
+class HomeFrame(ctk.CTkFrame):
     def __init__(self, master):
-        ctk.CTkScrollableFrame.__init__(self, master, fg_color=COLOR_CREAM, corner_radius=0)
+        super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
 
         self.hero_section = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
         self.hero_section.pack(fill="x")
