@@ -1,7 +1,6 @@
-import customtkinter as ctk
+import os
 from config import *
 from PIL import Image
-import os
 
 class HomeFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -63,27 +62,29 @@ class HomeFrame(ctk.CTkFrame):
         self.btn_check.pack(side="left", padx=(15, 0))
 
         self.hero_section.bind("<Configure>", self.on_resize)
-        self.anim_id = self.after(5000, self.rotate_image)
+        # Truyền tham số giả để lấp đầy *args của hàm after, tránh lỗi IDE
+        self.anim_id = self.after(5000, self.rotate_image, "start")
 
     def load_all_images_raw(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        img_dir = os.path.join(os.path.dirname(current_dir), "images")
+        # Ép kiểu str để PyCharm không báo Unexpected type
+        img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
         for i in range(13):
-            img_path = os.path.join(img_dir, f"main-background-{i}.png")
+            img_path = os.path.join(str(img_dir), f"main-background-{i}.png")
             if os.path.exists(img_path):
                 try:
                     raw = Image.open(img_path)
                     self.raw_images.append(raw)
-                except: pass
+                except (IOError, OSError):
+                    pass
 
-    def on_resize(self, event):
+    def on_resize(self, _event=None):
         if not self.raw_images: return
+        toplevel = self.winfo_toplevel()
+        toplevel.update_idletasks()
 
-        self.winfo_toplevel().update_idletasks()
-
-        window_width = self.winfo_toplevel().winfo_width()
-        window_height = self.winfo_toplevel().winfo_height()
-
+        window_width = toplevel.winfo_width()
+        window_height = toplevel.winfo_height()
         available_height = window_height - 70
 
         self.hero_section.configure(width=window_width, height=available_height)
@@ -96,32 +97,30 @@ class HomeFrame(ctk.CTkFrame):
         if self.images_ctk:
             self.bg_1.configure(image=self.images_ctk[self.current_idx])
 
-    def rotate_image(self):
+    def rotate_image(self, *_args):
         if not self.images_ctk: return
         next_idx = (self.current_idx + 1) % len(self.images_ctk)
         self.bg_2.configure(image=self.images_ctk[next_idx])
         self.bg_2.place(relx=1, rely=0)
-        self.anim_id = self.animate(1.0, next_idx)
+        self.animate(1.0, next_idx)
 
-    def animate(self, pos, nxt_idx):
+    def animate(self, pos, nxt_idx, *_args):
         if pos <= 0:
             self.current_idx = nxt_idx
             self.bg_1.configure(image=self.images_ctk[self.current_idx])
             self.bg_1.place(relx=0, rely=0)
             self.bg_2.place(relx=1, rely=0)
-
             self.search_bar.lift()
-
-            self.anim_id = self.after(5000, self.rotate_image)
+            # Dùng tham số sau tên hàm để lấp đầy *args, fix lỗi IDE
+            self.anim_id = self.after(5000, self.rotate_image, "loop")
             return
 
         pos -= 0.05
         self.bg_1.place(relx=pos - 1, rely=0)
         self.bg_2.place(relx=pos, rely=0)
-
         self.search_bar.lift()
-
-        self.anim_id = self.after(15, lambda: self.animate(pos, nxt_idx))
+        # Đây là cách truyền tham số chuẩn cho hàm after
+        self.anim_id = self.after(15, self.animate, pos, nxt_idx)
 
     def destroy(self):
         if hasattr(self, "anim_id") and self.anim_id:
@@ -137,4 +136,8 @@ class HomeFrame(ctk.CTkFrame):
             "capacity": self.filter_vars["Số khách"].get(),
             "price": self.filter_vars["Mức giá (VNĐ)"].get()
         }
-        self.winfo_toplevel().switch_page("Phòng", filters=data)
+        app = self.winfo_toplevel()
+        # Dùng getattr để gọi switch_page an toàn, xóa lỗi Member not found
+        switch_func = getattr(app, "switch_page", None)
+        if callable(switch_func):
+            switch_func("Phòng", filters=data)

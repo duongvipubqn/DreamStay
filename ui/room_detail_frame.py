@@ -1,17 +1,21 @@
-import customtkinter as ctk
+import os
 from config import *
 from PIL import Image
-import os
 from datetime import datetime, timedelta
 from tkinter import messagebox
 from database import db
 from tkcalendar import Calendar
 
-
 class RoomDetailFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
         self.room_data = None
+        self.img_path = None
+        self.right_p = None
+        self.entry_in = None
+        self.entry_out = None
+        self.lbl_total = None
+        self.btn_book = None
 
     def set_room(self, data, img_path):
         self.room_data = data
@@ -19,9 +23,15 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
         for widget in self.winfo_children():
             widget.destroy()
 
+        def go_back():
+            app = self.winfo_toplevel()
+            switch_func = getattr(app, "switch_page", None)
+            if callable(switch_func):
+                switch_func("Phòng")
+
         ctk.CTkButton(self, text="← QUAY LẠI DANH SÁCH", fg_color="transparent",
                       text_color=COLOR_GOLD, font=("Segoe UI", 13, "bold"),
-                      command=lambda: self.winfo_toplevel().switch_page("Phòng")).pack(anchor="w", padx=50, pady=20)
+                      command=go_back).pack(anchor="w", padx=50, pady=20)
 
         main_container = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=20)
         main_container.pack(fill="x", padx=50, pady=10)
@@ -108,7 +118,7 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
         top.title("Chọn ngày")
         top.geometry("320x400")
         top.configure(fg_color=COLOR_CREAM)
-        top.transient(self)
+        top.transient(self.winfo_toplevel())
         top.grab_set()
         top.resizable(False, False)
 
@@ -145,50 +155,53 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
             self.lbl_total.configure(text=f"Tổng ({days} đêm): {total:,.0f} VNĐ", font=("Segoe UI", 18, "bold"),
                                      text_color="white")
             return total
-        except:
+        except (ValueError, TypeError, AttributeError):
             self.lbl_total.configure(text="Ngày không hợp lệ", text_color="#e74c3c")
             return None
 
     def process_booking(self):
         app = self.winfo_toplevel()
-        if not app.current_user:
+        curr_user = getattr(app, "current_user", None)
+        if not curr_user:
             return messagebox.showwarning("Thông báo", "Sếp vui lòng đăng nhập để đặt phòng!")
 
         total = self.calculate_total()
-        if total is None: return
-
-        d_in_dt = datetime.strptime(self.entry_in.get(), "%d/%m/%Y")
-        d_out_dt = datetime.strptime(self.entry_out.get(), "%d/%m/%Y")
-        stay_days = (d_out_dt - d_in_dt).days
-
-        level, limits = db.get_user_level_info(app.current_user)
-        active_bookings = db.count_active_bookings(app.current_user)
-
-        if stay_days > limits["max_days"]:
-            return messagebox.showerror("Từ chối",
-                                        f"Tài khoản bậc {limits['label']} chỉ được thuê tối đa {limits['max_days']} ngày!")
-
-        if active_bookings >= limits["max_rooms"]:
-            return messagebox.showerror("Từ chối",
-                                        f"Sếp đã đạt giới hạn {limits['max_rooms']} phòng đang đặt. Vui lòng thanh toán bớt!")
-
-        d_in = d_in_dt.strftime("%Y-%m-%d")
-        d_out = d_out_dt.strftime("%Y-%m-%d")
-
-        if not db.is_room_available(self.room_data[0], d_in, d_out):
-            return messagebox.showerror("Hết chỗ", "Khoảng thời gian này đã có người đặt!")
+        if total is None: return None
 
         try:
+            d_in_dt = datetime.strptime(self.entry_in.get(), "%d/%m/%Y")
+            d_out_dt = datetime.strptime(self.entry_out.get(), "%d/%m/%Y")
+            stay_days = (d_out_dt - d_in_dt).days
+
+            level, limits = db.get_user_level_info(curr_user)
+            active_bookings = db.count_active_bookings(curr_user)
+
+            if stay_days > limits["max_days"]:
+                return messagebox.showerror("Từ chối", f"Tối đa {limits['max_days']} ngày cho hạng {limits['label']}")
+
+            if active_bookings >= limits["max_rooms"]:
+                return messagebox.showerror("Từ chối",
+                                            f"Hạng {limits['label']} chỉ được đặt tối đa {limits['max_rooms']} phòng!")
+
+            d_in = d_in_dt.strftime("%Y-%m-%d")
+            d_out = d_out_dt.strftime("%Y-%m-%d")
+
+            if not db.is_room_available(self.room_data[0], d_in, d_out):
+                return messagebox.showerror("Hết chỗ", "Khoảng thời gian này đã có người đặt!")
+
             db.cursor.execute("""
-                              INSERT INTO bookings (customer_name, room_id, checkin_date, checkout_date, total_price,
-                                                    status)
-                              VALUES (?, ?, ?, ?, ?, ?)
-                              """, (app.current_user, self.room_data[0], d_in, d_out, total, "Pending"))
+                INSERT INTO bookings (customer_name, room_id, checkin_date, checkout_date, total_price, status)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (curr_user, self.room_data[0], d_in, d_out, total, "Pending"))
             db.conn.commit()
 
             messagebox.showinfo("Thành công", f"Yêu cầu đặt phòng {self.room_data[0]} đã được gửi!")
-            app.switch_page("Phòng")
-        except Exception as e:
+
+            switch_func = getattr(app, "switch_page", None)
+            if callable(switch_func):
+                switch_func("Phòng")
+
+        except (ValueError, Exception) as e:
             messagebox.showerror("Lỗi", f"Không thể đặt phòng: {str(e)}")
 
     def load_data(self):

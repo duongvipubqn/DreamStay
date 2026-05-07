@@ -1,4 +1,3 @@
-import customtkinter as ctk
 import os
 from config import *
 from ui.header import Header
@@ -22,7 +21,8 @@ class HotelApp(ctk.CTk):
         super().__init__()
         self.title("DreamStay")
         self.geometry("1300x850")
-        self.after(0, lambda: self.state('zoomed'))
+        self.state('zoomed')
+        self.update()
         self.configure(fg_color=COLOR_CREAM)
 
         self.current_user = None
@@ -62,7 +62,7 @@ class HotelApp(ctk.CTk):
                     data = f.read().split("|")
                     if len(data) == 2:
                         self.login_success(data[0], data[1], save_session=False)
-            except:
+            except (IOError, IndexError, Exception):
                 pass
 
     def switch_page(self, name, filters=None):
@@ -70,12 +70,14 @@ class HotelApp(ctk.CTk):
             page.pack_forget()
 
         if name in self.pages:
-            self.pages[name].pack(fill="both", expand=True)
-            if hasattr(self.pages[name], 'load_data'):
+            target_page = self.pages[name]
+            target_page.pack(fill="both", expand=True)
+            load_func = getattr(target_page, 'load_data', None)
+            if callable(load_func):
                 if name == "Phòng":
-                    self.pages[name].load_data(filters)
+                    load_func(filters)
                 else:
-                    self.pages[name].load_data()
+                    load_func()
 
     def show_login(self):
         self.switch_page("Login")
@@ -107,7 +109,11 @@ class HotelApp(ctk.CTk):
         self.header.user_btn.configure(text="👤", width=40, corner_radius=20, font=("Segoe UI", 18))
         self.header.update_menu(True, role)
         self.switch_page("Trang chủ")
-        self.pages["Quản lý"].update_user(name, role)
+
+        mgmt_page = self.pages.get("Quản lý")
+        update_func = getattr(mgmt_page, 'update_user', None)
+        if callable(update_func):
+            update_func(name, role)
 
 if __name__ == "__main__":
     app = HotelApp()

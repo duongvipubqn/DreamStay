@@ -1,13 +1,16 @@
-import customtkinter as ctk
 from tkinter import messagebox, ttk
 from config import *
 from database import db
-
 
 class ProfileFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
         self.app = master.master
+        self.info_label = None
+        self.email_label = None
+        self.phone_label = None
+        self.tree = None
+        self.coupon_scroll = None
 
         self.panel = ctk.CTkFrame(self, width=900, height=700, fg_color=COLOR_WHITE,
                                   corner_radius=15, border_width=1, border_color=COLOR_BORDER)
@@ -47,9 +50,15 @@ class ProfileFrame(ctk.CTkFrame):
         ctk.CTkButton(btn_f, text="CHỈNH SỬA HỒ SƠ", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
                       text_color="white", font=("Segoe UI", 13, "bold"), width=180, height=40,
                       command=self.open_edit_modal).pack(side="left", padx=10)
+
+        def do_logout():
+            func = getattr(self.app, "logout", None)
+            if callable(func):
+                func()
+
         ctk.CTkButton(btn_f, text="ĐĂNG XUẤT", fg_color="#e74c3c", hover_color="#c0392b",
                       text_color="white", font=("Segoe UI", 13, "bold"), width=180, height=40,
-                      command=self.app.logout).pack(side="left", padx=10)
+                      command=do_logout).pack(side="left", padx=10)
 
     def setup_history_tab(self):
         cols = ("Mã", "Phòng", "Ngày Nhận", "Ngày Trả", "Tổng Tiền", "Trạng Thái")
@@ -118,7 +127,7 @@ class ProfileFrame(ctk.CTkFrame):
         modal.title("Chỉnh sửa hồ sơ")
         modal.geometry("400x500")
         modal.configure(fg_color=COLOR_CREAM)
-        modal.transient(self)
+        modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
         ctk.CTkLabel(modal, text="CẬP NHẬT THÔNG TIN", font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(
@@ -146,15 +155,22 @@ class ProfileFrame(ctk.CTkFrame):
 
             try:
                 db.cursor.execute("UPDATE users SET full_name=?, email=?, phone=? WHERE full_name=?",
-                                  (new_name, new_email, new_phone, self.app.current_user))
+                                  (new_name, new_email, new_phone, getattr(self.app, "current_user", "")))
                 db.conn.commit()
-                self.app.current_user = new_name
+
+                setattr(self.app, "current_user", new_name)
                 self.load_data()
-                self.app.pages["Quản lý"].update_user(new_name, self.app.current_role)
+
+                pages = getattr(self.app, "pages", {})
+                mgmt_page = pages.get("Quản lý")
+                if mgmt_page and hasattr(mgmt_page, "update_user"):
+                    curr_role = getattr(self.app, "current_role", None)
+                    mgmt_page.update_user(new_name, curr_role)
+
                 modal.destroy()
                 messagebox.showinfo("Thành công", "Đã cập nhật hồ sơ sếp!")
-            except Exception as e:
-                messagebox.showerror("Lỗi", f"Không thể cập nhật: {str(e)}")
+            except Exception as err:
+                messagebox.showerror("Lỗi", f"Không thể cập nhật: {str(err)}")
 
         ctk.CTkButton(modal, text="LƯU THAY ĐỔI", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
                       text_color="white", font=("Segoe UI", 14, "bold"), height=45, command=save).pack(pady=30, padx=40,

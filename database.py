@@ -11,7 +11,8 @@ class Database:
         self.create_tables()
         self.seed_manager()
 
-    def hash_password(self, password):
+    @staticmethod
+    def hash_password(password):
         return hashlib.sha256(password.encode()).hexdigest()
 
     def create_tables(self):

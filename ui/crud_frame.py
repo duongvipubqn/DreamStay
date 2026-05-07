@@ -1,4 +1,3 @@
-import customtkinter as ctk
 import csv
 from tkinter import filedialog, ttk, messagebox
 from config import *
@@ -64,6 +63,7 @@ class FormModal(ctk.CTkToplevel):
             return messagebox.showwarning("Chú ý", "Vui lòng nhập đủ tin!")
         self.callback(vals)
         self.destroy()
+        return None
 
 
 class CRUDFrame(ctk.CTkFrame):
@@ -141,9 +141,10 @@ class CRUDFrame(ctk.CTkFrame):
     def open_edit_modal(self):
         item = self.tree.selection()
         if not item: return messagebox.showwarning("Chú ý", "Hãy chọn dòng cần sửa!")
-        vals = self.tree.item(item, "values")
+        vals = self.tree.item(item[0], "values")
         title = "Cập nhật phòng" if self.table_name == "rooms" else "Cập nhật dữ liệu"
         FormModal(self.winfo_toplevel(), title, self.columns, self.table_name, self.save_to_db, initial_data=vals)
+        return None
 
     def save_to_db(self, vals):
         try:
@@ -160,7 +161,7 @@ class CRUDFrame(ctk.CTkFrame):
         except Exception as e:
             messagebox.showerror("Lỗi", str(e))
 
-    def filter_data(self, *args):
+    def filter_data(self, *_args):
         search_text = self.search_var.get().lower()
         for row in self.tree.get_children(): self.tree.delete(row)
         for data in self.all_data:
@@ -176,13 +177,14 @@ class CRUDFrame(ctk.CTkFrame):
     def delete(self):
         item = self.tree.selection()
         if not item: return messagebox.showwarning("Chú ý", "Hãy chọn dòng cần xóa!")
-        row_id = self.tree.item(item, "values")[0]
+        row_id = self.tree.item(item[0], "values")[0]
         db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
         id_col = db.cursor.description[0][0]
         if messagebox.askyesno("Xác nhận", "Sếp có chắc muốn xóa vĩnh viễn dòng này không?"):
             db.cursor.execute(f"DELETE FROM {self.table_name} WHERE {id_col}=?", (row_id,))
             db.conn.commit()
             self.load_data()
+        return None
 
     def export_csv(self):
         path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
@@ -202,7 +204,7 @@ class CRUDFrame(ctk.CTkFrame):
         try:
             with open(path, mode="r", encoding="utf-8-sig") as f:
                 reader = csv.reader(f)
-                header = next(reader)
+                next(reader)
                 count = 0
                 for row in reader:
                     if len(row) == len(self.columns):

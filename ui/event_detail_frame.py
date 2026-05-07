@@ -1,8 +1,4 @@
-import customtkinter as ctk
 from config import *
-from PIL import Image
-import os
-
 
 class EventDetailFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
@@ -12,9 +8,15 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
         for widget in self.winfo_children():
             widget.destroy()
 
+        def go_back():
+            app = self.winfo_toplevel()
+            switch_func = getattr(app, "switch_page", None)
+            if callable(switch_func):
+                switch_func("Sự kiện")
+
         ctk.CTkButton(self, text="← QUAY LẠI SỰ KIỆN", fg_color="transparent",
                       text_color=COLOR_GOLD, font=("Segoe UI", 13, "bold"),
-                      command=lambda: self.winfo_toplevel().switch_page("Sự kiện")).pack(anchor="w", padx=50, pady=20)
+                      command=go_back).pack(anchor="w", padx=50, pady=20)
 
         main_container = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=20)
         main_container.pack(fill="x", padx=50, pady=10)

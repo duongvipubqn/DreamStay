@@ -1,8 +1,6 @@
-import customtkinter as ctk
+import os
 from config import *
 from PIL import Image
-import os
-
 
 class UtilityFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
@@ -38,7 +36,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
         ]
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        img_dir = os.path.join(os.path.dirname(current_dir), "images")
+        img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
 
         for i, (name, desc, img_name) in enumerate(utils):
             card = ctk.CTkFrame(self.grid_frame, fg_color=COLOR_WHITE, corner_radius=15, border_width=1,
@@ -51,7 +49,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                     pil_img = Image.open(img_path)
                     ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(img_w, img_h))
                     ctk.CTkLabel(card, image=ctk_img, text="").pack(pady=10, padx=10, fill="x")
-                except:
+                except (IOError, OSError, TypeError, ValueError):
                     ctk.CTkLabel(card, text="[ Lỗi tải ảnh ]", width=img_w, height=img_h).pack()
             else:
                 ctk.CTkLabel(card, text="[ Ảnh chưa cập nhật ]", width=img_w, height=img_h).pack()
@@ -65,6 +63,12 @@ class UtilityFrame(ctk.CTkScrollableFrame):
 
     def show_details(self, name, desc, img_path):
         app = self.winfo_toplevel()
-        if hasattr(app, "pages") and "Chi tiết tiện ích" in app.pages:
-            app.pages["Chi tiết tiện ích"].set_utility(name, desc, img_path)
-            app.switch_page("Chi tiết tiện ích")
+        pages = getattr(app, "pages", {})
+        if "Chi tiết tiện ích" in pages:
+            detail_page = pages["Chi tiết tiện ích"]
+            if hasattr(detail_page, "set_utility"):
+                detail_page.set_utility(name, desc, img_path)
+
+            switch_func = getattr(app, "switch_page", None)
+            if callable(switch_func):
+                switch_func("Chi tiết tiện ích")

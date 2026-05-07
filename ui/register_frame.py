@@ -1,8 +1,7 @@
-import customtkinter as ctk
+import sqlite3
 from tkinter import messagebox
 from config import *
 from database import db
-
 
 class RegisterFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -41,9 +40,15 @@ class RegisterFrame(ctk.CTkFrame):
                       text_color="white", font=("Segoe UI", 13, "bold"),
                       command=self.submit).pack(pady=(20, 10))
 
+        def go_to_login():
+            app = self.winfo_toplevel()
+            func = getattr(app, "show_login", None)
+            if callable(func):
+                func()
+
         ctk.CTkButton(self.panel, text="Đã có tài khoản? Đăng nhập", fg_color="transparent",
                       text_color=COLOR_GOLD, font=("Segoe UI", 12),
-                      hover=False, command=lambda: self.master.master.show_login()).pack(pady=10)
+                      hover=False, command=go_to_login).pack(pady=10)
 
     def toggle_password(self):
         mode = "" if self.show_pass_check.get() else "*"
@@ -56,10 +61,15 @@ class RegisterFrame(ctk.CTkFrame):
         if d["pass"] != d["confirm"]: return messagebox.showerror("Lỗi", "Mật khẩu không khớp!")
         try:
             hashed_pw = db.hash_password(d["pass"])
-            db.cursor.execute("INSERT INTO users (full_name, username, email, phone, password, role) VALUES (?,?,?,?,?,?)",
-                              (d["name"], d["username"], d["email"], d["phone"], hashed_pw, "user"))
+            db.cursor.execute(
+                "INSERT INTO users (full_name, username, email, phone, password, role) VALUES (?,?,?,?,?,?)",
+                (d["name"], d["username"], d["email"], d["phone"], hashed_pw, "user"))
             db.conn.commit()
             messagebox.showinfo("Xong", "Đăng ký thành công! Bạn có thể đăng nhập ngay.")
-            self.master.master.show_login()
-        except:
+
+            app = self.winfo_toplevel()
+            func = getattr(app, "show_login", None)
+            if callable(func):
+                func()
+        except sqlite3.Error:
             messagebox.showerror("Lỗi", "Username hoặc Email đã tồn tại!")

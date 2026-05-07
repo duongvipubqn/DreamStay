@@ -1,4 +1,3 @@
-import customtkinter as ctk
 import os
 from config import *
 from PIL import Image
@@ -74,7 +73,7 @@ class RoomView(ctk.CTkScrollableFrame):
         rooms_db = db.cursor.fetchall()
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        img_dir = os.path.join(os.path.dirname(current_dir), "images")
+        img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
 
         if not rooms_db:
             ctk.CTkLabel(self.grid_frame, text="Rất tiếc, không tìm thấy phòng phù hợp với yêu cầu của sếp!",
@@ -82,7 +81,7 @@ class RoomView(ctk.CTkScrollableFrame):
         else:
             self.render_batch(rooms_db, 0, img_dir, img_w, img_h)
 
-    def render_batch(self, rooms, start_idx, img_dir, img_w, img_h):
+    def render_batch(self, rooms, start_idx, img_dir, img_w, img_h, *_args):
         batch_size = 6
         end_idx = min(start_idx + batch_size, len(rooms))
 
@@ -103,7 +102,7 @@ class RoomView(ctk.CTkScrollableFrame):
                         pil_img = Image.open(img_path)
                         self.ctk_image_cache[cache_key] = ctk.CTkImage(light_image=pil_img, dark_image=pil_img,
                                                                        size=(img_w, img_h))
-                    except:
+                    except (IOError, OSError, TypeError, ValueError):
                         self.ctk_image_cache[cache_key] = None
                 else:
                     self.ctk_image_cache[cache_key] = None
@@ -146,18 +145,24 @@ class RoomView(ctk.CTkScrollableFrame):
                                                                                       fill="x")
 
         if end_idx < len(rooms):
-            self.loading_task = self.after(10, lambda: self.render_batch(rooms, end_idx, img_dir, img_w, img_h))
+            self.loading_task = self.after(10, self.render_batch, rooms, end_idx, img_dir, img_w, img_h)
 
     def show_details(self, data, img_path):
         app = self.winfo_toplevel()
-        if hasattr(app, "pages") and "Chi tiết phòng" in app.pages:
-            detail_page = app.pages["Chi tiết phòng"]
-            detail_page.set_room(data, img_path)
-            app.switch_page("Chi tiết phòng")
+        pages = getattr(app, "pages", {})
+        if "Chi tiết phòng" in pages:
+            detail_page = pages["Chi tiết phòng"]
+            if hasattr(detail_page, "set_room"):
+                detail_page.set_room(data, img_path)
+
+            switch_func = getattr(app, "switch_page", None)
+            if callable(switch_func):
+                switch_func("Chi tiết phòng")
 
     def open_booking_modal(self, room_data):
         app = self.winfo_toplevel()
-        if not app.current_user:
+        current_user = getattr(app, "current_user", None)
+        if not current_user:
             return messagebox.showwarning("Thông báo", "Sếp vui lòng đăng nhập để đặt phòng!")
 
         modal = ctk.CTkToplevel(self)
@@ -223,7 +228,7 @@ class RoomView(ctk.CTkScrollableFrame):
                     lbl_money.configure(text=f"Tổng ({days} đêm): {total:,.0f} VNĐ")
                 else:
                     lbl_money.configure(text="Ngày không hợp lệ", text_color="red")
-            except:
+            except (ValueError, TypeError):
                 pass
 
         update_price()
@@ -240,11 +245,13 @@ class RoomView(ctk.CTkScrollableFrame):
 
             db.cursor.execute(
                 "INSERT INTO bookings (customer_name, room_id, checkin_date, checkout_date, total_price, status) VALUES (?,?,?,?,?,?)",
-                (app.current_user, room_data[0], d_in, d_out, total, "Pending"))
+                (getattr(app, "current_user", "Unknown"), room_data[0], d_in, d_out, total, "Pending"))
             db.conn.commit()
             messagebox.showinfo("Thành công", "Đã gửi yêu cầu đặt phòng!")
             modal.destroy()
+            return None
 
         ctk.CTkButton(modal, text="XÁC NHẬN ĐẶT", fg_color=COLOR_GOLD, height=45, command=confirm).pack(pady=30,
                                                                                                         padx=40,
                                                                                                         fill="x")
+        return None

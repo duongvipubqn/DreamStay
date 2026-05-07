@@ -1,13 +1,10 @@
-import customtkinter as ctk
 import matplotlib.pyplot as plt
+import logging
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from database import db
 from config import *
 
-import logging
-
 logging.getLogger('matplotlib.font_manager').disabled = True
-
 
 class StatisticsFrame(ctk.CTkFrame):
     def __init__(self, master):

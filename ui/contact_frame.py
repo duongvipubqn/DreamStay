@@ -1,6 +1,4 @@
-import customtkinter as ctk
 from config import *
-
 
 class ContactFrame(ctk.CTkFrame):
     def __init__(self, master):

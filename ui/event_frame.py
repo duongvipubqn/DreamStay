@@ -1,6 +1,4 @@
-import customtkinter as ctk
 from config import *
-
 
 class EventFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
@@ -41,16 +39,25 @@ class EventFrame(ctk.CTkScrollableFrame):
             ctk.CTkLabel(f, text=ev["title"], font=("Segoe UI", 28, "bold"), text_color="white").pack(anchor="w", pady=5)
             ctk.CTkLabel(f, text=ev["desc"], font=("Segoe UI", 14), text_color="#ccc", justify="left").pack(anchor="w", pady=10)
 
+            def make_cmd(d):
+                return lambda: self.show_details(d)
+
             ctk.CTkButton(f, text="ĐĂNG KÝ THAM GIA NGAY", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
                           text_color="white", font=("Segoe UI", 13, "bold"), height=40,
-                          command=lambda data=ev: self.show_details(data)).pack(anchor="w", pady=10)
+                          command=make_cmd(ev)).pack(anchor="w", pady=10)
 
             ctk.CTkLabel(card, text=ev["icon"], font=("Segoe UI", 100), text_color=COLOR_GOLD).pack(side="right", padx=60)
 
     def show_details(self, data):
         app = self.winfo_toplevel()
-        if hasattr(app, "pages") and "Chi tiết sự kiện" in app.pages:
-            app.pages["Chi tiết sự kiện"].set_event(data["title"], data["subtitle"], data["desc"])
-            app.switch_page("Chi tiết sự kiện")
+        pages = getattr(app, "pages", {})
+        if "Chi tiết sự kiện" in pages:
+            detail_page = pages["Chi tiết sự kiện"]
+            if hasattr(detail_page, "set_event"):
+                detail_page.set_event(data.get("title"), data.get("subtitle"), data.get("desc"))
+
+            switch_func = getattr(app, "switch_page", None)
+            if callable(switch_func):
+                switch_func("Chi tiết sự kiện")
 
     def load_data(self): pass

@@ -1,7 +1,4 @@
-import customtkinter as ctk
 from config import *
-from PIL import Image
-import os
 
 class AboutFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):

@@ -1,8 +1,6 @@
-import customtkinter as ctk
 from tkinter import messagebox
 from config import *
 from database import db
-
 
 class LoginFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -26,18 +24,30 @@ class LoginFrame(ctk.CTkFrame):
                                                text_color=COLOR_TEXT, command=self.toggle_password)
         self.show_pass_check.pack(pady=10)
 
+        def go_to_forgot():
+            app = self.winfo_toplevel()
+            func = getattr(app, "switch_page", None)
+            if callable(func):
+                func("Forgot")
+
         ctk.CTkButton(self.panel, text="Quên mật khẩu?", fg_color="transparent",
                       text_color=COLOR_GOLD, font=("Segoe UI", 11),
-                      hover=False, command=lambda: self.master.master.switch_page("Forgot")).pack()
+                      hover=False, command=go_to_forgot).pack()
 
         ctk.CTkButton(self.panel, text="ĐĂNG NHẬP", width=280, height=45,
                       fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
                       text_color="white", font=("Segoe UI", 13, "bold"),
                       command=self.login).pack(pady=(10, 10))
 
+        def go_to_register():
+            app = self.winfo_toplevel()
+            func = getattr(app, "show_register", None)
+            if callable(func):
+                func()
+
         ctk.CTkButton(self.panel, text="Tạo tài khoản mới", fg_color="transparent",
                       text_color=COLOR_GOLD, font=("Segoe UI", 12, "underline"),
-                      hover=False, command=lambda: self.master.master.show_register()).pack()
+                      hover=False, command=go_to_register).pack()
 
     def create_input(self, placeholder, is_password=False):
         entry = ctk.CTkEntry(self.panel, placeholder_text=placeholder, width=300, height=45,
@@ -58,6 +68,9 @@ class LoginFrame(ctk.CTkFrame):
         db.cursor.execute("SELECT full_name, role FROM users WHERE username=? AND password=?", (u, hashed_pw))
         res = db.cursor.fetchone()
         if res:
-            self.master.master.login_success(res[0], res[1])
+            app = self.winfo_toplevel()
+            func = getattr(app, "login_success", None)
+            if callable(func):
+                func(res[0], res[1])
         else:
             messagebox.showerror("Từ chối", "Tài khoản hoặc mật khẩu không đúng!")

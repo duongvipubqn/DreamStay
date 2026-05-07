@@ -1,8 +1,6 @@
-import customtkinter as ctk
 from tkinter import messagebox
 from config import *
 from database import db
-
 
 class ForgotFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -38,9 +36,15 @@ class ForgotFrame(ctk.CTkFrame):
                       text_color="white", font=("Segoe UI", 13, "bold"),
                       command=self.reset_password).pack(pady=(30, 10))
 
+        def go_to_login():
+            app = self.winfo_toplevel()
+            func = getattr(app, "show_login", None)
+            if callable(func):
+                func()
+
         ctk.CTkButton(self.panel, text="Quay lại đăng nhập", fg_color="transparent",
                       text_color=COLOR_GOLD, font=("Segoe UI", 12),
-                      hover=False, command=lambda: self.master.master.show_login()).pack(pady=10)
+                      hover=False, command=go_to_login).pack(pady=10)
 
     def reset_password(self):
         u = self.fields["username"].get()
@@ -60,4 +64,9 @@ class ForgotFrame(ctk.CTkFrame):
         db.cursor.execute("UPDATE users SET password=? WHERE username=?", (p, u))
         db.conn.commit()
         messagebox.showinfo("Thành công", "Mật khẩu đã được thay đổi thành công!")
-        self.master.master.show_login()
+
+        app = self.winfo_toplevel()
+        func = getattr(app, "show_login", None)
+        if callable(func):
+            func()
+        return None

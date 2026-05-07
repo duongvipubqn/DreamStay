@@ -1,4 +1,4 @@
-import customtkinter as ctk
+import sqlite3
 from config import *
 from ui.reception import ReceptionFrame
 from ui.crud_frame import CRUDFrame
@@ -6,11 +6,13 @@ from ui.statistics import StatisticsFrame
 from tkinter import messagebox
 from database import db
 
-
 class MainFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM)
         self.master = master
+        self.current_role = None
+        self.staff_reg_btn = None
+        self.voucher_grant_btn = None
 
         self.sidebar = ctk.CTkFrame(self, width=260, fg_color=COLOR_NAVY, corner_radius=0)
         self.sidebar.pack(side="left", fill="y")
@@ -63,7 +65,10 @@ class MainFrame(ctk.CTkFrame):
         self.switch("Lễ Tân")
 
     def logout_clicked(self):
-        self.master.master.show_login()
+        app = self.winfo_toplevel()
+        func = getattr(app, "show_login", None)
+        if callable(func):
+            func()
 
     def switch(self, name):
         for f in self.frames.values(): f.pack_forget()
@@ -71,21 +76,25 @@ class MainFrame(ctk.CTkFrame):
         if hasattr(self.frames[name], 'load_data'):
             self.frames[name].load_data()
 
-    def update_user(self, name, role):
+    def update_user(self, _name, role):
         self.current_role = role
-        if role == "manager":
-            self.staff_reg_btn.pack(pady=2, padx=15, fill="x", before=self.sidebar.winfo_children()[-1])
-            self.voucher_grant_btn.pack(pady=2, padx=15, fill="x", before=self.sidebar.winfo_children()[-1])
-        else:
+        if self.staff_reg_btn is not None:
             self.staff_reg_btn.pack_forget()
+        if self.voucher_grant_btn is not None:
             self.voucher_grant_btn.pack_forget()
+
+        if role == "manager":
+            if self.staff_reg_btn is not None:
+                self.staff_reg_btn.pack(pady=2, padx=15, fill="x")
+            if self.voucher_grant_btn is not None:
+                self.voucher_grant_btn.pack(pady=2, padx=15, fill="x")
 
     def open_staff_registration(self):
         modal = ctk.CTkToplevel(self)
         modal.title("Cấp tài khoản nhân viên")
         modal.geometry("450x600")
         modal.configure(fg_color=COLOR_CREAM)
-        modal.transient(self)
+        modal.transient(self.winfo_toplevel())
         modal.grab_set()
         modal.resizable(False, False)
 
@@ -124,8 +133,8 @@ class MainFrame(ctk.CTkFrame):
                 db.conn.commit()
                 messagebox.showinfo("Thành công", f"Đã cấp tài khoản cho nhân viên: {vals['name']}")
                 modal.destroy()
-            except Exception as e:
-                messagebox.showerror("Lỗi", "Tên đăng nhập hoặc Email đã tồn tại trên hệ thống!")
+            except sqlite3.Error as err:
+                messagebox.showerror("Lỗi", f"Tên đăng nhập hoặc Email đã tồn tại: {str(err)}")
 
         ctk.CTkButton(modal, text="XÁC NHẬN CẤP TÀI KHOẢN", fg_color=COLOR_GOLD,
                       hover_color=COLOR_GOLD_HOVER, height=45, font=("Segoe UI", 13, "bold"),
@@ -136,7 +145,7 @@ class MainFrame(ctk.CTkFrame):
         modal.title("Tặng Voucher cho khách hàng")
         modal.geometry("450x550")
         modal.configure(fg_color=COLOR_CREAM)
-        modal.transient(self)
+        modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
         ctk.CTkLabel(modal, text="🎁 TẶNG VOUCHER MỚI", font=("Segoe UI", 22, "bold"), text_color=COLOR_GOLD).pack(
@@ -183,8 +192,11 @@ class MainFrame(ctk.CTkFrame):
                 db.conn.commit()
                 messagebox.showinfo("Thành công", f"Đã tặng voucher {code} cho {target}!")
                 modal.destroy()
-            except Exception as e:
-                messagebox.showerror("Lỗi", f"Lỗi hệ thống: {str(e)}")
+            except (sqlite3.Error, ValueError) as err:
+                messagebox.showerror("Lỗi", f"Lỗi hệ thống: {str(err)}")
 
         ctk.CTkButton(modal, text="XÁC NHẬN TẶNG", fg_color="#27ae60", hover_color="#219150",
                       height=45, font=("Segoe UI", 13, "bold"), command=confirm_grant).pack(pady=40, padx=40, fill="x")
+
+    def load_data(self):
+        pass

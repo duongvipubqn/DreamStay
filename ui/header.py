@@ -1,7 +1,5 @@
-import customtkinter as ctk
-from config import *
 import colorsys
-
+from config import *
 
 class Header(ctk.CTkFrame):
     def __init__(self, master, switch_func):
@@ -33,7 +31,7 @@ class Header(ctk.CTkFrame):
         self.update_menu(False)
         self.animate_rainbow()
 
-    def animate_rainbow(self):
+    def animate_rainbow(self, *_args):
         self.hue += 0.005
         if self.hue > 1.0: self.hue = 0
 
@@ -45,7 +43,7 @@ class Header(ctk.CTkFrame):
 
             lbl.configure(text_color=color_hex)
 
-        self.after(30, self.animate_rainbow)
+        self.after(30, self.animate_rainbow, "rainbow")
 
     def update_menu(self, is_logged_in, role=None):
         for widget in self.menu_frame.winfo_children():
