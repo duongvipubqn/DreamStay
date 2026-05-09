@@ -24,8 +24,12 @@ class HomeFrame(ctk.CTkFrame):
         self.bg_2 = ctk.CTkLabel(self.hero_section, text="", fg_color="transparent")
         self.bg_2.place(relx=1, rely=0, relwidth=1, relheight=1)
 
-        self.search_bar = ctk.CTkFrame(self.hero_section, fg_color="#2c2c3e", corner_radius=15)
+        self.search_bar = ctk.CTkFrame(self.hero_section, fg_color="transparent", corner_radius=15)
         self.search_bar.place(relx=0.5, rely=0.7, anchor="center")
+
+        self.search_bar_bg_image = None
+        self.search_bar_bg = ctk.CTkLabel(self.search_bar, text="", fg_color="transparent")
+        self.search_bar_bg.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         self.title_label = ctk.CTkLabel(self.search_bar, text="Sự Sang Trọng Vượt Thời Gian",
                                         font=("Segoe UI", 36, "bold"), text_color="white")
@@ -39,30 +43,12 @@ class HomeFrame(ctk.CTkFrame):
         self.inner_padding = ctk.CTkFrame(self.search_bar, fg_color="transparent")
         self.inner_padding.pack(padx=30, pady=(0, 25))
 
-        filters = [
-            ("Địa điểm", ["Mọi địa điểm"] + LOCATIONS),
-            ("Loại phòng", ["Mọi loại phòng"] + ROOM_TYPES),
-            ("Số khách", ["Mọi số khách"] + CAPACITIES),
-            ("Mức giá (VNĐ)", ["Mọi mức giá", "Dưới 3tr", "3tr - 6tr", "Trên 10tr"])
-        ]
-
-        self.filter_vars = {}
-        for label, vals in filters:
-            f = ctk.CTkFrame(self.inner_padding, fg_color="transparent")
-            f.pack(side="left", padx=10)
-            ctk.CTkLabel(f, text=label, font=("Segoe UI", 11, "bold"), text_color="#aaa").pack(anchor="w")
-
-            var = ctk.StringVar(value=vals[0])
-            self.filter_vars[label] = var
-            ctk.CTkOptionMenu(f, values=vals, variable=var, fg_color=COLOR_WHITE, text_color=COLOR_TEXT,
-                              button_color=COLOR_GOLD, width=150, height=35, dynamic_resizing=False).pack(pady=(5, 0))
-
-        self.btn_check = ctk.CTkButton(self.inner_padding, text="KIỂM TRA\nPHÒNG",
+        self.btn_check = ctk.CTkButton(self.inner_padding, text="KHÁM PHÁ",
                                        font=("Segoe UI", 12, "bold"),
                                        fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                                       text_color="white", width=120, height=55,
+                                       text_color="white", width=180, height=55,
                                        command=self.apply_filter)
-        self.btn_check.pack(side="left", padx=(15, 0))
+        self.btn_check.pack(pady=(10, 0))
 
         self.hero_section.bind("<Configure>", self.on_resize)
 
@@ -97,7 +83,7 @@ class HomeFrame(ctk.CTkFrame):
 
         if self.images_ctk:
             self.bg_1.configure(image=self.images_ctk[self.current_idx])
-            
+            self._update_search_bar_overlay()
             if not self.anim_started:
                 self.anim_started = True
                 self.anim_id = self.after(5000, self.rotate_image, "start")
@@ -106,6 +92,16 @@ class HomeFrame(ctk.CTkFrame):
         if not self.images_ctk: return
         next_idx = (self.current_idx + 1) % len(self.images_ctk)
         self.animate_fade(1.0, next_idx)
+
+    def _update_search_bar_overlay(self):
+        self.search_bar.update_idletasks()
+        width = self.search_bar.winfo_width()
+        height = self.search_bar.winfo_height()
+        if width > 0 and height > 0:
+            overlay = Image.new('RGBA', (width, height), (28, 34, 52, 180))
+            self.search_bar_bg_image = ctk.CTkImage(light_image=overlay, dark_image=overlay,
+                                                   size=(width, height))
+            self.search_bar_bg.configure(image=self.search_bar_bg_image)
 
     def fade_images(self, img1, img2, alpha):
         """Blend hai ảnh PIL: dùng Image.blend() để tối ưu"""
@@ -145,14 +141,8 @@ class HomeFrame(ctk.CTkFrame):
     def load_data(self): pass
 
     def apply_filter(self):
-        data = {
-            "location": self.filter_vars["Địa điểm"].get(),
-            "type": self.filter_vars["Loại phòng"].get(),
-            "capacity": self.filter_vars["Số khách"].get(),
-            "price": self.filter_vars["Mức giá (VNĐ)"].get()
-        }
         app = self.winfo_toplevel()
         # Dùng getattr để gọi switch_page an toàn, xóa lỗi Member not found
         switch_func = getattr(app, "switch_page", None)
         if callable(switch_func):
-            switch_func("Phòng", filters=data)
+            switch_func("Phòng")

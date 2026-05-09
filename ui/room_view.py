@@ -13,11 +13,53 @@ class RoomView(ctk.CTkScrollableFrame):
         ctk.CTkLabel(self, text="Phòng Nghỉ Của Chúng Tôi", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(
             pady=30)
 
+        self.filter_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.filter_frame.pack(fill="x", padx=50, pady=(0, 20))
+
+        self.filter_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
+        self.filter_container.pack(anchor="center", pady=10)
+
+        self.filter_vars = {}
+        filters = [
+            ("Địa điểm", ["Mọi địa điểm"] + LOCATIONS),
+            ("Loại phòng", ["Mọi loại phòng"] + ROOM_TYPES),
+            ("Số khách", ["Mọi số khách"] + CAPACITIES),
+            ("Mức giá (VNĐ)", ["Mọi mức giá", "Dưới 3tr", "3tr - 6tr", "Trên 10tr"])
+        ]
+
+        for label, vals in filters:
+            f = ctk.CTkFrame(self.filter_container, fg_color="transparent")
+            f.pack(side="left", padx=12)
+            ctk.CTkLabel(f, text=label, font=("Segoe UI", 11, "bold"), text_color="#aaa").pack(anchor="w")
+
+            var = ctk.StringVar(value=vals[0])
+            self.filter_vars[label] = var
+            ctk.CTkOptionMenu(f, values=vals, variable=var, fg_color=COLOR_WHITE, text_color=COLOR_TEXT,
+                              button_color=COLOR_GOLD, width=150, height=35, dynamic_resizing=False).pack(pady=(5, 0))
+
+        self.apply_btn = ctk.CTkButton(self.filter_container, text="LỌC PHÒNG",
+                                       width=140, height=45, fg_color=COLOR_GOLD,
+                                       hover_color=COLOR_GOLD_HOVER, text_color="white",
+                                       command=self.apply_filter)
+        self.apply_btn.pack(side="left", padx=(15, 0), pady=(18, 0))
+
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=50)
 
-        for col in range(3):
+        for col in range(2):
             self.grid_frame.grid_columnconfigure(col, weight=1, uniform="column_group")
+
+        self.page_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.page_frame.pack(pady=10)
+
+        self.prev_btn = ctk.CTkButton(self.page_frame, text="Trước", command=self.prev_page, state="disabled")
+        self.prev_btn.pack(side="left", padx=10)
+
+        self.page_label = ctk.CTkLabel(self.page_frame, text="Trang 1 / 1", font=("Segoe UI", 14))
+        self.page_label.pack(side="left", padx=20)
+
+        self.next_btn = ctk.CTkButton(self.page_frame, text="Sau", command=self.next_page, state="disabled")
+        self.next_btn.pack(side="left", padx=10)
 
         self.image_map = {
             "Deluxe Hướng Biển": "room-deluxe-ocean.png",
@@ -27,24 +69,64 @@ class RoomView(ctk.CTkScrollableFrame):
             "Presidential Suite": "room-presidential.png"
         }
         self.ctk_image_cache = {}
-        self.loading_task = None
+        self.current_page = 1
+        self.items_per_page = 10
+        self.total_pages = 1
+        self.filters = None
 
-    def load_data(self, filters=None):
-        if self.loading_task:
-            self.after_cancel(self.loading_task)
+    def load_data(self, filters=None, page=1):
+        self.current_page = page
+        self.filters = filters
 
-        for widget in self.grid_frame.winfo_children():
-            widget.destroy()
+        if filters:
+            mapping = {
+                "location": "Địa điểm",
+                "type": "Loại phòng",
+                "capacity": "Số khách",
+                "price": "Mức giá (VNĐ)"
+            }
+            for key, label in mapping.items():
+                if label in self.filter_vars:
+                    self.filter_vars[label].set(filters.get(key, self.filter_vars[label].get()))
 
-        self.winfo_toplevel().update_idletasks()
-        window_width = self.winfo_toplevel().winfo_width()
-        if window_width < 100: window_width = 1300
+        # Build count query
+        query_count = "SELECT COUNT(*) FROM rooms WHERE status IN ('Trống', 'Đã đặt')"
+        params = []
 
-        card_width = (window_width - 150) // 3
-        img_w = int(card_width * 0.9)
-        img_h = int(img_w * 0.62)
+        if filters:
+            if filters["location"] != "Mọi địa điểm":
+                query_count += " AND location = ?"
+                params.append(filters["location"])
 
-        # Xây dựng SQL query động
+            if filters["type"] != "Mọi loại phòng":
+                query_count += " AND room_type = ?"
+                params.append(filters["type"])
+
+            if filters["capacity"] != "Mọi số khách":
+                query_count += " AND capacity = ?"
+                params.append(filters["capacity"])
+
+            p_range = filters["price"]
+            if p_range == "Dưới 3tr":
+                query_count += " AND price < 3000000"
+            elif p_range == "3tr - 6tr":
+                query_count += " AND price BETWEEN 3000000 AND 6000000"
+            elif p_range == "Trên 10tr":
+                query_count += " AND price > 10000000"
+
+        db.cursor.execute(query_count, params)
+        count = db.cursor.fetchone()[0]
+        self.total_pages = max(1, (count + self.items_per_page - 1) // self.items_per_page)
+
+        if page > self.total_pages:
+            page = self.total_pages
+        if page < 1:
+            page = 1
+        self.current_page = page
+
+        offset = (page - 1) * self.items_per_page
+
+        # Build data query
         query = "SELECT room_id, location, room_type, status, capacity, price FROM rooms WHERE status IN ('Trống', 'Đã đặt')"
         params = []
 
@@ -69,8 +151,21 @@ class RoomView(ctk.CTkScrollableFrame):
             elif p_range == "Trên 10tr":
                 query += " AND price > 10000000"
 
+        query += f" LIMIT {self.items_per_page} OFFSET {offset}"
+
         db.cursor.execute(query, params)
         rooms_db = db.cursor.fetchall()
+
+        for widget in self.grid_frame.winfo_children():
+            widget.destroy()
+
+        self.winfo_toplevel().update_idletasks()
+        window_width = self.winfo_toplevel().winfo_width()
+        if window_width < 100: window_width = 1300
+
+        card_width = (window_width - 130) // 2
+        img_w = int(card_width * 0.92)
+        img_h = int(img_w * 0.62)
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
@@ -79,73 +174,84 @@ class RoomView(ctk.CTkScrollableFrame):
             ctk.CTkLabel(self.grid_frame, text="Rất tiếc, không tìm thấy phòng phù hợp với yêu cầu của sếp!",
                          font=("Segoe UI", 16), text_color=COLOR_GOLD).pack(pady=50)
         else:
-            self.render_batch(rooms_db, 0, img_dir, img_w, img_h)
+            for i, (r_id, loc, r_type, status, cap, price) in enumerate(rooms_db):
+                card = ctk.CTkFrame(self.grid_frame, fg_color=COLOR_WHITE, corner_radius=15, border_width=1,
+                                    border_color=COLOR_BORDER)
+                card.grid(row=i // 2, column=i % 2, padx=15, pady=15, sticky="nsew")
 
-    def render_batch(self, rooms, start_idx, img_dir, img_w, img_h, *_args):
-        batch_size = 6
-        end_idx = min(start_idx + batch_size, len(rooms))
+                img_name = self.image_map.get(r_type, "default.png")
+                cache_key = f"{img_name}_{img_w}"
 
-        for i in range(start_idx, end_idx):
-            r_id, loc, r_type, status, cap, price = rooms[i]
-
-            card = ctk.CTkFrame(self.grid_frame, fg_color=COLOR_WHITE, corner_radius=15, border_width=1,
-                                border_color=COLOR_BORDER)
-            card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
-
-            img_name = self.image_map.get(r_type, "default.png")
-            cache_key = f"{img_name}_{img_w}"
-
-            if cache_key not in self.ctk_image_cache:
-                img_path = os.path.join(img_dir, img_name)
-                if os.path.exists(img_path):
-                    try:
-                        pil_img = Image.open(img_path)
-                        self.ctk_image_cache[cache_key] = ctk.CTkImage(light_image=pil_img, dark_image=pil_img,
-                                                                       size=(img_w, img_h))
-                    except (IOError, OSError, TypeError, ValueError):
+                if cache_key not in self.ctk_image_cache:
+                    img_path = os.path.join(img_dir, img_name)
+                    if os.path.exists(img_path):
+                        try:
+                            pil_img = Image.open(img_path)
+                            self.ctk_image_cache[cache_key] = ctk.CTkImage(light_image=pil_img, dark_image=pil_img,
+                                                                           size=(img_w, img_h))
+                        except (IOError, OSError, TypeError, ValueError):
+                            self.ctk_image_cache[cache_key] = None
+                    else:
                         self.ctk_image_cache[cache_key] = None
+
+                ctk_img = self.ctk_image_cache[cache_key]
+                if ctk_img:
+                    ctk.CTkLabel(card, image=ctk_img, text="").pack(pady=10, padx=10, fill="x")
                 else:
-                    self.ctk_image_cache[cache_key] = None
+                    ctk.CTkLabel(card, text="[ Ảnh chưa cập nhật ]", width=img_w, height=img_h).pack()
 
-            ctk_img = self.ctk_image_cache[cache_key]
-            if ctk_img:
-                ctk.CTkLabel(card, image=ctk_img, text="").pack(pady=10, padx=10, fill="x")
-            else:
-                ctk.CTkLabel(card, text="[ Ảnh chưa cập nhật ]", width=img_w, height=img_h).pack()
+                header_f = ctk.CTkFrame(card, fg_color="transparent")
+                header_f.pack(fill="x", padx=20)
+                ctk.CTkLabel(header_f, text=f"Mã: {r_id}", font=("Segoe UI", 11, "bold"), text_color="#888").pack(
+                    side="left")
 
-            header_f = ctk.CTkFrame(card, fg_color="transparent")
-            header_f.pack(fill="x", padx=20)
-            ctk.CTkLabel(header_f, text=f"Mã: {r_id}", font=("Segoe UI", 11, "bold"), text_color="#888").pack(
-                side="left")
+                status_color = "#2ecc71" if status == "Trống" else "#e74c3c"
+                ctk.CTkLabel(header_f, text=status.upper(), font=("Segoe UI", 10, "bold"), text_color=status_color).pack(
+                    side="right")
 
-            status_color = "#2ecc71" if status == "Trống" else "#e74c3c"
-            ctk.CTkLabel(header_f, text=status.upper(), font=("Segoe UI", 10, "bold"), text_color=status_color).pack(
-                side="right")
+                ctk.CTkLabel(card, text=r_type, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(5, 0))
+                ctk.CTkLabel(card, text=f"📍 {loc} | 👥 {cap}", font=("Segoe UI", 12), text_color="#aaa").pack()
+                ctk.CTkLabel(card, text=f"{price:,.0f} VNĐ / đêm", font=("Segoe UI", 16, "bold"),
+                             text_color=COLOR_GOLD).pack(pady=10)
 
-            ctk.CTkLabel(card, text=r_type, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(5, 0))
-            ctk.CTkLabel(card, text=f"📍 {loc} | 👥 {cap}", font=("Segoe UI", 12), text_color="#aaa").pack()
-            ctk.CTkLabel(card, text=f"{price:,.0f} VNĐ / đêm", font=("Segoe UI", 16, "bold"),
-                         text_color=COLOR_GOLD).pack(pady=10)
+                btn_frame = ctk.CTkFrame(card, fg_color="transparent")
+                btn_frame.pack(pady=(0, 20), padx=20, fill="x")
 
-            btn_frame = ctk.CTkFrame(card, fg_color="transparent")
-            btn_frame.pack(pady=(0, 20), padx=20, fill="x")
+                ctk.CTkButton(btn_frame, text="CHI TIẾT",
+                              fg_color="#3a3a50", text_color="white",
+                              font=("Segoe UI", 11, "bold"), height=35, width=80,
+                              command=lambda d=rooms_db[i], p=os.path.join(img_dir, img_name): self.show_details(d, p)).pack(
+                    side="left", padx=(0, 5), expand=True, fill="x")
 
-            ctk.CTkButton(btn_frame, text="CHI TIẾT",
-                          fg_color="#3a3a50", text_color="white",
-                          font=("Segoe UI", 11, "bold"), height=35, width=80,
-                          command=lambda d=rooms[i], p=os.path.join(img_dir, img_name): self.show_details(d, p)).pack(
-                side="left", padx=(0, 5), expand=True, fill="x")
+                btn_state = "normal" if status == "Trống" else "disabled"
+                btn_text = "ĐẶT PHÒNG" if status == "Trống" else "HẾT PHÒNG"
+                ctk.CTkButton(btn_frame, text=btn_text, state=btn_state,
+                              fg_color=COLOR_GOLD, text_color="white", hover_color=COLOR_GOLD_HOVER,
+                              font=("Segoe UI", 11, "bold"), height=35, width=80,
+                              command=lambda r=rooms_db[i]: self.open_booking_modal(r)).pack(side="left", expand=True,
+                                                                                          fill="x")
 
-            btn_state = "normal" if status == "Trống" else "disabled"
-            btn_text = "ĐẶT PHÒNG" if status == "Trống" else "HẾT PHÒNG"
-            ctk.CTkButton(btn_frame, text=btn_text, state=btn_state,
-                          fg_color=COLOR_GOLD, text_color="white", hover_color=COLOR_GOLD_HOVER,
-                          font=("Segoe UI", 11, "bold"), height=35, width=80,
-                          command=lambda r=rooms[i]: self.open_booking_modal(r)).pack(side="left", expand=True,
-                                                                                      fill="x")
+        # Update page controls
+        self.page_label.configure(text=f"Trang {self.current_page} / {self.total_pages}")
+        self.prev_btn.configure(state="normal" if self.current_page > 1 else "disabled")
+        self.next_btn.configure(state="normal" if self.current_page < self.total_pages else "disabled")
 
-        if end_idx < len(rooms):
-            self.loading_task = self.after(10, self.render_batch, rooms, end_idx, img_dir, img_w, img_h)
+    def prev_page(self):
+        if self.current_page > 1:
+            self.load_data(self.filters, self.current_page - 1)
+
+    def next_page(self):
+        if self.current_page < self.total_pages:
+            self.load_data(self.filters, self.current_page + 1)
+
+    def apply_filter(self):
+        data = {
+            "location": self.filter_vars["Địa điểm"].get(),
+            "type": self.filter_vars["Loại phòng"].get(),
+            "capacity": self.filter_vars["Số khách"].get(),
+            "price": self.filter_vars["Mức giá (VNĐ)"].get()
+        }
+        self.load_data(data, 1)
 
     def show_details(self, data, img_path):
         app = self.winfo_toplevel()
