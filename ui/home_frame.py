@@ -13,6 +13,9 @@ class HomeFrame(ctk.CTkFrame):
         self.raw_images = []
         self.images_ctk = []
         self.current_idx = 0
+        self.anim_started = False
+        self.anim_id = None
+        self.current_blend = None
         self.load_all_images_raw()
 
         self.bg_1 = ctk.CTkLabel(self.hero_section, text="", fg_color="transparent")
@@ -62,8 +65,6 @@ class HomeFrame(ctk.CTkFrame):
         self.btn_check.pack(side="left", padx=(15, 0))
 
         self.hero_section.bind("<Configure>", self.on_resize)
-        # Truyền tham số giả để lấp đầy *args của hàm after, tránh lỗi IDE
-        self.anim_id = self.after(5000, self.rotate_image, "start")
 
     def load_all_images_raw(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -96,31 +97,45 @@ class HomeFrame(ctk.CTkFrame):
 
         if self.images_ctk:
             self.bg_1.configure(image=self.images_ctk[self.current_idx])
+            
+            if not self.anim_started:
+                self.anim_started = True
+                self.anim_id = self.after(5000, self.rotate_image, "start")
 
     def rotate_image(self, *_args):
         if not self.images_ctk: return
         next_idx = (self.current_idx + 1) % len(self.images_ctk)
-        self.bg_2.configure(image=self.images_ctk[next_idx])
-        self.bg_2.place(relx=1, rely=0)
-        self.animate(1.0, next_idx)
+        self.animate_fade(1.0, next_idx)
 
-    def animate(self, pos, nxt_idx, *_args):
-        if pos <= 0:
+    def fade_images(self, img1, img2, alpha):
+        """Blend hai ảnh PIL: dùng Image.blend() để tối ưu"""
+        if not img1 or not img2:
+            return img1 or img2
+        try:
+            if img1.size != img2.size:
+                img2 = img2.resize(img1.size, Image.Resampling.LANCZOS)
+            return Image.blend(img1.convert("RGB"), img2.convert("RGB"), alpha)
+        except Exception:
+            return img1
+
+    def animate_fade(self, alpha, nxt_idx, *_args):
+        if alpha <= 0:
             self.current_idx = nxt_idx
             self.bg_1.configure(image=self.images_ctk[self.current_idx])
-            self.bg_1.place(relx=0, rely=0)
-            self.bg_2.place(relx=1, rely=0)
             self.search_bar.lift()
-            # Dùng tham số sau tên hàm để lấp đầy *args, fix lỗi IDE
             self.anim_id = self.after(5000, self.rotate_image, "loop")
             return
 
-        pos -= 0.05
-        self.bg_1.place(relx=pos - 1, rely=0)
-        self.bg_2.place(relx=pos, rely=0)
+        alpha -= 0.05
+        faded = self.fade_images(self.raw_images[self.current_idx], self.raw_images[nxt_idx], 1.0 - alpha)
+        if faded:
+            w = self.hero_section.winfo_width()
+            h = self.hero_section.winfo_height()
+            if w > 1 and h > 1:
+                self.current_blend = ctk.CTkImage(light_image=faded, dark_image=faded, size=(w, h))
+                self.bg_1.configure(image=self.current_blend)
         self.search_bar.lift()
-        # Đây là cách truyền tham số chuẩn cho hàm after
-        self.anim_id = self.after(15, self.animate, pos, nxt_idx)
+        self.anim_id = self.after(15, self.animate_fade, alpha, nxt_idx)
 
     def destroy(self):
         if hasattr(self, "anim_id") and self.anim_id:
