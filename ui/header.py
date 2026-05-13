@@ -28,7 +28,8 @@ class Header(ctk.CTkFrame):
         self.menu_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.menu_frame.pack(side="right", padx=20)
 
-        self.update_menu(False)
+        self.active_menu = None
+        self.update_menu(False, None, "Trang chủ")
         self.animate_rainbow()
 
     def animate_rainbow(self, *_args):
@@ -45,7 +46,10 @@ class Header(ctk.CTkFrame):
 
         self.after(30, self.animate_rainbow, "rainbow")
 
-    def update_menu(self, is_logged_in, role=None):
+    def update_menu(self, is_logged_in, role=None, active_page=None):
+        if active_page is not None:
+            self.active_menu = active_page
+
         for widget in self.menu_frame.winfo_children():
             widget.destroy()
 
@@ -55,9 +59,12 @@ class Header(ctk.CTkFrame):
             menus.append("Quản lý")
 
         for menu in menus:
+            is_active = menu == self.active_menu
             btn = ctk.CTkButton(self.menu_frame, text=menu, font=("Segoe UI", 13, "bold"),
                                 fg_color="transparent", text_color="white",
                                 hover_color=COLOR_GOLD, width=100,
+                                border_width=2 if is_active else 0,
+                                border_color=COLOR_GOLD,
                                 command=lambda m=menu: self.switch_func(m))
             btn.pack(side="left", padx=5)
 

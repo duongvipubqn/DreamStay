@@ -79,6 +79,8 @@ class HotelApp(ctk.CTk):
                 else:
                     load_func()
 
+        self.header.update_menu(self.current_user is not None, self.current_role, name)
+
     def show_login(self):
         self.switch_page("Login")
 
