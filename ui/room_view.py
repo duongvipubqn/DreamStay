@@ -24,7 +24,8 @@ class RoomView(ctk.CTkScrollableFrame):
             ("Địa điểm", ["Mọi địa điểm"] + LOCATIONS),
             ("Loại phòng", ["Mọi loại phòng"] + ROOM_TYPES),
             ("Số khách", ["Mọi số khách"] + CAPACITIES),
-            ("Mức giá (VNĐ)", ["Mọi mức giá", "Dưới 3tr", "3tr - 6tr", "Trên 10tr"])
+            ("Mức giá (VNĐ)", ["Mọi mức giá", "Dưới 3tr", "3tr - 6tr", "Trên 10tr"]),
+            ("Trạng thái", ["Mọi trạng thái", "Trống", "Đã đặt"])
         ]
 
         for label, vals in filters:
@@ -74,6 +75,38 @@ class RoomView(ctk.CTkScrollableFrame):
         self.total_pages = 1
         self.filters = None
 
+    def _get_room_bookings(self, room_id):
+        raw_bookings = db.get_room_bookings(room_id)
+        parsed = []
+        for checkin, checkout, status in raw_bookings:
+            try:
+                start = datetime.strptime(checkin, "%Y-%m-%d").date()
+                end = datetime.strptime(checkout, "%Y-%m-%d").date()
+            except (ValueError, TypeError):
+                continue
+            parsed.append((start, end, status))
+        return parsed
+
+    def _get_room_status_info(self, room_id):
+        today = datetime.now().date()
+        bookings = self._get_room_bookings(room_id)
+        current_booking = any(start <= today < end and status != "Cancelled" for start, end, status in bookings)
+        upcoming = [
+            (start, end) for start, end, status in bookings
+            if status != "Cancelled" and end > today
+        ]
+        upcoming.sort()
+        return current_booking, upcoming
+
+    def _format_booking_summary(self, upcoming):
+        if not upcoming:
+            return "Chưa có lịch đặt"
+
+        formatted = [f"{start.strftime('%d/%m')} - {end.strftime('%d/%m')}" for start, end in upcoming[:2]]
+        if len(upcoming) > 2:
+            formatted.append(f"+{len(upcoming) - 2} lịch khác")
+        return ", ".join(formatted)
+
     def load_data(self, filters=None, page=1):
         self.current_page = page
         self.filters = filters
@@ -83,51 +116,15 @@ class RoomView(ctk.CTkScrollableFrame):
                 "location": "Địa điểm",
                 "type": "Loại phòng",
                 "capacity": "Số khách",
-                "price": "Mức giá (VNĐ)"
+                "price": "Mức giá (VNĐ)",
+                "status": "Trạng thái"
             }
             for key, label in mapping.items():
                 if label in self.filter_vars:
                     self.filter_vars[label].set(filters.get(key, self.filter_vars[label].get()))
 
-        # Build count query
-        query_count = "SELECT COUNT(*) FROM rooms WHERE status IN ('Trống', 'Đã đặt')"
-        params = []
-
-        if filters:
-            if filters["location"] != "Mọi địa điểm":
-                query_count += " AND location = ?"
-                params.append(filters["location"])
-
-            if filters["type"] != "Mọi loại phòng":
-                query_count += " AND room_type = ?"
-                params.append(filters["type"])
-
-            if filters["capacity"] != "Mọi số khách":
-                query_count += " AND capacity = ?"
-                params.append(filters["capacity"])
-
-            p_range = filters["price"]
-            if p_range == "Dưới 3tr":
-                query_count += " AND price < 3000000"
-            elif p_range == "3tr - 6tr":
-                query_count += " AND price BETWEEN 3000000 AND 6000000"
-            elif p_range == "Trên 10tr":
-                query_count += " AND price > 10000000"
-
-        db.cursor.execute(query_count, params)
-        count = db.cursor.fetchone()[0]
-        self.total_pages = max(1, (count + self.items_per_page - 1) // self.items_per_page)
-
-        if page > self.total_pages:
-            page = self.total_pages
-        if page < 1:
-            page = 1
-        self.current_page = page
-
-        offset = (page - 1) * self.items_per_page
-
-        # Build data query
-        query = "SELECT room_id, location, room_type, status, capacity, price FROM rooms WHERE status IN ('Trống', 'Đã đặt')"
+        # Build SQL query for all rooms matching filter criteria
+        query = "SELECT room_id, location, room_type, status, capacity, price FROM rooms WHERE 1=1"
         params = []
 
         if filters:
@@ -151,10 +148,35 @@ class RoomView(ctk.CTkScrollableFrame):
             elif p_range == "Trên 10tr":
                 query += " AND price > 10000000"
 
-        query += f" LIMIT {self.items_per_page} OFFSET {offset}"
-
         db.cursor.execute(query, params)
         rooms_db = db.cursor.fetchall()
+
+        status_filter = None
+        if filters and filters.get("status") and filters["status"] != "Mọi trạng thái":
+            status_filter = filters["status"]
+
+        filtered_rooms = []
+        for room in rooms_db:
+            room_id = room[0]
+            current_booking, _ = self._get_room_status_info(room_id)
+            is_currently_booked = current_booking
+            if status_filter == "Trống" and is_currently_booked:
+                continue
+            if status_filter == "Đã đặt" and not is_currently_booked:
+                continue
+            filtered_rooms.append(room)
+
+        count = len(filtered_rooms)
+        self.total_pages = max(1, (count + self.items_per_page - 1) // self.items_per_page)
+
+        if page > self.total_pages:
+            page = self.total_pages
+        if page < 1:
+            page = 1
+        self.current_page = page
+
+        offset = (page - 1) * self.items_per_page
+        rooms_db = filtered_rooms[offset:offset + self.items_per_page]
 
         for widget in self.grid_frame.winfo_children():
             widget.destroy()
@@ -205,14 +227,23 @@ class RoomView(ctk.CTkScrollableFrame):
                 ctk.CTkLabel(header_f, text=f"Mã: {r_id}", font=("Segoe UI", 11, "bold"), text_color="#888").pack(
                     side="left")
 
-                status_color = "#2ecc71" if status == "Trống" else "#e74c3c"
-                ctk.CTkLabel(header_f, text=status.upper(), font=("Segoe UI", 10, "bold"), text_color=status_color).pack(
+                current_booking, upcoming_bookings = self._get_room_status_info(r_id)
+                current_text = "Đang đặt" if current_booking else "Trống"
+                status_color = "#e74c3c" if current_booking else "#2ecc71"
+                ctk.CTkLabel(header_f, text=current_text, font=("Segoe UI", 10, "bold"), text_color=status_color).pack(
                     side="right")
 
                 ctk.CTkLabel(card, text=r_type, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(5, 0))
                 ctk.CTkLabel(card, text=f"📍 {loc} | 👥 {cap}", font=("Segoe UI", 12), text_color="#aaa").pack()
                 ctk.CTkLabel(card, text=f"{price:,.0f} VNĐ / đêm", font=("Segoe UI", 16, "bold"),
                              text_color=COLOR_GOLD).pack(pady=10)
+
+                if upcoming_bookings:
+                    ctk.CTkLabel(card, text=f"Lịch đặt: {self._format_booking_summary(upcoming_bookings)}",
+                                 font=("Segoe UI", 12), text_color="#888").pack(padx=20, pady=(0, 10), anchor="w")
+                else:
+                    ctk.CTkLabel(card, text="Chưa có lịch đặt", font=("Segoe UI", 12), text_color="#888").pack(
+                                 padx=20, pady=(0, 10), anchor="w")
 
                 btn_frame = ctk.CTkFrame(card, fg_color="transparent")
                 btn_frame.pack(pady=(0, 20), padx=20, fill="x")
@@ -223,9 +254,7 @@ class RoomView(ctk.CTkScrollableFrame):
                               command=lambda d=rooms_db[i], p=os.path.join(img_dir, img_name): self.show_details(d, p)).pack(
                     side="left", padx=(0, 5), expand=True, fill="x")
 
-                btn_state = "normal" if status == "Trống" else "disabled"
-                btn_text = "ĐẶT PHÒNG" if status == "Trống" else "HẾT PHÒNG"
-                ctk.CTkButton(btn_frame, text=btn_text, state=btn_state,
+                ctk.CTkButton(btn_frame, text="ĐẶT PHÒNG",
                               fg_color=COLOR_GOLD, text_color="white", hover_color=COLOR_GOLD_HOVER,
                               font=("Segoe UI", 11, "bold"), height=35, width=80,
                               command=lambda r=rooms_db[i]: self.open_booking_modal(r)).pack(side="left", expand=True,
@@ -249,7 +278,8 @@ class RoomView(ctk.CTkScrollableFrame):
             "location": self.filter_vars["Địa điểm"].get(),
             "type": self.filter_vars["Loại phòng"].get(),
             "capacity": self.filter_vars["Số khách"].get(),
-            "price": self.filter_vars["Mức giá (VNĐ)"].get()
+            "price": self.filter_vars["Mức giá (VNĐ)"].get(),
+            "status": self.filter_vars["Trạng thái"].get()
         }
         self.load_data(data, 1)
 

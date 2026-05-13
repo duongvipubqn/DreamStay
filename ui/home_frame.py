@@ -24,31 +24,31 @@ class HomeFrame(ctk.CTkFrame):
         self.bg_2 = ctk.CTkLabel(self.hero_section, text="", fg_color="transparent")
         self.bg_2.place(relx=1, rely=0, relwidth=1, relheight=1)
 
-        self.search_bar = ctk.CTkFrame(self.hero_section, fg_color="transparent", corner_radius=15)
+        self.search_bar = ctk.CTkFrame(self.hero_section, fg_color="transparent", corner_radius=20, width=900)
         self.search_bar.place(relx=0.5, rely=0.7, anchor="center")
 
         self.search_bar_bg_image = None
         self.search_bar_bg = ctk.CTkLabel(self.search_bar, text="", fg_color="transparent")
         self.search_bar_bg.place(relx=0, rely=0, relwidth=1, relheight=1)
 
-        self.title_label = ctk.CTkLabel(self.search_bar, text="Sự Sang Trọng Vượt Thời Gian",
-                                        font=("Segoe UI", 36, "bold"), text_color="white")
-        self.title_label.pack(pady=(25, 5))
+        self.search_content = ctk.CTkFrame(self.search_bar, fg_color="transparent")
+        self.search_content.pack(fill="both", expand=True, padx=40, pady=40)
 
-        self.subtitle_label = ctk.CTkLabel(self.search_bar,
+        self.title_label = ctk.CTkLabel(self.search_content, text="Sự Sang Trọng Vượt Thời Gian",
+                                         font=("Segoe UI", 36, "bold"), text_color="white")
+        self.title_label.pack(pady=(0, 5))
+
+        self.subtitle_label = ctk.CTkLabel(self.search_content,
                                            text="Chào mừng đến với DreamStay, nơi mọi khoảnh khắc là một giấc mơ.",
-                                           font=("Segoe UI", 16), text_color="#aaa")
-        self.subtitle_label.pack(pady=(0, 15))
+                                           font=("Segoe UI", 16), text_color="#ddd", wraplength=760, justify="center")
+        self.subtitle_label.pack(pady=(0, 25))
 
-        self.inner_padding = ctk.CTkFrame(self.search_bar, fg_color="transparent")
-        self.inner_padding.pack(padx=30, pady=(0, 25))
-
-        self.btn_check = ctk.CTkButton(self.inner_padding, text="KHÁM PHÁ",
+        self.btn_check = ctk.CTkButton(self.search_content, text="KHÁM PHÁ",
                                        font=("Segoe UI", 12, "bold"),
                                        fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
                                        text_color="white", width=180, height=55,
                                        command=self.apply_filter)
-        self.btn_check.pack(pady=(10, 0))
+        self.btn_check.pack(pady=(0, 0))
 
         self.hero_section.bind("<Configure>", self.on_resize)
 
@@ -98,7 +98,7 @@ class HomeFrame(ctk.CTkFrame):
         width = self.search_bar.winfo_width()
         height = self.search_bar.winfo_height()
         if width > 0 and height > 0:
-            overlay = Image.new('RGBA', (width, height), (28, 34, 52, 180))
+            overlay = Image.new('RGBA', (width, height), (28, 34, 52, 120))
             self.search_bar_bg_image = ctk.CTkImage(light_image=overlay, dark_image=overlay,
                                                    size=(width, height))
             self.search_bar_bg.configure(image=self.search_bar_bg_image)

@@ -54,11 +54,15 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
 
         ctk.CTkLabel(info_f, text=f"Mã phòng: {data[0]}", font=("Segoe UI", 14), text_color="#888").pack(anchor="w")
 
+        current_booked = db.is_room_currently_booked(data[0])
+        bookings = db.get_room_bookings(data[0])
+        upcoming_bookings = [b for b in bookings if b[2] != "Cancelled" and b[1] >= datetime.now().strftime('%Y-%m-%d')]
+
         details = [
             (f"📍 Địa điểm: {data[1]}", COLOR_TEXT),
             (f"👥 Sức chứa: {data[4]}", COLOR_TEXT),
             (f"💳 Giá niêm yết: {data[5]:,.0f} VNĐ / đêm", COLOR_GOLD),
-            (f"✨ Trạng thái: {data[3]}", "#2ecc71" if data[3] == "Trống" else "#e74c3c")
+            (f"✨ Trạng thái: {'Đang đặt' if current_booked else 'Trống'}", "#e74c3c" if current_booked else "#2ecc71")
         ]
 
         for txt, clr in details:
@@ -70,6 +74,26 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
                     "Dịch vụ dọn phòng 24/7 đảm bảo không gian luôn sạch sẽ và thơm mát.")
         ctk.CTkLabel(self.right_p, text=desc_txt, font=("Segoe UI", 14), text_color="#aaa", justify="left").pack(
             anchor="w", pady=(15, 0))
+
+        if bookings:
+            schedule_frame = ctk.CTkFrame(self.right_p, fg_color=COLOR_WHITE, corner_radius=10)
+            schedule_frame.pack(fill="x", padx=20, pady=(20, 0))
+            ctk.CTkLabel(schedule_frame, text="Lịch đặt đã có:", font=("Segoe UI", 14, "bold"), text_color=COLOR_TEXT).pack(
+                anchor="w", padx=15, pady=(15, 0))
+            for checkin, checkout, status in bookings:
+                if status == "Cancelled":
+                    continue
+                try:
+                    start = datetime.strptime(checkin, "%Y-%m-%d").strftime("%d/%m/%Y")
+                    end = datetime.strptime(checkout, "%Y-%m-%d").strftime("%d/%m/%Y")
+                except (ValueError, TypeError):
+                    continue
+                ctk.CTkLabel(schedule_frame,
+                             text=f"- {start} → {end} ({status})",
+                             font=("Segoe UI", 12), text_color="#555").pack(anchor="w", padx=20, pady=2)
+        else:
+            ctk.CTkLabel(self.right_p, text="Chưa có lịch đặt cho phòng này.", font=("Segoe UI", 14), text_color="#888").pack(
+                anchor="w", pady=(20, 0), padx=20)
 
         booking_f = ctk.CTkFrame(self.right_p, fg_color=COLOR_NAVY, corner_radius=10)
         booking_f.pack(fill="x", pady=25)

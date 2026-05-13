@@ -122,9 +122,32 @@ class Database:
                             FROM bookings
                             WHERE room_id = ?
                               AND status != 'Cancelled'
-            AND NOT (checkout_date <= ? OR checkin_date >= ?)
+                              AND NOT (checkout_date <= ? OR checkin_date >= ?)
                             """, (room_id, start_date, end_date))
         return self.cursor.fetchone()[0] == 0
+
+    def get_room_bookings(self, room_id, include_cancelled=False):
+        query = "SELECT checkin_date, checkout_date, status FROM bookings WHERE room_id = ?"
+        params = [room_id]
+        if not include_cancelled:
+            query += " AND status != 'Cancelled'"
+        query += " ORDER BY checkin_date"
+        self.cursor.execute(query, params)
+        return self.cursor.fetchall()
+
+    def is_room_currently_booked(self, room_id, today=None):
+        if today is None:
+            from datetime import datetime
+            today = datetime.now().strftime('%Y-%m-%d')
+        self.cursor.execute("""
+                            SELECT COUNT(*)
+                            FROM bookings
+                            WHERE room_id = ?
+                              AND status != 'Cancelled'
+                              AND checkin_date <= ?
+                              AND checkout_date > ?
+                            """, (room_id, today, today))
+        return self.cursor.fetchone()[0] > 0
 
     def get_user_level_info(self, full_name):
         self.cursor.execute("SELECT user_level FROM users WHERE full_name=?", (full_name,))
