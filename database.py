@@ -157,7 +157,6 @@ class Database:
         return level, USER_LIMITS.get(level)
 
     def count_active_bookings(self, full_name):
-        # Đếm các booking chưa hoàn thành (đang chờ, đã xác nhận hoặc đang ở)
         self.cursor.execute("""
                             SELECT COUNT(*)
                             FROM bookings

@@ -6,7 +6,6 @@ class EventFrame(ctk.CTkScrollableFrame):
 
         ctk.CTkLabel(self, text="Sự Kiện & Khuyến Mãi", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(pady=30)
 
-        # Danh sách các sự kiện khác nhau hoàn toàn
         self.events_list = [
             {
                 "title": "GIẤC MƠ VƯỢT THỜI GIAN",

@@ -1,4 +1,5 @@
 import os
+import base64
 from config import *
 from ui.header import Header
 from ui.home_frame import HomeFrame
@@ -21,7 +22,10 @@ class HotelApp(ctk.CTk):
         super().__init__()
         self.title("DreamStay")
         self.geometry("1300x850")
-        self.state('zoomed')
+        try:
+            self.state('zoomed')
+        except:
+            self.attributes('-zoomed', True)
         self.update()
         self.configure(fg_color=COLOR_CREAM)
 
@@ -58,20 +62,31 @@ class HotelApp(ctk.CTk):
     def check_persistent_login(self):
         if os.path.exists("session.txt"):
             try:
-                with open("session.txt", "r", encoding="utf-8") as f:
-                    data = f.read().split("|")
+                with open("session.txt", "rb") as f:
+                    encoded_data = f.read()
+                    decoded_str = base64.b64decode(encoded_data).decode("utf-8")
+                    data = decoded_str.split("|")
                     if len(data) == 2:
                         self.login_success(data[0], data[1], save_session=False)
-            except (IOError, IndexError, Exception):
+            except Exception:
                 pass
 
     def switch_page(self, name, filters=None):
-        for page in self.pages.values():
-            page.pack_forget()
+        for page_name, page in self.pages.items():
+            if page.winfo_ismapped():
+                page.pack_forget()
+                hide_func = getattr(page, 'on_hide', None)
+                if callable(hide_func): 
+                    hide_func()
 
         if name in self.pages:
             target_page = self.pages[name]
             target_page.pack(fill="both", expand=True)
+            
+            show_func = getattr(target_page, 'on_show', None)
+            if callable(show_func): 
+                show_func()
+
             load_func = getattr(target_page, 'load_data', None)
             if callable(load_func):
                 if name == "Phòng":
@@ -105,8 +120,10 @@ class HotelApp(ctk.CTk):
         self.current_role = role
 
         if save_session:
-            with open("session.txt", "w", encoding="utf-8") as f:
-                f.write(f"{name}|{role}")
+            raw_str = f"{name}|{role}"
+            encoded_bytes = base64.b64encode(raw_str.encode("utf-8"))
+            with open("session.txt", "wb") as f:
+                f.write(encoded_bytes)
 
         self.header.user_btn.configure(text="👤", width=40, corner_radius=20, font=("Segoe UI", 18))
         self.header.update_menu(True, role)

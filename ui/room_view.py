@@ -123,7 +123,6 @@ class RoomView(ctk.CTkScrollableFrame):
                 if label in self.filter_vars:
                     self.filter_vars[label].set(filters.get(key, self.filter_vars[label].get()))
 
-        # Build SQL query for all rooms matching filter criteria
         query = "SELECT room_id, location, room_type, status, capacity, price FROM rooms WHERE 1=1"
         params = []
 
@@ -260,7 +259,6 @@ class RoomView(ctk.CTkScrollableFrame):
                               command=lambda r=rooms_db[i]: self.open_booking_modal(r)).pack(side="left", expand=True,
                                                                                           fill="x")
 
-        # Update page controls
         self.page_label.configure(text=f"Trang {self.current_page} / {self.total_pages}")
         self.prev_btn.configure(state="normal" if self.current_page > 1 else "disabled")
         self.next_btn.configure(state="normal" if self.current_page < self.total_pages else "disabled")
@@ -332,7 +330,6 @@ class RoomView(ctk.CTkScrollableFrame):
         en_out.insert(0, tomorrow.strftime("%d/%m/%Y"))
         en_out.configure(state="readonly")
 
-        # Hàm chọn ngày (Dùng lại logic từ trang chi tiết)
         def pick_date(entry):
             top_cal = ctk.CTkToplevel(modal)
             cal = Calendar(top_cal, selectmode='day', date_pattern='dd/mm/yyyy')

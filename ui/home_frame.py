@@ -54,7 +54,6 @@ class HomeFrame(ctk.CTkFrame):
 
     def load_all_images_raw(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        # Ép kiểu str để PyCharm không báo Unexpected type
         img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
         for i in range(13):
             img_path = os.path.join(str(img_dir), f"main-background-{i}.png")
@@ -142,7 +141,6 @@ class HomeFrame(ctk.CTkFrame):
 
     def apply_filter(self):
         app = self.winfo_toplevel()
-        # Dùng getattr để gọi switch_page an toàn, xóa lỗi Member not found
         switch_func = getattr(app, "switch_page", None)
         if callable(switch_func):
             switch_func("Phòng")

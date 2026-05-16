@@ -9,7 +9,6 @@ class AboutFrame(ctk.CTkScrollableFrame):
         about_frame = ctk.CTkFrame(self, fg_color="transparent")
         about_frame.pack(padx=50, pady=60, anchor="center")
 
-        # Ảnh chính có khung viền
         img_frame = ctk.CTkFrame(about_frame, fg_color=COLOR_WHITE, border_width=2, border_color=COLOR_GOLD, corner_radius=10)
         img_frame.pack(side="left", padx=(0, 50))
 
@@ -28,7 +27,6 @@ class AboutFrame(ctk.CTkScrollableFrame):
         else:
             ctk.CTkLabel(img_frame, text="[ Ảnh Giới Thiệu ]", width=640, height=360).pack()
 
-        # Text bên phải
         content_frame = ctk.CTkFrame(about_frame, fg_color="transparent", width=380)
         content_frame.pack(side="left", fill="y")
         content_frame.pack_propagate(False)

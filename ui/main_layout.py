@@ -151,7 +151,6 @@ class MainFrame(ctk.CTkFrame):
         ctk.CTkLabel(modal, text="🎁 TẶNG VOUCHER MỚI", font=("Segoe UI", 22, "bold"), text_color=COLOR_GOLD).pack(
             pady=30)
 
-        # Lấy danh sách username từ DB
         db.cursor.execute("SELECT username FROM users WHERE role='user'")
         user_list = [r[0] for r in db.cursor.fetchall()]
         if not user_list: user_list = ["Chưa có khách hàng"]
