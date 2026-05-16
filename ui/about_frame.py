@@ -18,11 +18,49 @@ class AboutFrame(ctk.CTkScrollableFrame):
 
         if os.path.exists(img_path):
             try:
-                pil_img = Image.open(img_path)
+                pil_img = Image.open(img_path).convert("RGB")
                 ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(640, 360))
-                ctk.CTkLabel(img_frame, image=ctk_img, text="").pack(padx=0, pady=0)
+                img_lbl = ctk.CTkLabel(img_frame, image=ctk_img, text="")
+                img_lbl.pack(padx=0, pady=0)
                 self.ctk_img_cache = ctk_img
-            except (IOError, OSError, TypeError, ValueError):
+
+                def make_zoom_handler(lbl, p_img, base_img, w, h):
+                    state = {"current_step": 0.0, "after_id": None}
+                    max_zoom_factor = 0.05
+                    total_steps = 5
+
+                    def update_display():
+                        if state["current_step"] <= 0:
+                            lbl.configure(image=base_img)
+                            return
+                        zoom_val = state["current_step"] * max_zoom_factor
+                        iw, ih = p_img.size
+                        cw, ch = iw / (1 + zoom_val), ih / (1 + zoom_val)
+                        l, t, r, b = (iw - cw) / 2, (ih - ch) / 2, (iw + cw) / 2, (ih + ch) / 2
+                        zoomed_pil = p_img.crop((l, t, r, b))
+                        zoomed_ctk = ctk.CTkImage(light_image=zoomed_pil, dark_image=zoomed_pil, size=(w, h))
+                        lbl.configure(image=zoomed_ctk)
+
+                    def animate(direction):
+                        if state["after_id"]:
+                            lbl.after_cancel(state["after_id"])
+                            state["after_id"] = None
+                        if direction == "in":
+                            if state["current_step"] < 1.0:
+                                state["current_step"] += 1.0 / total_steps
+                                if state["current_step"] > 1.0: state["current_step"] = 1.0
+                                update_display()
+                                state["after_id"] = lbl.after(15, lambda: animate("in"))
+                        else:
+                            state["current_step"] = 0.0
+                            lbl.configure(image=base_img)
+
+                    return lambda e: animate("in"), lambda e: animate("out")
+
+                in_f, out_f = make_zoom_handler(img_lbl, pil_img, ctk_img, 640, 360)
+                img_lbl.bind("<Enter>", in_f)
+                img_lbl.bind("<Leave>", out_f)
+            except:
                 ctk.CTkLabel(img_frame, text="[ Ảnh Giới Thiệu ]", width=640, height=360).pack()
         else:
             ctk.CTkLabel(img_frame, text="[ Ảnh Giới Thiệu ]", width=640, height=360).pack()
@@ -79,11 +117,51 @@ class AboutFrame(ctk.CTkScrollableFrame):
             img_path = os.path.join(img_dir, img_name)
             if os.path.exists(img_path):
                 try:
-                    pil_img = Image.open(img_path)
+                    pil_img = Image.open(img_path).convert("RGB")
                     ctk_img = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(360, 270))
-                    ctk.CTkLabel(card, image=ctk_img, text="").grid(row=0, column=0, sticky="nsew")
-                except (IOError, OSError, TypeError, ValueError):
-                    ctk.CTkLabel(card, text=f"[ {label_text} ]", fg_color=COLOR_BORDER, height=270).grid(row=0, column=0, sticky="nsew")
+                    gallery_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
+                    gallery_lbl.grid(row=0, column=0, sticky="nsew")
+
+                    def make_zoom_handler(lbl, p_img, base_img, w, h):
+                        state = {"current_step": 0.0, "after_id": None}
+                        max_zoom_factor = 0.05
+                        total_steps = 5
+
+                        def update_display():
+                            if state["current_step"] <= 0:
+                                lbl.configure(image=base_img)
+                                return
+                            zoom_val = state["current_step"] * max_zoom_factor
+                            iw, ih = p_img.size
+                            cw, ch = iw / (1 + zoom_val), ih / (1 + zoom_val)
+                            l, t, r, b = (iw - cw) / 2, (ih - ch) / 2, (iw + cw) / 2, (ih + ch) / 2
+                            zoomed_pil = p_img.crop((l, t, r, b))
+                            zoomed_ctk = ctk.CTkImage(light_image=zoomed_pil, dark_image=zoomed_pil, size=(w, h))
+                            lbl.configure(image=zoomed_ctk)
+
+                        def animate(direction):
+                            if state["after_id"]:
+                                lbl.after_cancel(state["after_id"])
+                                state["after_id"] = None
+                            if direction == "in":
+                                if state["current_step"] < 1.0:
+                                    state["current_step"] += 1.0 / total_steps
+                                    if state["current_step"] > 1.0: state["current_step"] = 1.0
+                                    update_display()
+                                    state["after_id"] = lbl.after(15, lambda: animate("in"))
+                            else:
+                                state["current_step"] = 0.0
+                                lbl.configure(image=base_img)
+
+                        return lambda e: animate("in"), lambda e: animate("out")
+
+                    in_f, out_f = make_zoom_handler(gallery_lbl, pil_img, ctk_img, 360, 270)
+                    gallery_lbl.bind("<Enter>", in_f)
+                    gallery_lbl.bind("<Leave>", out_f)
+                except:
+                    ctk.CTkLabel(card, text=f"[ {label_text} ]", fg_color=COLOR_BORDER, height=270).grid(row=0,
+                                                                                                         column=0,
+                                                                                                         sticky="nsew")
             else:
                 ctk.CTkLabel(card, text=f"[ {label_text} ]", fg_color=COLOR_BORDER, height=270).grid(row=0, column=0, sticky="nsew")
 

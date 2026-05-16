@@ -5,28 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a4760946-fed6-45ae-bcb7-fc319c04ca07" name="Changes" comment="Cập nhật giao diện quản lý khách sạn">
-      <change beforePath="$PROJECT_DIR$/.idea/DreamStay.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DreamStay.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/about_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/about_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/contact_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/contact_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/crud_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/crud_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/event_detail_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/event_detail_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/event_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/event_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/forgot_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/forgot_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/header.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/header.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/home_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/home_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/login_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/login_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/main_layout.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/main_layout.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/profile_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/profile_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/reception.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/reception.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/register_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/register_frame.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/room_detail_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/room_detail_frame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/room_view.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/room_view.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/statistics.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/statistics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/utility_detail_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/utility_detail_frame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/utility_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/utility_frame.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
