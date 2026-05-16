@@ -4,17 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a4760946-fed6-45ae-bcb7-fc319c04ca07" name="Changes" comment="Cập nhật chức năng zoom ảnh">
-      <change afterPath="$PROJECT_DIR$/images/service-beer.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/service-champagne.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/service-juice.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/service-softdrink.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/service-water.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/service-wine.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ui/service_frame.py" afterDir="false" />
+    <list default="true" id="a4760946-fed6-45ae-bcb7-fc319c04ca07" name="Changes" comment="Thêm chức năng dịch vụ">
+      <change afterPath="$PROJECT_DIR$/ui/service_detail_frame.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/header.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/header.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/service_frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/ui/service_frame.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -221,7 +215,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778932702096</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Thêm chức năng dịch vụ">
+      <option name="closed" value="true" />
+      <created>1778945655664</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1778945655664</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -248,7 +250,8 @@
     <MESSAGE value="Thêm chức năng lịch sử đặt phòng và kho phiếu giảm giá" />
     <MESSAGE value="Cập nhật giao diện quản lý khách sạn" />
     <MESSAGE value="Cập nhật chức năng zoom ảnh" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cập nhật chức năng zoom ảnh" />
+    <MESSAGE value="Thêm chức năng dịch vụ" />
+    <option name="LAST_COMMIT_MESSAGE" value="Thêm chức năng dịch vụ" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/DreamStay$room_view.coverage" NAME="room_view Coverage Results" MODIFIED="1778030809646" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ui" />

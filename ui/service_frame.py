@@ -89,4 +89,16 @@ class ServiceFrame(ctk.CTkScrollableFrame):
 
             ctk.CTkLabel(card, text=name, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(10, 0))
             ctk.CTkLabel(card, text=desc, font=("Segoe UI", 12), text_color=COLOR_TEXT, wraplength=img_w - 40).pack(pady=15, padx=15)
-            ctk.CTkButton(card, text="ĐẶT NGAY", fg_color=COLOR_GOLD, text_color="white", font=("Segoe UI", 12, "bold"), height=35, width=200).pack(pady=(0, 20))
+            ctk.CTkButton(card, text="CHI TIẾT", fg_color="#3a3a50", text_color="white",
+                          font=("Segoe UI", 12, "bold"), height=35, width=200,
+                          command=lambda n=name, d=desc, p=img_path: self.show_details(n, d, p)).pack(pady=(0, 20))
+
+    def show_details(self, name, desc, img_path):
+        app = self.winfo_toplevel()
+        pages = getattr(app, "pages", {})
+        if "Chi tiết dịch vụ" in pages:
+            detail_page = pages["Chi tiết dịch vụ"]
+            if hasattr(detail_page, "set_service"):
+                detail_page.set_service(name, desc, img_path)
+            sf = getattr(app, "switch_page", None)
+            if callable(sf): sf("Chi tiết dịch vụ")

@@ -9,6 +9,7 @@ from ui.room_detail_frame import RoomDetailFrame
 from ui.utility_frame import UtilityFrame
 from ui.utility_detail_frame import UtilityDetailFrame
 from ui.service_frame import ServiceFrame
+from ui.service_detail_frame import ServiceDetailFrame
 from ui.event_frame import EventFrame
 from ui.event_detail_frame import EventDetailFrame
 from ui.contact_frame import ContactFrame
@@ -48,6 +49,7 @@ class HotelApp(ctk.CTk):
             "Tiện ích": UtilityFrame(self.container),
             "Chi tiết tiện ích": UtilityDetailFrame(self.container),
             "Dịch vụ": ServiceFrame(self.container),
+            "Chi tiết dịch vụ": ServiceDetailFrame(self.container),
             "Sự kiện": EventFrame(self.container),
             "Chi tiết sự kiện": EventDetailFrame(self.container),
             "Liên hệ": ContactFrame(self.container),
