@@ -1,16 +1,116 @@
 import os
 from config import *
 from PIL import Image
+from tkinter import messagebox
+from database import db
+
+SUB_SERVICES = {
+    "Rượu Vang Đỏ Cao Cấp": [("Chateau Margaux 2015", 5500000), ("Penfolds Bin 389", 2800000), ("Casillero del Diablo", 850000)],
+    "Bia Nhập Khẩu": [("Heineken Silver", 45000), ("Tiger Crystal", 40000), ("Bia Thủ Công IPA", 95000), ("Corona Extra", 55000)],
+    "Nước Ngọt & Soda": [("Coca Cola Classic", 25000), ("Pepsi Black", 25000), ("7Up Lemon", 25000), ("Sprite", 25000), ("Schweppes Soda", 30000)],
+    "Champagne Sang Trọng": [("Moët & Chandon", 3500000), ("Dom Pérignon", 8200000), ("Veuve Clicquot", 4100000)],
+    "Nước Ép Trái Cây": [("Nước Ép Cam Tươi", 65000), ("Nước Ép Dưa Hấu", 60000), ("Nước Ép Thơm", 60000), ("Sinh Tố Bơ", 85000)],
+    "Nước Khoáng Tinh Khiết": [("Lavie 500ml", 15000), ("Aquafina 500ml", 15000), ("Evian Glass Bottle", 110000), ("Perrier Sparkling", 95000)]
+}
+
+class OrderModal(ctk.CTkToplevel):
+    def __init__(self, parent, category_name):
+        super().__init__(parent)
+        self.title(f"Đặt hàng: {category_name}")
+        self.geometry("500x700")
+        self.configure(fg_color=COLOR_CREAM)
+        self.grab_set()
+        
+        self.items = SUB_SERVICES.get(category_name, [])
+        self.quantities = {item[0]: ctk.IntVar(value=0) for item in self.items}
+        
+        ctk.CTkLabel(self, text=category_name.upper(), font=("Segoe UI", 20, "bold"), text_color=COLOR_GOLD).pack(pady=20)
+        
+        self.scroll = ctk.CTkScrollableFrame(self, fg_color="transparent", height=350)
+        self.scroll.pack(fill="both", expand=True, padx=20)
+        
+        for name, price in self.items:
+            f = ctk.CTkFrame(self.scroll, fg_color=COLOR_WHITE, corner_radius=10)
+            f.pack(fill="x", pady=5)
+            
+            ctk.CTkLabel(f, text=name, font=("Segoe UI", 13, "bold"), text_color=COLOR_NAVY).pack(side="left", padx=15, pady=10)
+            
+            qty_f = ctk.CTkFrame(f, fg_color="transparent")
+            qty_f.pack(side="right", padx=10)
+            
+            ctk.CTkButton(qty_f, text="-", width=30, height=30, fg_color="#e74c3c", 
+                          command=lambda n=name: self.change_qty(n, -1)).pack(side="left", padx=2)
+            
+            ctk.CTkEntry(qty_f, textvariable=self.quantities[name], width=40, height=30, 
+                         justify="center").pack(side="left", padx=2)
+            
+            ctk.CTkButton(qty_f, text="+", width=30, height=30, fg_color="#27ae60", 
+                          command=lambda n=name: self.change_qty(n, 1)).pack(side="left", padx=2)
+            
+            ctk.CTkLabel(f, text=f"{price:,.0f}đ", font=("Segoe UI", 12), text_color=COLOR_GOLD, 
+                         width=80).pack(side="right", padx=10)
+
+        bottom_f = ctk.CTkFrame(self, fg_color=COLOR_NAVY, corner_radius=0)
+        bottom_f.pack(fill="x", side="bottom", pady=0)
+        
+        room_f = ctk.CTkFrame(bottom_f, fg_color="transparent")
+        room_f.pack(fill="x", padx=30, pady=15)
+        
+        ctk.CTkLabel(room_f, text="Giao đến phòng:", font=("Segoe UI", 12, "bold")).pack(side="left")
+        
+        db.cursor.execute("SELECT room_id FROM rooms WHERE status='Đã đặt'")
+        occupied_rooms = [r[0] for r in db.cursor.fetchall()]
+        if not occupied_rooms: occupied_rooms = ["Không có phòng trống"]
+        
+        self.room_cb = ctk.CTkOptionMenu(room_f, values=occupied_rooms, fg_color=COLOR_WHITE, 
+                                         text_color=COLOR_NAVY, button_color=COLOR_GOLD)
+        self.room_cb.pack(side="right", fill="x", expand=True, padx=(10, 0))
+        
+        self.total_lbl = ctk.CTkLabel(bottom_f, text="TỔNG CỘNG: 0 VNĐ", font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD)
+        self.total_lbl.pack(pady=10)
+        
+        ctk.CTkButton(bottom_f, text="XÁC NHẬN ĐƠN HÀNG", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
+                      height=45, font=("Segoe UI", 14, "bold"), command=self.confirm).pack(pady=(0, 20), padx=30, fill="x")
+
+    def change_qty(self, name, delta):
+        val = self.quantities[name].get() + delta
+        if val < 0: val = 0
+        self.quantities[name].set(val)
+        self.update_total()
+
+    def update_total(self):
+        total = 0
+        for name, price in self.items:
+            total += self.quantities[name].get() * price
+        self.total_lbl.configure(text=f"TỔNG CỘNG: {total:,.0f} VNĐ")
+
+    def confirm(self):
+        room = self.room_cb.get()
+        if room == "Không có phòng trống":
+            return messagebox.showerror("Lỗi", "Hiện tại không có phòng nào đang có khách lưu trú!")
+        
+        total = 0
+        order_details = []
+        for name, price in self.items:
+            q = self.quantities[name].get()
+            if q > 0:
+                total += q * price
+                order_details.append(f"- {name} (x{q})")
+        
+        if total == 0:
+            return messagebox.showwarning("Chú ý", "Vui lòng chọn ít nhất một món đồ!")
+            
+        msg = f"Xác nhận đơn hàng giao tới phòng {room}:\n" + "\n".join(order_details) + f"\n\nTổng thanh toán: {total:,.0f} VNĐ"
+        if messagebox.askyesno("Xác nhận", msg):
+            messagebox.showinfo("Thành công", f"Đơn hàng đang được chuẩn bị và sẽ giao tới phòng {room} sau ít phút!")
+            self.destroy()
 
 class ServiceFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         ctk.CTkScrollableFrame.__init__(self, master, fg_color=COLOR_CREAM, corner_radius=0)
-
         ctk.CTkLabel(self, text="Dịch Vụ Đồ Uống & F&B", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(pady=30)
-
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=50)
-
         for col in range(3):
             self.grid_frame.grid_columnconfigure(col, weight=1)
 
@@ -21,7 +121,6 @@ class ServiceFrame(ctk.CTkScrollableFrame):
         self.winfo_toplevel().update_idletasks()
         window_width = self.winfo_toplevel().winfo_width()
         if window_width < 100: window_width = 1300
-
         card_width = (window_width - 150) // 3
         img_w = int(card_width * 0.9)
         img_h = int(img_w * 0.65)
@@ -89,9 +188,17 @@ class ServiceFrame(ctk.CTkScrollableFrame):
 
             ctk.CTkLabel(card, text=name, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(10, 0))
             ctk.CTkLabel(card, text=desc, font=("Segoe UI", 12), text_color=COLOR_TEXT, wraplength=img_w - 40).pack(pady=15, padx=15)
-            ctk.CTkButton(card, text="CHI TIẾT", fg_color="#3a3a50", text_color="white",
-                          font=("Segoe UI", 12, "bold"), height=35, width=200,
-                          command=lambda n=name, d=desc, p=img_path: self.show_details(n, d, p)).pack(pady=(0, 20))
+            
+            btn_f = ctk.CTkFrame(card, fg_color="transparent")
+            btn_f.pack(pady=(0, 20), padx=20, fill="x")
+            
+            ctk.CTkButton(btn_f, text="CHI TIẾT", fg_color="#3a3a50", text_color="white", 
+                          font=("Segoe UI", 11, "bold"), height=35, width=80,
+                          command=lambda n=name, d=desc, p=img_path: self.show_details(n, d, p)).pack(side="left", padx=5, expand=True, fill="x")
+            
+            ctk.CTkButton(btn_f, text="ĐẶT HÀNG", fg_color=COLOR_GOLD, text_color="white", 
+                          font=("Segoe UI", 11, "bold"), height=35, width=80,
+                          command=lambda n=name: self.open_order_modal(n)).pack(side="left", padx=5, expand=True, fill="x")
 
     def show_details(self, name, desc, img_path):
         app = self.winfo_toplevel()
@@ -102,3 +209,6 @@ class ServiceFrame(ctk.CTkScrollableFrame):
                 detail_page.set_service(name, desc, img_path)
             sf = getattr(app, "switch_page", None)
             if callable(sf): sf("Chi tiết dịch vụ")
+
+    def open_order_modal(self, category_name):
+        OrderModal(self, category_name)

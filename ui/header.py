@@ -53,7 +53,7 @@ class Header(ctk.CTkFrame):
         for widget in self.menu_frame.winfo_children():
             widget.destroy()
 
-        menus = ["Trang chủ", "Giới thiệu", "Phòng", "Tiện ích", "Dịch vụ", "Sự kiện", "Liên hệ"]
+        menus = ["Trang chủ", "Giới thiệu", "Phòng", "Dịch vụ", "Tiện ích", "Sự kiện", "Liên hệ"]
 
         if is_logged_in and role in ['staff', 'manager']:
             menus.append("Quản lý")
