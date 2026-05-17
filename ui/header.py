@@ -15,13 +15,13 @@ class Header(ctk.CTkFrame):
         self.letters = []
         for char in "DreamStay":
             lbl = ctk.CTkLabel(self.brand_container, text=char,
-                               font=("Edwardian Script ITC", 50))
+                               font=FONT_LOGO)
             lbl.pack(side="left", padx=0)
             self.letters.append(lbl)
 
         self.user_btn = ctk.CTkButton(self, text="ĐĂNG NHẬP", width=90, height=32, corner_radius=6,
                                       fg_color="white", text_color=COLOR_NAVY,
-                                      hover_color=COLOR_GOLD, font=("Segoe UI", 12, "bold"),
+                                      hover_color=COLOR_GOLD, font=FONT_BODY_BOLD,
                                       command=self.handle_user_click)
         self.user_btn.pack(side="right", padx=30)
 
@@ -60,7 +60,7 @@ class Header(ctk.CTkFrame):
 
         for menu in menus:
             is_active = menu == self.active_menu
-            btn = ctk.CTkButton(self.menu_frame, text=menu, font=("Segoe UI", 12, "bold"),
+            btn = ctk.CTkButton(self.menu_frame, text=menu, font=FONT_BODY_BOLD,
                                 fg_color="transparent", text_color="white",
                                 hover_color=COLOR_GOLD, width=80,
                                 border_width=2 if is_active else 0,

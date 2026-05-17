@@ -41,25 +41,25 @@ class MainFrame(ctk.CTkFrame):
                                 hover_color="#3a3a50",
                                 anchor="w",
                                 height=45,
-                                font=("Segoe UI", 13, "bold"),
+                                font=FONT_BODY_BOLD,
                                 command=lambda n=name: self.switch(n))
             btn.pack(pady=2, padx=15, fill="x")
 
         self.staff_reg_btn = ctk.CTkButton(self.sidebar, text="  Cấp TK Nhân Viên",
                                            fg_color=COLOR_GOLD, text_color="white",
                                            hover_color=COLOR_GOLD_HOVER,
-                                           anchor="w", height=45, font=("Segoe UI", 13, "bold"),
+                                           anchor="w", height=45, font=FONT_BODY_BOLD,
                                            command=self.open_staff_registration)
 
         self.voucher_grant_btn = ctk.CTkButton(self.sidebar, text="  Tặng Voucher",
                                                fg_color="#27ae60", text_color="white",
                                                hover_color="#219150",
-                                               anchor="w", height=45, font=("Segoe UI", 13, "bold"),
+                                               anchor="w", height=45, font=FONT_BODY_BOLD,
                                                command=self.open_voucher_modal)
 
         ctk.CTkButton(self.sidebar, text="  Đăng Xuất",
                       fg_color="transparent", text_color="#e74c3c",
-                      anchor="w", height=45, font=("Segoe UI", 13, "bold"),
+                      anchor="w", height=45, font=FONT_BODY_BOLD,
                       command=self.logout_clicked).pack(side="bottom", pady=20, padx=15, fill="x")
 
         self.switch("Lễ Tân")
@@ -103,7 +103,7 @@ class MainFrame(ctk.CTkFrame):
         modal.grab_set()
         modal.resizable(False, False)
 
-        ctk.CTkLabel(modal, text="ĐĂNG KÝ NHÂN VIÊN MỚI", font=("Segoe UI", 22, "bold"), text_color=COLOR_GOLD).pack(
+        ctk.CTkLabel(modal, text="ĐĂNG KÝ NHÂN VIÊN MỚI", font=FONT_TITLE, text_color=COLOR_GOLD).pack(
             pady=30)
 
         entries = {}
@@ -118,7 +118,7 @@ class MainFrame(ctk.CTkFrame):
         for label, key in fields:
             f = ctk.CTkFrame(modal, fg_color="transparent")
             f.pack(fill="x", padx=40, pady=8)
-            ctk.CTkLabel(f, text=label, font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT).pack(anchor="w")
+            ctk.CTkLabel(f, text=label, font=FONT_BODY_BOLD, text_color=COLOR_TEXT).pack(anchor="w")
             e = ctk.CTkEntry(f, show="*" if key == "pw" else "", height=40, fg_color=COLOR_WHITE,
                              border_color=COLOR_BORDER)
             e.pack(fill="x", pady=5)
@@ -142,7 +142,7 @@ class MainFrame(ctk.CTkFrame):
                 messagebox.showerror("Lỗi", f"Tên đăng nhập hoặc Email đã tồn tại: {str(err)}")
 
         ctk.CTkButton(modal, text="XÁC NHẬN CẤP TÀI KHOẢN", fg_color=COLOR_GOLD,
-                      hover_color=COLOR_GOLD_HOVER, height=45, font=("Segoe UI", 13, "bold"),
+                      hover_color=COLOR_GOLD_HOVER, height=45, font=FONT_BODY_BOLD,
                       command=confirm_save).pack(pady=40, padx=40, fill="x")
 
     def open_voucher_modal(self):
@@ -158,7 +158,7 @@ class MainFrame(ctk.CTkFrame):
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
-        ctk.CTkLabel(modal, text="🎁 TẶNG VOUCHER MỚI", font=("Segoe UI", 22, "bold"), text_color=COLOR_GOLD).pack(
+        ctk.CTkLabel(modal, text="🎁 TẶNG VOUCHER MỚI", font=FONT_TITLE, text_color=COLOR_GOLD).pack(
             pady=30)
 
         db.cursor.execute("SELECT username FROM users WHERE role='user'")
@@ -167,7 +167,7 @@ class MainFrame(ctk.CTkFrame):
 
         f_user = ctk.CTkFrame(modal, fg_color="transparent")
         f_user.pack(fill="x", padx=40, pady=8)
-        ctk.CTkLabel(f_user, text="Chọn khách hàng nhận:", font=("Segoe UI", 12, "bold")).pack(anchor="w")
+        ctk.CTkLabel(f_user, text="Chọn khách hàng nhận:", font=FONT_BODY_BOLD).pack(anchor="w")
         user_cb = ctk.CTkOptionMenu(f_user, values=user_list, height=40, fg_color=COLOR_WHITE, text_color=COLOR_TEXT,
                                     button_color=COLOR_GOLD)
         user_cb.pack(fill="x", pady=5)
@@ -179,7 +179,7 @@ class MainFrame(ctk.CTkFrame):
         for label, key in fields:
             f = ctk.CTkFrame(modal, fg_color="transparent")
             f.pack(fill="x", padx=40, pady=8)
-            ctk.CTkLabel(f, text=label, font=("Segoe UI", 12, "bold")).pack(anchor="w")
+            ctk.CTkLabel(f, text=label, font=FONT_BODY_BOLD).pack(anchor="w")
             e = ctk.CTkEntry(f, height=40, fg_color=COLOR_WHITE, border_color=COLOR_BORDER)
             e.pack(fill="x", pady=5)
             entries[key] = e
@@ -205,7 +205,7 @@ class MainFrame(ctk.CTkFrame):
                 messagebox.showerror("Lỗi", f"Lỗi hệ thống: {str(err)}")
 
         ctk.CTkButton(modal, text="XÁC NHẬN TẶNG", fg_color="#27ae60", hover_color="#219150",
-                      height=45, font=("Segoe UI", 13, "bold"), command=confirm_grant).pack(pady=40, padx=40, fill="x")
+                      height=45, font=FONT_BODY_BOLD, command=confirm_grant).pack(pady=40, padx=40, fill="x")
 
     def load_data(self):
         pass

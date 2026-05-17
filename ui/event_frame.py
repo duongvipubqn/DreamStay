@@ -4,7 +4,7 @@ class EventFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
 
-        ctk.CTkLabel(self, text="Sự Kiện & Khuyến Mãi", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(pady=30)
+        ctk.CTkLabel(self, text="Sự Kiện & Khuyến Mãi", font=FONT_HEADER, text_color=COLOR_TEXT).pack(pady=30)
 
         self.events_list = [
             {
@@ -34,18 +34,18 @@ class EventFrame(ctk.CTkScrollableFrame):
             f = ctk.CTkFrame(card, fg_color="transparent")
             f.pack(side="left", padx=40, pady=30)
 
-            ctk.CTkLabel(f, text=ev["subtitle"], font=("Segoe UI", 14, "bold"), text_color=COLOR_GOLD).pack(anchor="w")
-            ctk.CTkLabel(f, text=ev["title"], font=("Segoe UI", 28, "bold"), text_color="white").pack(anchor="w", pady=5)
-            ctk.CTkLabel(f, text=ev["desc"], font=("Segoe UI", 14), text_color="#ccc", justify="left").pack(anchor="w", pady=10)
+            ctk.CTkLabel(f, text=ev["subtitle"], font=FONT_LABEL, text_color=COLOR_GOLD).pack(anchor="w")
+            ctk.CTkLabel(f, text=ev["title"], font=FONT_TITLE, text_color="white").pack(anchor="w", pady=5)
+            ctk.CTkLabel(f, text=ev["desc"], font=FONT_BODY, text_color="#ccc", justify="left").pack(anchor="w", pady=10)
 
             def make_cmd(d):
                 return lambda: self.show_details(d)
 
             ctk.CTkButton(f, text="ĐĂNG KÝ THAM GIA NGAY", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                          text_color="white", font=("Segoe UI", 13, "bold"), height=40,
+                          text_color="white", font=FONT_BODY_BOLD, height=40,
                           command=make_cmd(ev)).pack(anchor="w", pady=10)
 
-            ctk.CTkLabel(card, text=ev["icon"], font=("Segoe UI", 100), text_color=COLOR_GOLD).pack(side="right", padx=60)
+            ctk.CTkLabel(card, text=ev["icon"], font=FONT_ICON, text_color=COLOR_GOLD).pack(side="right", padx=60)
 
     def show_details(self, data):
         app = self.winfo_toplevel()

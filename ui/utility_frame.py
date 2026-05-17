@@ -6,7 +6,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         ctk.CTkScrollableFrame.__init__(self, master, fg_color=COLOR_CREAM, corner_radius=0)
 
-        ctk.CTkLabel(self, text="Tiện Ích & Dịch Vụ", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(pady=30)
+        ctk.CTkLabel(self, text="Tiện Ích & Dịch Vụ", font=FONT_HEADER, text_color=COLOR_TEXT).pack(pady=30)
 
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=50)
@@ -92,11 +92,11 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             else:
                 ctk.CTkLabel(card, text="[ Ảnh chưa cập nhật ]", width=img_w, height=img_h).pack()
 
-            ctk.CTkLabel(card, text=name, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(10, 0))
-            ctk.CTkLabel(card, text=desc, font=("Segoe UI", 12), text_color=COLOR_TEXT, wraplength=img_w - 40).pack(pady=15, padx=15)
+            ctk.CTkLabel(card, text=name, font=FONT_LABEL, text_color=COLOR_GOLD).pack(pady=(10, 0))
+            ctk.CTkLabel(card, text=desc, font=FONT_BODY, text_color=COLOR_TEXT, wraplength=img_w - 40).pack(pady=15, padx=15)
 
             ctk.CTkButton(card, text="CHI TIẾT", fg_color="#3a3a50", text_color="white",
-                          font=("Segoe UI", 12, "bold"), height=35, width=200,
+                          font=FONT_BODY_BOLD, height=35, width=200,
                           command=lambda n=name, d=desc, p=img_path: self.show_details(n, d, p)).pack(pady=(0, 20))
 
     def show_details(self, name, desc, img_path):

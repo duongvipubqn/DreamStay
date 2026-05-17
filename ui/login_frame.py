@@ -11,15 +11,15 @@ class LoginFrame(ctk.CTkFrame):
                                   corner_radius=15, border_width=1, border_color=COLOR_BORDER)
         self.panel.place(relx=0.5, rely=0.5, anchor="center")
 
-        ctk.CTkLabel(self.panel, text="Đăng Nhập", font=("Segoe UI", 32, "bold"),
+        ctk.CTkLabel(self.panel, text="Đăng Nhập", font=FONT_HEADER,
                      text_color="white").pack(pady=(40, 5))
-        ctk.CTkLabel(self.panel, text="Chào mừng bạn trở lại!", font=("Segoe UI", 13),
+        ctk.CTkLabel(self.panel, text="Chào mừng bạn trở lại!", font=FONT_BODY,
                      text_color="#aaa").pack(pady=(0, 30))
 
         self.user_entry = self.create_input("Tài khoản nhân viên")
         self.pass_entry = self.create_input("Mật khẩu", is_password=True)
 
-        self.show_pass_check = ctk.CTkCheckBox(self.panel, text="Hiện mật khẩu", font=("Segoe UI", 11),
+        self.show_pass_check = ctk.CTkCheckBox(self.panel, text="Hiện mật khẩu", font=FONT_BODY,
                                                border_color=COLOR_GOLD, checkmark_color=COLOR_GOLD,
                                                text_color=COLOR_TEXT, command=self.toggle_password)
         self.show_pass_check.pack(pady=10)
@@ -31,12 +31,12 @@ class LoginFrame(ctk.CTkFrame):
                 func("Forgot")
 
         ctk.CTkButton(self.panel, text="Quên mật khẩu?", fg_color="transparent",
-                      text_color=COLOR_GOLD, font=("Segoe UI", 11),
+                      text_color=COLOR_GOLD, font=FONT_BODY,
                       hover=False, command=go_to_forgot).pack()
 
         ctk.CTkButton(self.panel, text="ĐĂNG NHẬP", width=280, height=45,
                       fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      text_color="white", font=("Segoe UI", 13, "bold"),
+                      text_color="white", font=FONT_BODY_BOLD,
                       command=self.login).pack(pady=(10, 10))
 
         def go_to_register():

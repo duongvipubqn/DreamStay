@@ -10,7 +10,7 @@ class RoomView(ctk.CTkScrollableFrame):
     def __init__(self, master):
         ctk.CTkScrollableFrame.__init__(self, master, fg_color=COLOR_CREAM, corner_radius=0)
 
-        ctk.CTkLabel(self, text="Phòng Nghỉ Của Chúng Tôi", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(
+        ctk.CTkLabel(self, text="Phòng Nghỉ Của Chúng Tôi", font=FONT_HEADER, text_color=COLOR_TEXT).pack(
             pady=30)
 
         self.filter_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -31,7 +31,7 @@ class RoomView(ctk.CTkScrollableFrame):
         for label, vals in filters:
             f = ctk.CTkFrame(self.filter_container, fg_color="transparent")
             f.pack(side="left", padx=12)
-            ctk.CTkLabel(f, text=label, font=("Segoe UI", 11, "bold"), text_color="#aaa").pack(anchor="w")
+            ctk.CTkLabel(f, text=label, font=FONT_BODY_BOLD, text_color="#aaa").pack(anchor="w")
 
             var = ctk.StringVar(value=vals[0])
             self.filter_vars[label] = var
@@ -59,7 +59,7 @@ class RoomView(ctk.CTkScrollableFrame):
         self.jump_frame = ctk.CTkFrame(self.page_frame, fg_color="transparent")
         self.jump_frame.pack(side="top", pady=10)
 
-        ctk.CTkLabel(self.jump_frame, text="Nhảy đến trang:", font=("Segoe UI", 12)).pack(side="left", padx=5)
+        ctk.CTkLabel(self.jump_frame, text="Nhảy đến trang:", font=FONT_BODY).pack(side="left", padx=5)
         self.jump_entry = ctk.CTkEntry(self.jump_frame, width=50, height=28, justify="center")
         self.jump_entry.pack(side="left", padx=5)
         self.jump_entry.bind("<Return>", lambda e: self.go_to_page())
@@ -198,7 +198,7 @@ class RoomView(ctk.CTkScrollableFrame):
 
         if not rooms_db:
             ctk.CTkLabel(self.grid_frame, text="Rất tiếc, không tìm thấy phòng phù hợp với yêu cầu của sếp!",
-                         font=("Segoe UI", 16), text_color=COLOR_GOLD).pack(pady=50)
+                         font=FONT_LABEL, text_color=COLOR_GOLD).pack(pady=50)
         else:
             for i, (r_id, loc, r_type, status, cap, price) in enumerate(rooms_db):
                 card = ctk.CTkFrame(self.grid_frame, fg_color=COLOR_WHITE, corner_radius=15, border_width=1,
@@ -269,25 +269,25 @@ class RoomView(ctk.CTkScrollableFrame):
 
                 header_f = ctk.CTkFrame(card, fg_color="transparent")
                 header_f.pack(fill="x", padx=20)
-                ctk.CTkLabel(header_f, text=f"Mã: {r_id}", font=("Segoe UI", 11, "bold"), text_color="#888").pack(
+                ctk.CTkLabel(header_f, text=f"Mã: {r_id}", font=FONT_BODY_BOLD, text_color="#888").pack(
                     side="left")
 
                 current_booking, upcoming_bookings = self._get_room_status_info(r_id)
                 current_text = "Đang đặt" if current_booking else "Trống"
                 status_color = "#e74c3c" if current_booking else "#2ecc71"
-                ctk.CTkLabel(header_f, text=current_text, font=("Segoe UI", 10, "bold"), text_color=status_color).pack(
+                ctk.CTkLabel(header_f, text=current_text, font=FONT_BODY_BOLD, text_color=status_color).pack(
                     side="right")
 
-                ctk.CTkLabel(card, text=r_type, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(5, 0))
-                ctk.CTkLabel(card, text=f"📍 {loc} | 👥 {cap}", font=("Segoe UI", 12), text_color="#aaa").pack()
-                ctk.CTkLabel(card, text=f"{price:,.0f} VNĐ / đêm", font=("Segoe UI", 16, "bold"),
+                ctk.CTkLabel(card, text=r_type, font=FONT_LABEL, text_color=COLOR_GOLD).pack(pady=(5, 0))
+                ctk.CTkLabel(card, text=f"📍 {loc} | 👥 {cap}", font=FONT_BODY, text_color="#aaa").pack()
+                ctk.CTkLabel(card, text=f"{price:,.0f} VNĐ / đêm", font=FONT_BODY,
                              text_color=COLOR_GOLD).pack(pady=10)
 
                 if upcoming_bookings:
                     ctk.CTkLabel(card, text=f"Lịch đặt: {self._format_booking_summary(upcoming_bookings)}",
-                                 font=("Segoe UI", 12), text_color="#888").pack(padx=20, pady=(0, 10), anchor="w")
+                                 font=FONT_BODY, text_color="#888").pack(padx=20, pady=(0, 10), anchor="w")
                 else:
-                    ctk.CTkLabel(card, text="Chưa có lịch đặt", font=("Segoe UI", 12), text_color="#888").pack(
+                    ctk.CTkLabel(card, text="Chưa có lịch đặt", font=FONT_BODY, text_color="#888").pack(
                                  padx=20, pady=(0, 10), anchor="w")
 
                 btn_frame = ctk.CTkFrame(card, fg_color="transparent")
@@ -295,13 +295,13 @@ class RoomView(ctk.CTkScrollableFrame):
 
                 ctk.CTkButton(btn_frame, text="CHI TIẾT",
                               fg_color="#3a3a50", text_color="white",
-                              font=("Segoe UI", 11, "bold"), height=35, width=80,
+                              font=FONT_BODY_BOLD, height=35, width=80,
                               command=lambda d=rooms_db[i], p=os.path.join(img_dir, img_name): self.show_details(d, p)).pack(
                     side="left", padx=(0, 5), expand=True, fill="x")
 
                 ctk.CTkButton(btn_frame, text="ĐẶT PHÒNG",
                               fg_color=COLOR_GOLD, text_color="white", hover_color=COLOR_GOLD_HOVER,
-                              font=("Segoe UI", 11, "bold"), height=35, width=80,
+                              font=FONT_BODY_BOLD, height=35, width=80,
                               command=lambda r=rooms_db[i]: self.open_booking_modal(r)).pack(side="left", expand=True,
                                                                                           fill="x")
 
@@ -342,13 +342,13 @@ class RoomView(ctk.CTkScrollableFrame):
         last_p = 0
         for p in visible_pages:
             if last_p != 0 and p - last_p > 1:
-                ctk.CTkLabel(self.pagination_container, text="...", font=("Segoe UI", 14, "bold")).pack(side="left", padx=5)
+                ctk.CTkLabel(self.pagination_container, text="...", font=FONT_LABEL).pack(side="left", padx=5)
             
             is_active = (p == self.current_page)
             btn = ctk.CTkButton(self.pagination_container, text=str(p), width=35, height=35,
                                 fg_color=COLOR_GOLD if is_active else COLOR_WHITE,
                                 text_color="white" if is_active else COLOR_NAVY,
-                                font=("Segoe UI", 12, "bold"),
+                                font=FONT_BODY_BOLD,
                                 command=lambda page=p: self.load_data(self.filters, page))
             btn.pack(side="left", padx=3)
             last_p = p
@@ -397,12 +397,12 @@ class RoomView(ctk.CTkScrollableFrame):
         modal.configure(fg_color=COLOR_CREAM)
         modal.grab_set()
 
-        ctk.CTkLabel(modal, text="ĐẶT PHÒNG NHANH", font=("Segoe UI", 20, "bold"), text_color=COLOR_GOLD).pack(pady=20)
+        ctk.CTkLabel(modal, text="ĐẶT PHÒNG NHANH", font=FONT_LABEL, text_color=COLOR_GOLD).pack(pady=20)
 
         info_f = ctk.CTkFrame(modal, fg_color=COLOR_NAVY, corner_radius=10)
         info_f.pack(fill="x", padx=30, pady=10)
-        ctk.CTkLabel(info_f, text=f"Phòng: {room_data[2]}", font=("Segoe UI", 14, "bold")).pack(pady=5)
-        ctk.CTkLabel(info_f, text=f"Giá: {room_data[5]:,.0f} VNĐ/đêm", font=("Segoe UI", 12)).pack(pady=2)
+        ctk.CTkLabel(info_f, text=f"Phòng: {room_data[2]}", font=FONT_LABEL).pack(pady=5)
+        ctk.CTkLabel(info_f, text=f"Giá: {room_data[5]:,.0f} VNĐ/đêm", font=FONT_BODY).pack(pady=2)
 
         date_f = ctk.CTkFrame(modal, fg_color="transparent")
         date_f.pack(pady=20)
@@ -446,7 +446,7 @@ class RoomView(ctk.CTkScrollableFrame):
         en_in.bind("<Button-1>", lambda e: pick_date(en_in))
         en_out.bind("<Button-1>", lambda e: pick_date(en_out))
 
-        lbl_money = ctk.CTkLabel(modal, text="Tổng: 0 VNĐ", font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD)
+        lbl_money = ctk.CTkLabel(modal, text="Tổng: 0 VNĐ", font=FONT_LABEL, text_color=COLOR_GOLD)
         lbl_money.pack(pady=10)
 
         def update_price():

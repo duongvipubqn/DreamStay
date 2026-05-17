@@ -9,7 +9,7 @@ logging.getLogger('matplotlib.font_manager').disabled = True
 class StatisticsFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM)
-        ctk.CTkLabel(self, text="Báo Cáo Doanh Thu & Hiệu Suất", font=("Segoe UI", 24, "bold"),
+        ctk.CTkLabel(self, text="Báo Cáo Doanh Thu & Hiệu Suất", font=FONT_TITLE,
                      text_color=COLOR_TEXT).pack(pady=15)
         self.chart_container = ctk.CTkFrame(self, fg_color="transparent")
         self.chart_container.pack(fill="both", expand=True, padx=20, pady=10)

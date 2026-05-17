@@ -30,7 +30,7 @@ class FormModal(ctk.CTkToplevel):
             f = ctk.CTkFrame(scroll_f, fg_color="transparent")
             f.pack(fill="x", pady=8, padx=20)
 
-            ctk.CTkLabel(f, text=col, font=("Segoe UI", 12, "bold"), text_color=COLOR_TEXT).pack(anchor="w")
+            ctk.CTkLabel(f, text=col, font=FONT_BODY_BOLD, text_color=COLOR_TEXT).pack(anchor="w")
 
             if any(x in col for x in
                    ["Địa điểm", "Thành phố", "Loại", "Trạng thái", "Sức Chứa", "Chức vụ", "Tình Trạng"]):
@@ -59,7 +59,7 @@ class FormModal(ctk.CTkToplevel):
                     entry.insert(0, initial_data[i])
 
         ctk.CTkButton(scroll_f, text="LƯU THAY ĐỔI", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      text_color="white", font=("Segoe UI", 14, "bold"), height=50,
+                      text_color="white", font=FONT_LABEL, height=50,
                       command=self.submit).pack(fill="x", pady=30, padx=20)
 
     def submit(self):
@@ -80,7 +80,7 @@ class CRUDFrame(ctk.CTkFrame):
 
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", pady=(0, 15))
-        ctk.CTkLabel(header, text=title, font=("Segoe UI", 28, "bold"), text_color=COLOR_TEXT).pack(side="left")
+        ctk.CTkLabel(header, text=title, font=FONT_TITLE, text_color=COLOR_TEXT).pack(side="left")
 
         toolbar = ctk.CTkFrame(self, fg_color=COLOR_WHITE, height=70, corner_radius=15, border_width=1,
                                border_color=COLOR_BORDER)
@@ -98,25 +98,25 @@ class CRUDFrame(ctk.CTkFrame):
         btn_f.pack(side="right", padx=15)
 
         ctk.CTkButton(btn_f, text="+ THÊM", fg_color="#27ae60", hover_color="#219150",
-                      width=90, height=35, font=("Segoe UI", 11, "bold"),
+                      width=90, height=35, font=FONT_BODY_BOLD,
                       command=self.open_add_modal).pack(side="left", padx=5)
 
         ctk.CTkButton(btn_f, text="✎ SỬA", fg_color="#3498db", hover_color="#2980b9",
-                      width=90, height=35, font=("Segoe UI", 11, "bold"),
+                      width=90, height=35, font=FONT_BODY_BOLD,
                       command=self.open_edit_modal).pack(side="left", padx=5)
 
         ctk.CTkButton(btn_f, text="🗑 XÓA", fg_color="#e74c3c", hover_color="#c0392b",
-                      width=90, height=35, font=("Segoe UI", 11, "bold"),
+                      width=90, height=35, font=FONT_BODY_BOLD,
                       command=self.delete).pack(side="left", padx=5)
 
         ctk.CTkLabel(btn_f, text="|", text_color=COLOR_BORDER).pack(side="left", padx=10)
 
         ctk.CTkButton(btn_f, text="NHẬP CSV", fg_color="#8e44ad", hover_color="#732d91",
-                      width=100, height=35, font=("Segoe UI", 11, "bold"),
+                      width=100, height=35, font=FONT_BODY_BOLD,
                       command=self.import_csv).pack(side="left", padx=5)
 
         ctk.CTkButton(btn_f, text="XUẤT CSV", fg_color="#f39c12", hover_color="#d35400",
-                      width=100, height=35, font=("Segoe UI", 11, "bold"),
+                      width=100, height=35, font=FONT_BODY_BOLD,
                       command=self.export_csv).pack(side="left", padx=5)
 
         self.tree = self.setup_treeview()
@@ -130,7 +130,7 @@ class CRUDFrame(ctk.CTkFrame):
                         fieldbackground=COLOR_NAVY, borderwidth=0)
         style.map('Treeview', background=[('selected', COLOR_GOLD)])
         style.configure("Treeview.Heading", background=COLOR_WHITE, foreground=COLOR_GOLD,
-                        font=("Segoe UI", 10, "bold"))
+                        font=FONT_BODY_BOLD)
 
         t = ttk.Treeview(f, columns=self.columns, show="headings")
         for col in self.columns:

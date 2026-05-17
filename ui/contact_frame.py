@@ -11,7 +11,7 @@ class ContactFrame(ctk.CTkScrollableFrame):
         ctk.CTkLabel(
             self,
             text="Liên Hệ Với Chúng Tôi",
-            font=("Segoe UI", 32, "bold"),
+            font=FONT_HEADER,
             text_color=COLOR_TEXT
         ).pack(pady=(36, 14))
 
@@ -39,7 +39,7 @@ class ContactFrame(ctk.CTkScrollableFrame):
         ctk.CTkLabel(
             self.left,
             text="Gửi Tin Nhắn",
-            font=("Segoe UI", 22, "bold"),
+            font=FONT_TITLE,
             text_color=COLOR_TEXT
         ).pack(pady=(24, 12))
 
@@ -64,7 +64,7 @@ class ContactFrame(ctk.CTkScrollableFrame):
         self.feedback_label = ctk.CTkLabel(
             self.left,
             text="",
-            font=("Segoe UI", 13),
+            font=FONT_BODY,
             text_color=COLOR_TEXT
         )
         self.feedback_label.pack(pady=(0, 10))
@@ -75,7 +75,7 @@ class ContactFrame(ctk.CTkScrollableFrame):
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,
             text_color="white",
-            font=("Segoe UI", 14, "bold"),
+            font=FONT_LABEL,
             width=340,
             height=44,
             command=self._send_message
@@ -84,7 +84,7 @@ class ContactFrame(ctk.CTkScrollableFrame):
         ctk.CTkLabel(
             self.right,
             text="Thông Tin Liên Hệ",
-            font=("Segoe UI", 22, "bold"),
+            font=FONT_TITLE,
             text_color=COLOR_TEXT
         ).pack(pady=(24, 16), padx=20, anchor="w")
 
@@ -109,7 +109,7 @@ class ContactFrame(ctk.CTkScrollableFrame):
             ctk.CTkLabel(
                 frame,
                 text=txt,
-                font=("Segoe UI", 15),
+                font=FONT_BODY,
                 text_color=COLOR_TEXT
             ).pack(anchor="w")
 
@@ -125,7 +125,7 @@ class ContactFrame(ctk.CTkScrollableFrame):
         ctk.CTkLabel(
             map_frame,
             text="Vị trí của chúng tôi",
-            font=("Segoe UI", 16, "bold"),
+            font=FONT_BODY,
             text_color=COLOR_TEXT
         ).pack(pady=(20, 8))
 
@@ -139,7 +139,7 @@ class ContactFrame(ctk.CTkScrollableFrame):
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,
             text_color="white",
-            font=("Segoe UI", 12, "bold"),
+            font=FONT_BODY_BOLD,
             command=self._open_google_maps
         ).pack(pady=(0, 18), padx=20)
 

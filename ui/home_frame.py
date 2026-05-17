@@ -35,16 +35,16 @@ class HomeFrame(ctk.CTkFrame):
         self.search_content.pack(fill="both", expand=True, padx=40, pady=40)
 
         self.title_label = ctk.CTkLabel(self.search_content, text="Sự Sang Trọng Vượt Thời Gian",
-                                         font=("Segoe UI", 36, "bold"), text_color="white")
+                                         font=FONT_HEADER, text_color="white")
         self.title_label.pack(pady=(0, 5))
 
         self.subtitle_label = ctk.CTkLabel(self.search_content,
                                            text="Chào mừng đến với DreamStay, nơi mọi khoảnh khắc là một giấc mơ.",
-                                           font=("Segoe UI", 16), text_color="#ddd", wraplength=760, justify="center")
+                                           font=FONT_LABEL, text_color="#ddd", wraplength=760, justify="center")
         self.subtitle_label.pack(pady=(0, 25))
 
         self.btn_check = ctk.CTkButton(self.search_content, text="KHÁM PHÁ",
-                                       font=("Segoe UI", 12, "bold"),
+                                       font=FONT_BODY_BOLD,
                                        fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
                                        text_color="white", width=180, height=55,
                                        command=self.apply_filter)

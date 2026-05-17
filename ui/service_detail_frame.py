@@ -16,7 +16,7 @@ class ServiceDetailFrame(ctk.CTkScrollableFrame):
             if callable(sf): sf("Dịch vụ")
 
         ctk.CTkButton(self, text="← QUAY LẠI DỊCH VỤ", fg_color="transparent",
-                      text_color=COLOR_GOLD, font=("Segoe UI", 13, "bold"),
+                      text_color=COLOR_GOLD, font=FONT_BODY_BOLD,
                       command=go_back).pack(anchor="w", padx=50, pady=20)
 
         main_container = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=20)
@@ -72,17 +72,17 @@ class ServiceDetailFrame(ctk.CTkScrollableFrame):
         right_p = ctk.CTkFrame(main_container, fg_color="transparent")
         right_p.pack(side="left", fill="both", expand=True, padx=30, pady=30)
 
-        ctk.CTkLabel(right_p, text=name, font=("Segoe UI", 32, "bold"), text_color=COLOR_GOLD).pack(anchor="w")
-        ctk.CTkLabel(right_p, text="Dịch vụ F&B phục vụ tại phòng 24/7", font=("Segoe UI", 14), text_color="#888").pack(anchor="w", pady=(0, 20))
+        ctk.CTkLabel(right_p, text=name, font=FONT_HEADER, text_color=COLOR_GOLD).pack(anchor="w")
+        ctk.CTkLabel(right_p, text="Dịch vụ F&B phục vụ tại phòng 24/7", font=FONT_BODY, text_color="#888").pack(anchor="w", pady=(0, 20))
 
-        ctk.CTkLabel(right_p, text=desc, font=("Segoe UI", 16), text_color=COLOR_TEXT, justify="left", wraplength=400).pack(anchor="w", pady=10)
+        ctk.CTkLabel(right_p, text=desc, font=FONT_LABEL, text_color=COLOR_TEXT, justify="left", wraplength=400).pack(anchor="w", pady=10)
 
         more_info = ("Thời gian phục vụ: 24/7\n"
                      "Phí phục vụ: Đã bao gồm trong giá niêm yết\n"
                      "Lưu ý: Đồ uống có cồn chỉ phục vụ cho khách trên 18 tuổi.")
-        ctk.CTkLabel(right_p, text=more_info, font=("Segoe UI", 14), text_color="#aaa", justify="left").pack(anchor="w", pady=30)
+        ctk.CTkLabel(right_p, text=more_info, font=FONT_BODY, text_color="#aaa", justify="left").pack(anchor="w", pady=30)
 
         ctk.CTkButton(right_p, text="GỌI DỊCH VỤ NGAY", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      height=50, width=250, font=("Segoe UI", 14, "bold")).pack(anchor="w")
+                      height=50, width=250, font=FONT_LABEL).pack(anchor="w")
 
     def load_data(self): pass

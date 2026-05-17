@@ -11,9 +11,9 @@ class ForgotFrame(ctk.CTkFrame):
                                   corner_radius=15, border_width=1, border_color=COLOR_BORDER)
         self.panel.place(relx=0.5, rely=0.5, anchor="center")
 
-        ctk.CTkLabel(self.panel, text="Quên Mật Khẩu", font=("Segoe UI", 32, "bold"),
+        ctk.CTkLabel(self.panel, text="Quên Mật Khẩu", font=FONT_HEADER,
                      text_color="white").pack(pady=(40, 5))
-        ctk.CTkLabel(self.panel, text="Nhập thông tin để thay đổi mật khẩu.", font=("Segoe UI", 13),
+        ctk.CTkLabel(self.panel, text="Nhập thông tin để thay đổi mật khẩu.", font=FONT_BODY,
                      text_color=COLOR_TEXT).pack(pady=(0, 20))
 
         self.fields = {}
@@ -33,7 +33,7 @@ class ForgotFrame(ctk.CTkFrame):
 
         ctk.CTkButton(self.panel, text="CẬP NHẬT MẬT KHẨU", width=320, height=45,
                       fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      text_color="white", font=("Segoe UI", 13, "bold"),
+                      text_color="white", font=FONT_BODY_BOLD,
                       command=self.reset_password).pack(pady=(30, 10))
 
         def go_to_login():
@@ -43,7 +43,7 @@ class ForgotFrame(ctk.CTkFrame):
                 func()
 
         ctk.CTkButton(self.panel, text="Quay lại đăng nhập", fg_color="transparent",
-                      text_color=COLOR_GOLD, font=("Segoe UI", 12),
+                      text_color=COLOR_GOLD, font=FONT_BODY,
                       hover=False, command=go_to_login).pack(pady=10)
 
     def reset_password(self):

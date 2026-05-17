@@ -30,7 +30,7 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
                 switch_func("Phòng")
 
         ctk.CTkButton(self, text="← QUAY LẠI DANH SÁCH", fg_color="transparent",
-                      text_color=COLOR_GOLD, font=("Segoe UI", 13, "bold"),
+                      text_color=COLOR_GOLD, font=FONT_BODY_BOLD,
                       command=go_back).pack(anchor="w", padx=50, pady=20)
 
         main_container = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=20)
@@ -47,12 +47,12 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
         self.right_p = ctk.CTkFrame(main_container, fg_color="transparent")
         self.right_p.pack(side="left", fill="both", expand=True, padx=30, pady=30)
 
-        ctk.CTkLabel(self.right_p, text=data[2], font=("Segoe UI", 32, "bold"), text_color=COLOR_GOLD).pack(anchor="w")
+        ctk.CTkLabel(self.right_p, text=data[2], font=FONT_HEADER, text_color=COLOR_GOLD).pack(anchor="w")
 
         info_f = ctk.CTkFrame(self.right_p, fg_color="transparent")
         info_f.pack(fill="x", pady=10)
 
-        ctk.CTkLabel(info_f, text=f"Mã phòng: {data[0]}", font=("Segoe UI", 14), text_color="#888").pack(anchor="w")
+        ctk.CTkLabel(info_f, text=f"Mã phòng: {data[0]}", font=FONT_BODY, text_color="#888").pack(anchor="w")
 
         current_booked = db.is_room_currently_booked(data[0])
         bookings = db.get_room_bookings(data[0])
@@ -66,19 +66,19 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
         ]
 
         for txt, clr in details:
-            ctk.CTkLabel(info_f, text=txt, font=("Segoe UI", 16), text_color=clr).pack(anchor="w", pady=2)
+            ctk.CTkLabel(info_f, text=txt, font=FONT_LABEL, text_color=clr).pack(anchor="w", pady=2)
 
         desc_txt = ("Trải nghiệm không gian nghỉ dưỡng đẳng cấp tại DreamStay. \n"
                     "Phòng được trang bị nội thất cao cấp, hệ thống điều hòa trung tâm, \n"
                     "tivi màn hình lớn và ban công với tầm nhìn tuyệt đẹp. \n"
                     "Dịch vụ dọn phòng 24/7 đảm bảo không gian luôn sạch sẽ và thơm mát.")
-        ctk.CTkLabel(self.right_p, text=desc_txt, font=("Segoe UI", 14), text_color="#aaa", justify="left").pack(
+        ctk.CTkLabel(self.right_p, text=desc_txt, font=FONT_BODY, text_color="#aaa", justify="left").pack(
             anchor="w", pady=(15, 0))
 
         if bookings:
             schedule_frame = ctk.CTkFrame(self.right_p, fg_color=COLOR_WHITE, corner_radius=10)
             schedule_frame.pack(fill="x", padx=20, pady=(20, 0))
-            ctk.CTkLabel(schedule_frame, text="Lịch đặt đã có:", font=("Segoe UI", 14, "bold"), text_color=COLOR_TEXT).pack(
+            ctk.CTkLabel(schedule_frame, text="Lịch đặt đã có:", font=FONT_LABEL, text_color=COLOR_TEXT).pack(
                 anchor="w", padx=15, pady=(15, 0))
             for checkin, checkout, status in bookings:
                 if status == "Cancelled":
@@ -90,9 +90,9 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
                     continue
                 ctk.CTkLabel(schedule_frame,
                              text=f"- {start} → {end} ({status})",
-                             font=("Segoe UI", 12), text_color="#555").pack(anchor="w", padx=20, pady=2)
+                             font=FONT_BODY, text_color="#555").pack(anchor="w", padx=20, pady=2)
         else:
-            ctk.CTkLabel(self.right_p, text="Chưa có lịch đặt cho phòng này.", font=("Segoe UI", 14), text_color="#888").pack(
+            ctk.CTkLabel(self.right_p, text="Chưa có lịch đặt cho phòng này.", font=FONT_BODY, text_color="#888").pack(
                 anchor="w", pady=(20, 0), padx=20)
 
         booking_f = ctk.CTkFrame(self.right_p, fg_color=COLOR_NAVY, corner_radius=10)
@@ -103,7 +103,7 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
 
         f1 = ctk.CTkFrame(date_grid, fg_color="transparent")
         f1.pack(side="left", expand=True)
-        ctk.CTkLabel(f1, text="Ngày nhận", font=("Segoe UI", 11, "bold"), text_color="#aaa").pack()
+        ctk.CTkLabel(f1, text="Ngày nhận", font=FONT_BODY_BOLD, text_color="#aaa").pack()
         self.entry_in = ctk.CTkEntry(f1, placeholder_text="Chọn ngày", width=150, height=35, state="readonly")
         self.entry_in.pack(pady=5)
         self.entry_in.bind("<Button-1>", lambda e: self.open_calendar(self.entry_in))
@@ -113,7 +113,7 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
 
         f2 = ctk.CTkFrame(date_grid, fg_color="transparent")
         f2.pack(side="left", expand=True)
-        ctk.CTkLabel(f2, text="Ngày trả", font=("Segoe UI", 11, "bold"), text_color="#aaa").pack()
+        ctk.CTkLabel(f2, text="Ngày trả", font=FONT_BODY_BOLD, text_color="#aaa").pack()
         self.entry_out = ctk.CTkEntry(f2, placeholder_text="Chọn ngày", width=150, height=35, state="readonly")
         self.entry_out.pack(pady=5)
         self.entry_out.bind("<Button-1>", lambda e: self.open_calendar(self.entry_out))
@@ -134,7 +134,7 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
 
         self.btn_book = ctk.CTkButton(self.right_p, text="XÁC NHẬN ĐẶT PHÒNG NGAY", fg_color=COLOR_GOLD,
                                       hover_color=COLOR_GOLD_HOVER, height=50, width=300,
-                                      font=("Segoe UI", 14, "bold"), command=self.process_booking)
+                                      font=FONT_LABEL, command=self.process_booking)
         self.btn_book.pack(anchor="w")
 
     def open_calendar(self, target_entry):
@@ -181,7 +181,7 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
             if days <= 0: raise ValueError
 
             total = days * self.room_data[5]
-            self.lbl_total.configure(text=f"Tổng ({days} đêm): {total:,.0f} VNĐ", font=("Segoe UI", 18, "bold"),
+            self.lbl_total.configure(text=f"Tổng ({days} đêm): {total:,.0f} VNĐ", font=FONT_LABEL,
                                      text_color="white")
             return total
         except (ValueError, TypeError, AttributeError):

@@ -69,25 +69,25 @@ class AboutFrame(ctk.CTkScrollableFrame):
         content_frame.pack(side="left", fill="y")
         content_frame.pack_propagate(False)
 
-        ctk.CTkLabel(content_frame, text="DreamStay", font=("Segoe UI", 42, "bold"),
+        ctk.CTkLabel(content_frame, text="DreamStay", font=FONT_HEADER,
                      text_color=COLOR_TEXT).pack(anchor="w", pady=(0, 10))
-        ctk.CTkLabel(content_frame, text="Khám Phá Di Sản Của Sự Tinh Tế", font=("Segoe UI", 18),
+        ctk.CTkLabel(content_frame, text="Khám Phá Di Sản Của Sự Tinh Tế", font=FONT_LABEL,
                      text_color=COLOR_GOLD).pack(anchor="w", pady=(0, 20))
 
         desc = ("Tọa lạc tại vị trí đắc địa, DreamStay là sự giao thoa hoàn hảo giữa kiến trúc cổ điển và tiện nghi hiện đại. "
                 "Chúng tôi tự hào mang đến một không gian nghỉ dưỡng không chỉ sang trọng mà còn ấm cúng, nơi mỗi chi tiết đều được chăm chút tỉ mỉ.\n\n"
                 "Từ những bộ sảnh lộng lẫy đến khu vườn thượng uyển yên tĩnh, chúng tôi cam kết mang đến cho bạn một kỳ nghỉ khó quên, vượt trên cả sự mong đợi.")
 
-        ctk.CTkLabel(content_frame, text=desc, font=("Segoe UI", 13), text_color="#ccc",
+        ctk.CTkLabel(content_frame, text=desc, font=FONT_BODY, text_color="#ccc",
                      justify="left", wraplength=360, anchor="w").pack(anchor="w", padx=0, pady=(0, 0))
 
         gallery_container = ctk.CTkFrame(self, fg_color="transparent")
         gallery_container.pack(fill="x", padx=50, pady=(80, 80))
 
-        ctk.CTkLabel(gallery_container, text="Không Gian Của Chúng Tôi", font=("Segoe UI", 36, "bold"),
+        ctk.CTkLabel(gallery_container, text="Không Gian Của Chúng Tôi", font=FONT_HEADER,
                      text_color=COLOR_TEXT).pack(pady=10)
         ctk.CTkLabel(gallery_container, text="Trải nghiệm hình ảnh sang trọng tại các chi nhánh DreamStay",
-                     font=("Segoe UI", 16), text_color="#888").pack(pady=(0, 40))
+                     font=FONT_LABEL, text_color="#888").pack(pady=(0, 40))
 
         grid_frame = ctk.CTkFrame(gallery_container, fg_color="transparent")
         grid_frame.pack(fill="both", expand=True)

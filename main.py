@@ -114,7 +114,7 @@ class HotelApp(ctk.CTk):
         self.current_user = None
         self.current_role = None
         self.header.user_btn.configure(text="ĐĂNG NHẬP", width=90, height=32, corner_radius=6,
-                                       font=("Segoe UI", 12, "bold"))
+                                       font=FONT_BODY_BOLD)
         self.header.update_menu(False, None)
         self.switch_page("Trang chủ")
         messagebox.showinfo("Thông báo", "Sếp đã đăng xuất an toàn!")
@@ -129,7 +129,7 @@ class HotelApp(ctk.CTk):
             with open("session.txt", "wb") as f:
                 f.write(encoded_bytes)
 
-        self.header.user_btn.configure(text="👤", width=40, corner_radius=20, font=("Segoe UI", 18))
+        self.header.user_btn.configure(text="👤", width=40, corner_radius=20, font=FONT_LABEL)
         self.header.update_menu(True, role)
         self.switch_page("Trang chủ")
 

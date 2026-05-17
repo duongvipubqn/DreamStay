@@ -15,7 +15,7 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
                 switch_func("Sự kiện")
 
         ctk.CTkButton(self, text="← QUAY LẠI SỰ KIỆN", fg_color="transparent",
-                      text_color=COLOR_GOLD, font=("Segoe UI", 13, "bold"),
+                      text_color=COLOR_GOLD, font=FONT_BODY_BOLD,
                       command=go_back).pack(anchor="w", padx=50, pady=20)
 
         main_container = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=20)
@@ -30,16 +30,16 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
         text_f = ctk.CTkFrame(top_section, fg_color="transparent")
         text_f.place(relx=0.25, rely=0.5, anchor="w")
 
-        ctk.CTkLabel(text_f, text=title, font=("Segoe UI", 42, "bold"), text_color="white").pack(anchor="w")
+        ctk.CTkLabel(text_f, text=title, font=FONT_HEADER, text_color="white").pack(anchor="w")
         ctk.CTkLabel(text_f, text=subtitle, font=("Segoe UI", 20), text_color=COLOR_GOLD).pack(anchor="w")
 
         content_f = ctk.CTkFrame(main_container, fg_color="transparent")
         content_f.pack(fill="x", padx=40, pady=30)
 
-        ctk.CTkLabel(content_f, text="Thông Tin Chi Tiết", font=("Segoe UI", 24, "bold"), text_color=COLOR_GOLD).pack(
+        ctk.CTkLabel(content_f, text="Thông Tin Chi Tiết", font=FONT_TITLE, text_color=COLOR_GOLD).pack(
             anchor="w", pady=(0, 20))
 
-        ctk.CTkLabel(content_f, text=desc, font=("Segoe UI", 16), text_color=COLOR_TEXT, justify="left",
+        ctk.CTkLabel(content_f, text=desc, font=FONT_LABEL, text_color=COLOR_TEXT, justify="left",
                      wraplength=800).pack(anchor="w")
 
         if "ĐIỆN ẢNH" in title:
@@ -61,12 +61,12 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
         rule_f = ctk.CTkFrame(content_f, fg_color=COLOR_NAVY, corner_radius=10)
         rule_f.pack(fill="x", pady=40)
 
-        ctk.CTkLabel(rule_f, text="Thể Lệ Chương Trình", font=("Segoe UI", 16, "bold"), text_color="white").pack(
+        ctk.CTkLabel(rule_f, text="Thể Lệ Chương Trình", font=FONT_BODY, text_color="white").pack(
             anchor="w", padx=20, pady=(15, 5))
-        ctk.CTkLabel(rule_f, text=rules, font=("Segoe UI", 14), text_color="#aaa", justify="left").pack(
+        ctk.CTkLabel(rule_f, text=rules, font=FONT_BODY, text_color="#aaa", justify="left").pack(
             anchor="w", padx=20, pady=(0, 15))
 
         ctk.CTkButton(content_f, text="ĐĂNG KÝ THAM GIA NGAY", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      height=55, width=350, font=("Segoe UI", 16, "bold")).pack(pady=20)
+                      height=55, width=350, font=FONT_BODY).pack(pady=20)
 
     def load_data(self): pass

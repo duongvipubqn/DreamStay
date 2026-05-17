@@ -12,9 +12,9 @@ class RegisterFrame(ctk.CTkFrame):
                                   corner_radius=15, border_width=1, border_color=COLOR_BORDER)
         self.panel.place(relx=0.5, rely=0.5, anchor="center")
 
-        ctk.CTkLabel(self.panel, text="Tạo Tài Khoản", font=("Segoe UI", 32, "bold"),
+        ctk.CTkLabel(self.panel, text="Tạo Tài Khoản", font=FONT_HEADER,
                      text_color="white").pack(pady=(40, 5))
-        ctk.CTkLabel(self.panel, text="Đăng ký tài khoản quản lý nhân viên.", font=("Segoe UI", 13),
+        ctk.CTkLabel(self.panel, text="Đăng ký tài khoản quản lý nhân viên.", font=FONT_BODY,
                      text_color=COLOR_TEXT).pack(pady=(0, 20))
 
         self.fields = {}
@@ -30,14 +30,14 @@ class RegisterFrame(ctk.CTkFrame):
             entry.pack(pady=6)
             self.fields[key] = entry
 
-        self.show_pass_check = ctk.CTkCheckBox(self.panel, text="Hiện mật khẩu", font=("Segoe UI", 11),
+        self.show_pass_check = ctk.CTkCheckBox(self.panel, text="Hiện mật khẩu", font=FONT_BODY,
                                                border_color=COLOR_GOLD, checkmark_color=COLOR_GOLD,
                                                text_color=COLOR_TEXT, command=self.toggle_password)
         self.show_pass_check.pack(pady=10)
 
         ctk.CTkButton(self.panel, text="ĐĂNG KÝ NGAY", width=320, height=45,
                       fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      text_color="white", font=("Segoe UI", 13, "bold"),
+                      text_color="white", font=FONT_BODY_BOLD,
                       command=self.submit).pack(pady=(20, 10))
 
         def go_to_login():
@@ -47,7 +47,7 @@ class RegisterFrame(ctk.CTkFrame):
                 func()
 
         ctk.CTkButton(self.panel, text="Đã có tài khoản? Đăng nhập", fg_color="transparent",
-                      text_color=COLOR_GOLD, font=("Segoe UI", 12),
+                      text_color=COLOR_GOLD, font=FONT_BODY,
                       hover=False, command=go_to_login).pack(pady=10)
 
     def toggle_password(self):

@@ -8,26 +8,26 @@ class ReceptionFrame(ctk.CTkFrame):
         super().__init__(master, fg_color=COLOR_WHITE, corner_radius=15, border_width=1, border_color=COLOR_BORDER)
         self.tree = None
 
-        ctk.CTkLabel(self, text="Hệ Thống Quản Lý Lễ Tân", font=("Segoe UI", 24, "bold"),
+        ctk.CTkLabel(self, text="Hệ Thống Quản Lý Lễ Tân", font=FONT_TITLE,
                      text_color=COLOR_TEXT).pack(pady=15)
 
         self.tool_f = ctk.CTkFrame(self, fg_color="transparent")
         self.tool_f.pack(pady=10, fill="x", padx=20)
 
         ctk.CTkButton(self.tool_f, text="XÁC NHẬN ĐƠN", fg_color="#3498db", hover_color="#2980b9",
-                      font=("Segoe UI", 12, "bold"), width=140, height=40,
+                      font=FONT_BODY_BOLD, width=140, height=40,
                       command=self.confirm_booking).pack(side="left", padx=5)
 
         ctk.CTkButton(self.tool_f, text="NHẬN PHÒNG (CHECK-IN)", fg_color="#27ae60", hover_color="#219150",
-                      font=("Segoe UI", 12, "bold"), width=160, height=40,
+                      font=FONT_BODY_BOLD, width=160, height=40,
                       command=self.check_in).pack(side="left", padx=5)
 
         ctk.CTkButton(self.tool_f, text="THANH TOÁN (CHECK-OUT)", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      font=("Segoe UI", 12, "bold"), width=170, height=40,
+                      font=FONT_BODY_BOLD, width=170, height=40,
                       command=self.check_out).pack(side="left", padx=5)
 
         ctk.CTkButton(self.tool_f, text="HỦY ĐƠN", fg_color="#e74c3c", hover_color="#c0392b",
-                      font=("Segoe UI", 12, "bold"), width=100, height=40,
+                      font=FONT_BODY_BOLD, width=100, height=40,
                       command=self.cancel_booking).pack(side="right", padx=5)
 
         self.setup_treeview()
@@ -43,7 +43,7 @@ class ReceptionFrame(ctk.CTkFrame):
                         fieldbackground=COLOR_NAVY, bordercolor=COLOR_BORDER, borderwidth=1)
         style.map('Treeview', background=[('selected', COLOR_GOLD)], foreground=[('selected', 'white')])
         style.configure("Treeview.Heading", background=COLOR_WHITE, foreground=COLOR_GOLD,
-                        font=("Segoe UI", 10, "bold"))
+                        font=FONT_BODY_BOLD)
 
         self.tree = ttk.Treeview(f, columns=cols, show="headings")
         for c in cols:

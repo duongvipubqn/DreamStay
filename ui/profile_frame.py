@@ -34,21 +34,21 @@ class ProfileFrame(ctk.CTkFrame):
         container = ctk.CTkFrame(self.tab_info, fg_color="transparent")
         container.pack(expand=True)
 
-        ctk.CTkLabel(container, text="👤", font=("Segoe UI", 100)).pack()
-        self.info_label = ctk.CTkLabel(container, text="Sếp: ...", font=("Segoe UI", 24, "bold"), text_color=COLOR_GOLD)
+        ctk.CTkLabel(container, text="👤", font=FONT_ICON).pack()
+        self.info_label = ctk.CTkLabel(container, text="Sếp: ...", font=FONT_TITLE, text_color=COLOR_GOLD)
         self.info_label.pack(pady=10)
 
-        self.email_label = ctk.CTkLabel(container, text="Email: ...", font=("Segoe UI", 14), text_color="#aaa")
+        self.email_label = ctk.CTkLabel(container, text="Email: ...", font=FONT_BODY, text_color="#aaa")
         self.email_label.pack()
 
-        self.phone_label = ctk.CTkLabel(container, text="SĐT: ...", font=("Segoe UI", 14), text_color="#aaa")
+        self.phone_label = ctk.CTkLabel(container, text="SĐT: ...", font=FONT_BODY, text_color="#aaa")
         self.phone_label.pack(pady=5)
 
         btn_f = ctk.CTkFrame(container, fg_color="transparent")
         btn_f.pack(pady=30)
 
         ctk.CTkButton(btn_f, text="CHỈNH SỬA HỒ SƠ", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      text_color="white", font=("Segoe UI", 13, "bold"), width=180, height=40,
+                      text_color="white", font=FONT_BODY_BOLD, width=180, height=40,
                       command=self.open_edit_modal).pack(side="left", padx=10)
 
         def do_logout():
@@ -57,7 +57,7 @@ class ProfileFrame(ctk.CTkFrame):
                 func()
 
         ctk.CTkButton(btn_f, text="ĐĂNG XUẤT", fg_color="#e74c3c", hover_color="#c0392b",
-                      text_color="white", font=("Segoe UI", 13, "bold"), width=180, height=40,
+                      text_color="white", font=FONT_BODY_BOLD, width=180, height=40,
                       command=do_logout).pack(side="left", padx=10)
 
     def setup_history_tab(self):
@@ -103,7 +103,7 @@ class ProfileFrame(ctk.CTkFrame):
             coupons = db.cursor.fetchall()
             if not coupons:
                 ctk.CTkLabel(self.coupon_scroll, text="Bạn chưa có voucher nào. Hãy tham gia sự kiện để nhận quà!",
-                             font=("Segoe UI", 14), text_color="#888").pack(pady=50)
+                             font=FONT_BODY, text_color="#888").pack(pady=50)
             else:
                 for code, desc, disc in coupons:
                     f = ctk.CTkFrame(self.coupon_scroll, fg_color=COLOR_NAVY, corner_radius=10)
@@ -111,9 +111,9 @@ class ProfileFrame(ctk.CTkFrame):
                     ctk.CTkLabel(f, text="🎟️", font=("Segoe UI", 30)).pack(side="left", padx=20)
                     txt_f = ctk.CTkFrame(f, fg_color="transparent")
                     txt_f.pack(side="left", fill="both", expand=True, pady=10)
-                    ctk.CTkLabel(txt_f, text=f"Code: {code} (-{disc}%)", font=("Segoe UI", 16, "bold"),
+                    ctk.CTkLabel(txt_f, text=f"Code: {code} (-{disc}%)", font=FONT_BODY,
                                  text_color=COLOR_GOLD).pack(anchor="w")
-                    ctk.CTkLabel(txt_f, text=desc, font=("Segoe UI", 12), text_color="#ccc").pack(anchor="w")
+                    ctk.CTkLabel(txt_f, text=desc, font=FONT_BODY, text_color="#ccc").pack(anchor="w")
                     ctk.CTkButton(f, text="DÙNG NGAY", width=100, fg_color="transparent", border_width=1,
                                   border_color=COLOR_GOLD, text_color=COLOR_GOLD).pack(side="right", padx=20)
 
@@ -135,7 +135,7 @@ class ProfileFrame(ctk.CTkFrame):
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
 
-        ctk.CTkLabel(modal, text="CẬP NHẬT THÔNG TIN", font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(
+        ctk.CTkLabel(modal, text="CẬP NHẬT THÔNG TIN", font=FONT_LABEL, text_color=COLOR_GOLD).pack(
             pady=20)
 
         entries = {}
@@ -144,7 +144,7 @@ class ProfileFrame(ctk.CTkFrame):
         for label, val in fields:
             f = ctk.CTkFrame(modal, fg_color="transparent")
             f.pack(fill="x", padx=40, pady=10)
-            ctk.CTkLabel(f, text=label, font=("Segoe UI", 12), text_color=COLOR_TEXT).pack(anchor="w")
+            ctk.CTkLabel(f, text=label, font=FONT_BODY, text_color=COLOR_TEXT).pack(anchor="w")
             e = ctk.CTkEntry(f, fg_color=COLOR_WHITE, border_color=COLOR_BORDER, text_color=COLOR_TEXT, height=40)
             e.insert(0, val)
             e.pack(fill="x", pady=5)
@@ -178,5 +178,5 @@ class ProfileFrame(ctk.CTkFrame):
                 messagebox.showerror("Lỗi", f"Không thể cập nhật: {str(err)}")
 
         ctk.CTkButton(modal, text="LƯU THAY ĐỔI", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      text_color="white", font=("Segoe UI", 14, "bold"), height=45, command=save).pack(pady=30, padx=40,
+                      text_color="white", font=FONT_LABEL, height=45, command=save).pack(pady=30, padx=40,
                                                                                                        fill="x")

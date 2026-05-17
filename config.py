@@ -10,6 +10,14 @@ COLOR_BORDER = "#3d3d5c"
 COLOR_GOLD = "#c5a059"
 COLOR_GOLD_HOVER = "#b38f4d"
 
+FONT_ICON = ("Segoe UI", 100)
+FONT_LOGO = ("Edwardian Script ITC", 50)
+FONT_HEADER = ("Segoe UI", 36, "bold")
+FONT_TITLE = ("Segoe UI", 24, "bold")
+FONT_LABEL = ("Segoe UI", 16, "bold")
+FONT_BODY = ("Segoe UI", 14)
+FONT_BODY_BOLD = ("Segoe UI", 14, "bold")
+
 LOCATIONS = [
     "Hạ Long", "Đà Lạt", "Hồ Chí Minh", "Cần Thơ", "Hà Nội", "Huế",
     "Hải Phòng", "Phú Quốc", "Nha Trang", "Quy Nhơn", "Vũng Tàu",

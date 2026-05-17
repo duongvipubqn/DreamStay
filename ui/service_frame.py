@@ -34,7 +34,7 @@ class OrderModal(ctk.CTkToplevel):
             var.trace_add("write", lambda *args: self.update_total())
             self.quantities[item[0]] = var
         
-        ctk.CTkLabel(self, text=category_name.upper(), font=("Segoe UI", 20, "bold"), text_color=COLOR_GOLD).pack(pady=20)
+        ctk.CTkLabel(self, text=category_name.upper(), font=FONT_LABEL, text_color=COLOR_GOLD).pack(pady=20)
         
         self.scroll = ctk.CTkScrollableFrame(self, fg_color="transparent", height=350)
         self.scroll.pack(fill="both", expand=True, padx=20)
@@ -43,7 +43,7 @@ class OrderModal(ctk.CTkToplevel):
             f = ctk.CTkFrame(self.scroll, fg_color=COLOR_WHITE, corner_radius=10)
             f.pack(fill="x", pady=5)
             
-            ctk.CTkLabel(f, text=name, font=("Segoe UI", 13, "bold"), text_color=COLOR_NAVY).pack(side="left", padx=15, pady=10)
+            ctk.CTkLabel(f, text=name, font=FONT_BODY_BOLD, text_color=COLOR_NAVY).pack(side="left", padx=15, pady=10)
             
             qty_f = ctk.CTkFrame(f, fg_color="transparent")
             qty_f.pack(side="right", padx=10)
@@ -57,7 +57,7 @@ class OrderModal(ctk.CTkToplevel):
             ctk.CTkButton(qty_f, text="+", width=30, height=30, fg_color="#27ae60", 
                           command=lambda n=name: self.change_qty(n, 1)).pack(side="left", padx=2)
             
-            ctk.CTkLabel(f, text=f"{price:,.0f}đ", font=("Segoe UI", 12), text_color=COLOR_GOLD, 
+            ctk.CTkLabel(f, text=f"{price:,.0f}đ", font=FONT_BODY, text_color=COLOR_GOLD, 
                          width=80).pack(side="right", padx=10)
 
         bottom_f = ctk.CTkFrame(self, fg_color=COLOR_NAVY, corner_radius=0)
@@ -66,7 +66,7 @@ class OrderModal(ctk.CTkToplevel):
         room_f = ctk.CTkFrame(bottom_f, fg_color="transparent")
         room_f.pack(fill="x", padx=30, pady=15)
         
-        ctk.CTkLabel(room_f, text="Giao đến phòng:", font=("Segoe UI", 12, "bold")).pack(side="left")
+        ctk.CTkLabel(room_f, text="Giao đến phòng:", font=FONT_BODY_BOLD).pack(side="left")
         
         db.cursor.execute("SELECT room_id FROM rooms WHERE status='Đã đặt'")
         occupied_rooms = [r[0] for r in db.cursor.fetchall()]
@@ -76,11 +76,11 @@ class OrderModal(ctk.CTkToplevel):
                                          text_color=COLOR_NAVY, button_color=COLOR_GOLD)
         self.room_cb.pack(side="right", fill="x", expand=True, padx=(10, 0))
         
-        self.total_lbl = ctk.CTkLabel(bottom_f, text="TỔNG CỘNG: 0 VNĐ", font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD)
+        self.total_lbl = ctk.CTkLabel(bottom_f, text="TỔNG CỘNG: 0 VNĐ", font=FONT_LABEL, text_color=COLOR_GOLD)
         self.total_lbl.pack(pady=10)
         
         ctk.CTkButton(bottom_f, text="XÁC NHẬN ĐƠN HÀNG", fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      height=45, font=("Segoe UI", 14, "bold"), command=self.confirm).pack(pady=(0, 20), padx=30, fill="x")
+                      height=45, font=FONT_LABEL, command=self.confirm).pack(pady=(0, 20), padx=30, fill="x")
 
     def change_qty(self, name, delta):
         val = self.quantities[name].get() + delta
@@ -118,7 +118,7 @@ class OrderModal(ctk.CTkToplevel):
 class ServiceFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         ctk.CTkScrollableFrame.__init__(self, master, fg_color=COLOR_CREAM, corner_radius=0)
-        ctk.CTkLabel(self, text="Dịch Vụ Đồ Uống & F&B", font=("Segoe UI", 32, "bold"), text_color=COLOR_TEXT).pack(pady=30)
+        ctk.CTkLabel(self, text="Dịch Vụ Đồ Uống & F&B", font=FONT_HEADER, text_color=COLOR_TEXT).pack(pady=30)
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=50)
         for col in range(3):
@@ -196,18 +196,18 @@ class ServiceFrame(ctk.CTkScrollableFrame):
             else:
                 ctk.CTkLabel(card, text="[ Ảnh dịch vụ ]", width=img_w, height=img_h).pack()
 
-            ctk.CTkLabel(card, text=name, font=("Segoe UI", 18, "bold"), text_color=COLOR_GOLD).pack(pady=(10, 0))
-            ctk.CTkLabel(card, text=desc, font=("Segoe UI", 12), text_color=COLOR_TEXT, wraplength=img_w - 40).pack(pady=15, padx=15)
+            ctk.CTkLabel(card, text=name, font=FONT_LABEL, text_color=COLOR_GOLD).pack(pady=(10, 0))
+            ctk.CTkLabel(card, text=desc, font=FONT_BODY, text_color=COLOR_TEXT, wraplength=img_w - 40).pack(pady=15, padx=15)
             
             btn_f = ctk.CTkFrame(card, fg_color="transparent")
             btn_f.pack(pady=(0, 20), padx=20, fill="x")
             
             ctk.CTkButton(btn_f, text="CHI TIẾT", fg_color="#3a3a50", text_color="white", 
-                          font=("Segoe UI", 11, "bold"), height=35, width=80,
+                          font=FONT_BODY_BOLD, height=35, width=80,
                           command=lambda n=name, d=desc, p=img_path: self.show_details(n, d, p)).pack(side="left", padx=5, expand=True, fill="x")
             
             ctk.CTkButton(btn_f, text="ĐẶT HÀNG", fg_color=COLOR_GOLD, text_color="white", 
-                          font=("Segoe UI", 11, "bold"), height=35, width=80,
+                          font=FONT_BODY_BOLD, height=35, width=80,
                           command=lambda n=name: self.open_order_modal(n)).pack(side="left", padx=5, expand=True, fill="x")
 
     def show_details(self, name, desc, img_path):
