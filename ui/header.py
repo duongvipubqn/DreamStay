@@ -60,13 +60,13 @@ class Header(ctk.CTkFrame):
 
         for menu in menus:
             is_active = menu == self.active_menu
-            btn = ctk.CTkButton(self.menu_frame, text=menu, font=("Segoe UI", 13, "bold"),
+            btn = ctk.CTkButton(self.menu_frame, text=menu, font=("Segoe UI", 12, "bold"),
                                 fg_color="transparent", text_color="white",
-                                hover_color=COLOR_GOLD, width=100,
+                                hover_color=COLOR_GOLD, width=80,
                                 border_width=2 if is_active else 0,
                                 border_color=COLOR_GOLD,
                                 command=lambda m=menu: self.switch_func(m))
-            btn.pack(side="left", padx=5)
+            btn.pack(side="left", padx=2)
 
     def handle_user_click(self):
         if self.app.current_user is None:

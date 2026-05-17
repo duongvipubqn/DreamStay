@@ -140,7 +140,12 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
     def open_calendar(self, target_entry):
         top = ctk.CTkToplevel(self)
         top.title("Chọn ngày")
-        top.geometry("320x400")
+        w, h = 320, 400
+        top.update_idletasks()
+        main_win = self.winfo_toplevel()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        top.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
         top.configure(fg_color=COLOR_CREAM)
         top.transient(self.winfo_toplevel())
         top.grab_set()

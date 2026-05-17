@@ -125,7 +125,12 @@ class ProfileFrame(ctk.CTkFrame):
 
         modal = ctk.CTkToplevel(self)
         modal.title("Chỉnh sửa hồ sơ")
-        modal.geometry("400x500")
+        w, h = 400, 500
+        modal.update_idletasks()
+        main_win = self.winfo_toplevel()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        modal.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
         modal.configure(fg_color=COLOR_CREAM)
         modal.transient(self.winfo_toplevel())
         modal.grab_set()

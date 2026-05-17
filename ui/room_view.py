@@ -51,16 +51,21 @@ class RoomView(ctk.CTkScrollableFrame):
             self.grid_frame.grid_columnconfigure(col, weight=1, uniform="column_group")
 
         self.page_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.page_frame.pack(pady=10)
+        self.page_frame.pack(pady=20, fill="x")
 
-        self.prev_btn = ctk.CTkButton(self.page_frame, text="Trước", command=self.prev_page, state="disabled")
-        self.prev_btn.pack(side="left", padx=10)
+        self.pagination_container = ctk.CTkFrame(self.page_frame, fg_color="transparent")
+        self.pagination_container.pack(side="top")
 
-        self.page_label = ctk.CTkLabel(self.page_frame, text="Trang 1 / 1", font=("Segoe UI", 14))
-        self.page_label.pack(side="left", padx=20)
+        self.jump_frame = ctk.CTkFrame(self.page_frame, fg_color="transparent")
+        self.jump_frame.pack(side="top", pady=10)
 
-        self.next_btn = ctk.CTkButton(self.page_frame, text="Sau", command=self.next_page, state="disabled")
-        self.next_btn.pack(side="left", padx=10)
+        ctk.CTkLabel(self.jump_frame, text="Nhảy đến trang:", font=("Segoe UI", 12)).pack(side="left", padx=5)
+        self.jump_entry = ctk.CTkEntry(self.jump_frame, width=50, height=28, justify="center")
+        self.jump_entry.pack(side="left", padx=5)
+        self.jump_entry.bind("<Return>", lambda e: self.go_to_page())
+        
+        ctk.CTkButton(self.jump_frame, text="ĐI", width=40, height=28, fg_color=COLOR_GOLD, 
+                      hover_color=COLOR_GOLD_HOVER, command=self.go_to_page).pack(side="left", padx=5)
 
         self.image_map = {
             "Deluxe Hướng Biển": "room-deluxe-ocean.png",
@@ -300,9 +305,7 @@ class RoomView(ctk.CTkScrollableFrame):
                               command=lambda r=rooms_db[i]: self.open_booking_modal(r)).pack(side="left", expand=True,
                                                                                           fill="x")
 
-        self.page_label.configure(text=f"Trang {self.current_page} / {self.total_pages}")
-        self.prev_btn.configure(state="normal" if self.current_page > 1 else "disabled")
-        self.next_btn.configure(state="normal" if self.current_page < self.total_pages else "disabled")
+        self.render_pagination()
 
     def prev_page(self):
         if self.current_page > 1:
@@ -321,6 +324,49 @@ class RoomView(ctk.CTkScrollableFrame):
             "status": self.filter_vars["Trạng thái"].get()
         }
         self.load_data(data, 1)
+
+    def render_pagination(self):
+        for widget in self.pagination_container.winfo_children():
+            widget.destroy()
+
+        pages_to_show = set()
+        pages_to_show.update([1, 2, 3])
+        pages_to_show.update([self.total_pages - 2, self.total_pages - 1, self.total_pages])
+        
+        if self.current_page > 1: pages_to_show.add(self.current_page - 1)
+        pages_to_show.add(self.current_page)
+        if self.current_page < self.total_pages: pages_to_show.add(self.current_page + 1)
+
+        visible_pages = sorted([p for p in pages_to_show if 1 <= p <= self.total_pages])
+
+        last_p = 0
+        for p in visible_pages:
+            if last_p != 0 and p - last_p > 1:
+                ctk.CTkLabel(self.pagination_container, text="...", font=("Segoe UI", 14, "bold")).pack(side="left", padx=5)
+            
+            is_active = (p == self.current_page)
+            btn = ctk.CTkButton(self.pagination_container, text=str(p), width=35, height=35,
+                                fg_color=COLOR_GOLD if is_active else COLOR_WHITE,
+                                text_color="white" if is_active else COLOR_NAVY,
+                                font=("Segoe UI", 12, "bold"),
+                                command=lambda page=p: self.load_data(self.filters, page))
+            btn.pack(side="left", padx=3)
+            last_p = p
+
+    def go_to_page(self):
+        val = self.jump_entry.get()
+        if val.isdigit():
+            page = int(val)
+            if 1 <= page <= self.total_pages:
+                self.load_data(self.filters, page)
+                self.jump_entry.delete(0, "end")
+            else:
+                messagebox.showwarning("Lỗi", f"Vui lòng nhập trang từ 1 đến {self.total_pages}")
+        else:
+            messagebox.showwarning("Lỗi", "Vui lòng nhập số trang hợp lệ")
+
+    def prev_page(self): pass
+    def next_page(self): pass    
 
     def show_details(self, data, img_path):
         app = self.winfo_toplevel()
@@ -342,7 +388,12 @@ class RoomView(ctk.CTkScrollableFrame):
 
         modal = ctk.CTkToplevel(self)
         modal.title(f"Đặt phòng nhanh: {room_data[2]}")
-        modal.geometry("400x600")
+        w, h = 400, 600
+        modal.update_idletasks()
+        main_win = self.winfo_toplevel()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        modal.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
         modal.configure(fg_color=COLOR_CREAM)
         modal.grab_set()
 
@@ -375,6 +426,12 @@ class RoomView(ctk.CTkScrollableFrame):
             top_cal = ctk.CTkToplevel(modal)
             cal = Calendar(top_cal, selectmode='day', date_pattern='dd/mm/yyyy')
             cal.pack(pady=10, padx=10)
+
+            tw, th = 300, 350
+            top_cal.update_idletasks()
+            mx = modal.winfo_x() + (modal.winfo_width() // 2) - (tw // 2)
+            my = modal.winfo_y() + (modal.winfo_height() // 2) - (th // 2)
+            top_cal.geometry(f"{tw}x{th}+{max(0, mx)}+{max(0, my)}")
 
             def set_val():
                 entry.configure(state="normal")

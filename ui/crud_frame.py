@@ -7,7 +7,12 @@ class FormModal(ctk.CTkToplevel):
     def __init__(self, parent, title, columns, table_name, callback, initial_data=None):
         super().__init__(parent)
         self.title(title)
-        self.geometry("500x700")
+        w, h = 500, 700
+        self.update_idletasks()
+        main_win = parent.winfo_toplevel()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        self.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
         self.configure(fg_color=COLOR_CREAM)
         self.transient(parent)
         self.grab_set()

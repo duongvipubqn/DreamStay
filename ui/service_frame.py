@@ -17,12 +17,22 @@ class OrderModal(ctk.CTkToplevel):
     def __init__(self, parent, category_name):
         super().__init__(parent)
         self.title(f"Đặt hàng: {category_name}")
-        self.geometry("500x700")
+        w, h = 500, 700
+        self.update_idletasks()
+        main_win = parent.winfo_toplevel()
+        main_win.update_idletasks()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        self.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
         self.configure(fg_color=COLOR_CREAM)
         self.grab_set()
         
         self.items = SUB_SERVICES.get(category_name, [])
-        self.quantities = {item[0]: ctk.IntVar(value=0) for item in self.items}
+        self.quantities = {}
+        for item in self.items:
+            var = ctk.IntVar(value=0)
+            var.trace_add("write", lambda *args: self.update_total())
+            self.quantities[item[0]] = var
         
         ctk.CTkLabel(self, text=category_name.upper(), font=("Segoe UI", 20, "bold"), text_color=COLOR_GOLD).pack(pady=20)
         

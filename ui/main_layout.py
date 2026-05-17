@@ -92,7 +92,12 @@ class MainFrame(ctk.CTkFrame):
     def open_staff_registration(self):
         modal = ctk.CTkToplevel(self)
         modal.title("Cấp tài khoản nhân viên")
-        modal.geometry("450x600")
+        w, h = 450, 600
+        modal.update_idletasks()
+        main_win = self.winfo_toplevel()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        modal.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
         modal.configure(fg_color=COLOR_CREAM)
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
@@ -143,7 +148,12 @@ class MainFrame(ctk.CTkFrame):
     def open_voucher_modal(self):
         modal = ctk.CTkToplevel(self)
         modal.title("Tặng Voucher cho khách hàng")
-        modal.geometry("450x550")
+        w, h = 450, 550
+        modal.update_idletasks()
+        main_win = self.winfo_toplevel()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        modal.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
         modal.configure(fg_color=COLOR_CREAM)
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
