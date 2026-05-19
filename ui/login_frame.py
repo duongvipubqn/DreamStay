@@ -2,26 +2,42 @@ from tkinter import messagebox
 from config import *
 from database import db
 
+
 class LoginFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM)
         self.master = master
 
-        self.panel = ctk.CTkFrame(self, width=400, height=550, fg_color=COLOR_WHITE,
-                                  corner_radius=15, border_width=1, border_color=COLOR_BORDER)
+        self.panel = ctk.CTkFrame(
+            self,
+            width=400,
+            height=550,
+            fg_color=COLOR_WHITE,
+            corner_radius=15,
+            border_width=1,
+            border_color=COLOR_BORDER,
+        )
         self.panel.place(relx=0.5, rely=0.5, anchor="center")
 
-        ctk.CTkLabel(self.panel, text="Đăng Nhập", font=FONT_HEADER,
-                     text_color="white").pack(pady=(40, 5))
-        ctk.CTkLabel(self.panel, text="Chào mừng bạn trở lại!", font=FONT_BODY,
-                     text_color="#aaa").pack(pady=(0, 30))
+        ctk.CTkLabel(
+            self.panel, text="Đăng Nhập", font=FONT_HEADER, text_color="white"
+        ).pack(pady=(40, 5))
+        ctk.CTkLabel(
+            self.panel, text="Chào mừng bạn trở lại!", font=FONT_BODY, text_color="#aaa"
+        ).pack(pady=(0, 30))
 
         self.user_entry = self.create_input("Tài khoản nhân viên")
         self.pass_entry = self.create_input("Mật khẩu", is_password=True)
 
-        self.show_pass_check = ctk.CTkCheckBox(self.panel, text="Hiện mật khẩu", font=FONT_BODY,
-                                               border_color=COLOR_GOLD, checkmark_color=COLOR_GOLD,
-                                               text_color=COLOR_TEXT, command=self.toggle_password)
+        self.show_pass_check = ctk.CTkCheckBox(
+            self.panel,
+            text="Hiện mật khẩu",
+            font=FONT_BODY,
+            border_color=COLOR_GOLD,
+            checkmark_color=COLOR_GOLD,
+            text_color=COLOR_TEXT,
+            command=self.toggle_password,
+        )
         self.show_pass_check.pack(pady=10)
 
         def go_to_forgot():
@@ -30,14 +46,27 @@ class LoginFrame(ctk.CTkFrame):
             if callable(func):
                 func("Forgot")
 
-        ctk.CTkButton(self.panel, text="Quên mật khẩu?", fg_color="transparent",
-                      text_color=COLOR_GOLD, font=FONT_BODY,
-                      hover=False, command=go_to_forgot).pack()
+        ctk.CTkButton(
+            self.panel,
+            text="Quên mật khẩu?",
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            font=FONT_BODY,
+            hover=False,
+            command=go_to_forgot,
+        ).pack()
 
-        ctk.CTkButton(self.panel, text="ĐĂNG NHẬP", width=280, height=45,
-                      fg_color=COLOR_GOLD, hover_color=COLOR_GOLD_HOVER,
-                      text_color="white", font=FONT_BODY_BOLD,
-                      command=self.login).pack(pady=(10, 10))
+        ctk.CTkButton(
+            self.panel,
+            text="ĐĂNG NHẬP",
+            width=280,
+            height=45,
+            fg_color=COLOR_GOLD,
+            hover_color=COLOR_GOLD_HOVER,
+            text_color="white",
+            font=FONT_BODY_BOLD,
+            command=self.login,
+        ).pack(pady=(10, 10))
 
         def go_to_register():
             app = self.winfo_toplevel()
@@ -45,14 +74,27 @@ class LoginFrame(ctk.CTkFrame):
             if callable(func):
                 func()
 
-        ctk.CTkButton(self.panel, text="Tạo tài khoản mới", fg_color="transparent",
-                      text_color=COLOR_GOLD, font=("Segoe UI", 12, "underline"),
-                      hover=False, command=go_to_register).pack()
+        ctk.CTkButton(
+            self.panel,
+            text="Tạo tài khoản mới",
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            font=("Segoe UI", 12, "underline"),
+            hover=False,
+            command=go_to_register,
+        ).pack()
 
     def create_input(self, placeholder, is_password=False):
-        entry = ctk.CTkEntry(self.panel, placeholder_text=placeholder, width=300, height=45,
-                             fg_color="#1a1a2e", border_color=COLOR_BORDER, text_color=COLOR_TEXT,
-                             show="*" if is_password else "")
+        entry = ctk.CTkEntry(
+            self.panel,
+            placeholder_text=placeholder,
+            width=300,
+            height=45,
+            fg_color="#1a1a2e",
+            border_color=COLOR_BORDER,
+            text_color=COLOR_TEXT,
+            show="*" if is_password else "",
+        )
         entry.pack(pady=10)
         return entry
 
@@ -65,7 +107,10 @@ class LoginFrame(ctk.CTkFrame):
     def login(self):
         u, p = self.user_entry.get(), self.pass_entry.get()
         hashed_pw = db.hash_password(p)
-        db.cursor.execute("SELECT full_name, role FROM users WHERE username=? AND password=?", (u, hashed_pw))
+        db.cursor.execute(
+            "SELECT full_name, role FROM users WHERE username=? AND password=?",
+            (u, hashed_pw),
+        )
         res = db.cursor.fetchone()
         if res:
             app = self.winfo_toplevel()

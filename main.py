@@ -19,15 +19,16 @@ from ui.register_frame import RegisterFrame
 from ui.forgot_frame import ForgotFrame
 from ui.profile_frame import ProfileFrame
 
+
 class HotelApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("DreamStay")
         self.geometry("1300x850")
         try:
-            self.state('zoomed')
+            self.state("zoomed")
         except:
-            self.attributes('-zoomed', True)
+            self.attributes("-zoomed", True)
         self.update()
         self.configure(fg_color=COLOR_CREAM)
 
@@ -57,7 +58,7 @@ class HotelApp(ctk.CTk):
             "Login": LoginFrame(self.container),
             "Register": RegisterFrame(self.container),
             "Forgot": ForgotFrame(self.container),
-            "Hồ sơ": ProfileFrame(self.container)
+            "Hồ sơ": ProfileFrame(self.container),
         }
 
         self.switch_page("Trang chủ")
@@ -79,19 +80,19 @@ class HotelApp(ctk.CTk):
         for page_name, page in self.pages.items():
             if page.winfo_ismapped():
                 page.pack_forget()
-                hide_func = getattr(page, 'on_hide', None)
-                if callable(hide_func): 
+                hide_func = getattr(page, "on_hide", None)
+                if callable(hide_func):
                     hide_func()
 
         if name in self.pages:
             target_page = self.pages[name]
             target_page.pack(fill="both", expand=True)
-            
-            show_func = getattr(target_page, 'on_show', None)
-            if callable(show_func): 
+
+            show_func = getattr(target_page, "on_show", None)
+            if callable(show_func):
                 show_func()
 
-            load_func = getattr(target_page, 'load_data', None)
+            load_func = getattr(target_page, "load_data", None)
             if callable(load_func):
                 if name == "Phòng":
                     load_func(filters)
@@ -108,13 +109,15 @@ class HotelApp(ctk.CTk):
 
     def logout(self):
         from tkinter import messagebox
+
         if os.path.exists("session.txt"):
             os.remove("session.txt")
 
         self.current_user = None
         self.current_role = None
-        self.header.user_btn.configure(text="ĐĂNG NHẬP", width=90, height=32, corner_radius=6,
-                                       font=FONT_BODY_BOLD)
+        self.header.user_btn.configure(
+            text="ĐĂNG NHẬP", width=90, height=32, corner_radius=6, font=FONT_BODY_BOLD
+        )
         self.header.update_menu(False, None)
         self.switch_page("Trang chủ")
         messagebox.showinfo("Thông báo", "Sếp đã đăng xuất an toàn!")
@@ -129,14 +132,17 @@ class HotelApp(ctk.CTk):
             with open("session.txt", "wb") as f:
                 f.write(encoded_bytes)
 
-        self.header.user_btn.configure(text="👤", width=40, corner_radius=20, font=FONT_LABEL)
+        self.header.user_btn.configure(
+            text="👤", width=40, corner_radius=20, font=FONT_LABEL
+        )
         self.header.update_menu(True, role)
         self.switch_page("Trang chủ")
 
         mgmt_page = self.pages.get("Quản lý")
-        update_func = getattr(mgmt_page, 'update_user', None)
+        update_func = getattr(mgmt_page, "update_user", None)
         if callable(update_func):
             update_func(name, role)
+
 
 if __name__ == "__main__":
     app = HotelApp()

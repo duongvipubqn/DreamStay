@@ -1,6 +1,7 @@
 import colorsys
 from config import *
 
+
 class Header(ctk.CTkFrame):
     def __init__(self, master, switch_func):
         super().__init__(master, fg_color=COLOR_NAVY, height=70, corner_radius=0)
@@ -14,15 +15,22 @@ class Header(ctk.CTkFrame):
 
         self.letters = []
         for char in "DreamStay":
-            lbl = ctk.CTkLabel(self.brand_container, text=char,
-                               font=FONT_LOGO)
+            lbl = ctk.CTkLabel(self.brand_container, text=char, font=FONT_LOGO)
             lbl.pack(side="left", padx=0)
             self.letters.append(lbl)
 
-        self.user_btn = ctk.CTkButton(self, text="ĐĂNG NHẬP", width=90, height=32, corner_radius=6,
-                                      fg_color="white", text_color=COLOR_NAVY,
-                                      hover_color=COLOR_GOLD, font=FONT_BODY_BOLD,
-                                      command=self.handle_user_click)
+        self.user_btn = ctk.CTkButton(
+            self,
+            text="ĐĂNG NHẬP",
+            width=90,
+            height=32,
+            corner_radius=6,
+            fg_color="white",
+            text_color=COLOR_NAVY,
+            hover_color=COLOR_GOLD,
+            font=FONT_BODY_BOLD,
+            command=self.handle_user_click,
+        )
         self.user_btn.pack(side="right", padx=30)
 
         self.menu_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -34,13 +42,18 @@ class Header(ctk.CTkFrame):
 
     def animate_rainbow(self, *_args):
         self.hue += 0.005
-        if self.hue > 1.0: self.hue = 0
+        if self.hue > 1.0:
+            self.hue = 0
 
         for i, lbl in enumerate(self.letters):
             char_hue = (self.hue + (i * 0.05)) % 1.0
 
             rgb = colorsys.hsv_to_rgb(char_hue, 0.4, 1.0)
-            color_hex = '#%02x%02x%02x' % (int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255))
+            color_hex = "#%02x%02x%02x" % (
+                int(rgb[0] * 255),
+                int(rgb[1] * 255),
+                int(rgb[2] * 255),
+            )
 
             lbl.configure(text_color=color_hex)
 
@@ -53,19 +66,33 @@ class Header(ctk.CTkFrame):
         for widget in self.menu_frame.winfo_children():
             widget.destroy()
 
-        menus = ["Trang chủ", "Giới thiệu", "Phòng", "Dịch vụ", "Tiện ích", "Sự kiện", "Liên hệ"]
+        menus = [
+            "Trang chủ",
+            "Giới thiệu",
+            "Phòng",
+            "Dịch vụ",
+            "Tiện ích",
+            "Sự kiện",
+            "Liên hệ",
+        ]
 
-        if is_logged_in and role in ['staff', 'manager']:
+        if is_logged_in and role in ["staff", "manager"]:
             menus.append("Quản lý")
 
         for menu in menus:
             is_active = menu == self.active_menu
-            btn = ctk.CTkButton(self.menu_frame, text=menu, font=FONT_BODY_BOLD,
-                                fg_color="transparent", text_color="white",
-                                hover_color=COLOR_GOLD, width=80,
-                                border_width=2 if is_active else 0,
-                                border_color=COLOR_GOLD,
-                                command=lambda m=menu: self.switch_func(m))
+            btn = ctk.CTkButton(
+                self.menu_frame,
+                text=menu,
+                font=FONT_BODY_BOLD,
+                fg_color="transparent",
+                text_color="white",
+                hover_color=COLOR_GOLD,
+                width=80,
+                border_width=2 if is_active else 0,
+                border_color=COLOR_GOLD,
+                command=lambda m=menu: self.switch_func(m),
+            )
             btn.pack(side="left", padx=2)
 
     def handle_user_click(self):

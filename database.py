@@ -2,6 +2,7 @@ import sqlite3
 import hashlib
 import os
 
+
 class Database:
     def __init__(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -104,30 +105,55 @@ class Database:
                                 INTEGER
                             )""")
 
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS service_orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                room_id TEXT,
+                items_detail TEXT,
+                total_price REAL,
+                order_date TEXT,
+                status TEXT DEFAULT 'Chờ xử lý'
+            )""")
+
         self.conn.commit()
 
     def seed_manager(self):
         self.cursor.execute("SELECT * FROM users WHERE role='manager'")
         if not self.cursor.fetchone():
             hashed_pw = self.hash_password("admin123")
-            self.cursor.execute("""
+            self.cursor.execute(
+                """
                 INSERT INTO users (full_name, username, email, phone, password, role)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, ("Tổng Quản Lý", "admin", "admin@dreamstay.com", "0000000000", hashed_pw, "manager"))
+            """,
+                (
+                    "Tổng Quản Lý",
+                    "admin",
+                    "admin@dreamstay.com",
+                    "0000000000",
+                    hashed_pw,
+                    "manager",
+                ),
+            )
             self.conn.commit()
 
     def is_room_available(self, room_id, start_date, end_date):
-        self.cursor.execute("""
+        self.cursor.execute(
+            """
                             SELECT COUNT(*)
                             FROM bookings
                             WHERE room_id = ?
                               AND status != 'Cancelled'
                               AND NOT (checkout_date <= ? OR checkin_date >= ?)
-                            """, (room_id, start_date, end_date))
+                            """,
+            (room_id, start_date, end_date),
+        )
         return self.cursor.fetchone()[0] == 0
 
     def get_room_bookings(self, room_id, include_cancelled=False):
-        query = "SELECT checkin_date, checkout_date, status FROM bookings WHERE room_id = ?"
+        query = (
+            "SELECT checkin_date, checkout_date, status FROM bookings WHERE room_id = ?"
+        )
         params = [room_id]
         if not include_cancelled:
             query += " AND status != 'Cancelled'"
@@ -138,31 +164,42 @@ class Database:
     def is_room_currently_booked(self, room_id, today=None):
         if today is None:
             from datetime import datetime
-            today = datetime.now().strftime('%Y-%m-%d')
-        self.cursor.execute("""
+
+            today = datetime.now().strftime("%Y-%m-%d")
+        self.cursor.execute(
+            """
                             SELECT COUNT(*)
                             FROM bookings
                             WHERE room_id = ?
                               AND status != 'Cancelled'
                               AND checkin_date <= ?
                               AND checkout_date > ?
-                            """, (room_id, today, today))
+                            """,
+            (room_id, today, today),
+        )
         return self.cursor.fetchone()[0] > 0
 
     def get_user_level_info(self, full_name):
-        self.cursor.execute("SELECT user_level FROM users WHERE full_name=?", (full_name,))
+        self.cursor.execute(
+            "SELECT user_level FROM users WHERE full_name=?", (full_name,)
+        )
         res = self.cursor.fetchone()
         level = res[0] if res else 1
         from config import USER_LIMITS
+
         return level, USER_LIMITS.get(level)
 
     def count_active_bookings(self, full_name):
-        self.cursor.execute("""
+        self.cursor.execute(
+            """
                             SELECT COUNT(*)
                             FROM bookings
                             WHERE customer_name = ?
                               AND status IN ('Pending', 'Confirmed', 'Stay-in')
-                            """, (full_name,))
+                            """,
+            (full_name,),
+        )
         return self.cursor.fetchone()[0]
+
 
 db = Database()
