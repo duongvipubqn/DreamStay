@@ -7,7 +7,9 @@ class HomeFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
 
-        self.hero_section = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
+        self.hero_section = ctk.CTkFrame(
+            self, fg_color="transparent", corner_radius=0, border_width=0
+        )
         self.hero_section.pack(fill="x")
         self.hero_section.pack_propagate(False)
 
@@ -19,16 +21,16 @@ class HomeFrame(ctk.CTkFrame):
         self.current_blend = None
         self.load_all_images_raw()
 
-        self.bg_1 = ctk.CTkLabel(self.hero_section, text="", fg_color="transparent")
+        self.bg_1 = ctk.CTkLabel(self.hero_section, text="", fg_color=COLOR_CREAM)
         self.bg_1.place(relx=0, rely=0, relwidth=1, relheight=1)
 
-        self.bg_2 = ctk.CTkLabel(self.hero_section, text="", fg_color="transparent")
+        self.bg_2 = ctk.CTkLabel(self.hero_section, text="", fg_color=COLOR_CREAM)
         self.bg_2.place(relx=1, rely=0, relwidth=1, relheight=1)
 
         self.search_bar = ctk.CTkFrame(
             self.hero_section, fg_color="transparent", corner_radius=20, width=900
         )
-        self.search_bar.place(relx=0.5, rely=0.7, anchor="center")
+        self.search_bar.place(relx=0.5, rely=0.93, anchor="center")
 
         self.search_bar_bg_image = None
         self.search_bar_bg = ctk.CTkLabel(
@@ -55,20 +57,7 @@ class HomeFrame(ctk.CTkFrame):
             wraplength=760,
             justify="center",
         )
-        self.subtitle_label.pack(pady=(0, 25))
-
-        self.btn_check = ctk.CTkButton(
-            self.search_content,
-            text="KHÁM PHÁ",
-            font=FONT_BODY_BOLD,
-            fg_color=COLOR_GOLD,
-            hover_color=COLOR_GOLD_HOVER,
-            text_color="white",
-            width=180,
-            height=55,
-            command=self.apply_filter,
-        )
-        self.btn_check.pack(pady=(0, 0))
+        self.subtitle_label.pack(pady=(0, 0))
 
         self.hero_section.bind("<Configure>", self.on_resize)
 
@@ -136,7 +125,7 @@ class HomeFrame(ctk.CTkFrame):
             return img1 or img2
         try:
             if img1.size != img2.size:
-                img2 = img2.resize(img1.size, Image.Resampling.LANCZOS)
+                img2 = img2.resize(img1.size, Image.Resampling.BILINEAR)
             return Image.blend(img1.convert("RGB"), img2.convert("RGB"), alpha)
         except Exception:
             return img1

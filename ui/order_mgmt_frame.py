@@ -3,6 +3,7 @@ from datetime import datetime
 from config import *
 from database import db
 
+
 class OrderMgmtFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
@@ -11,7 +12,10 @@ class OrderMgmtFrame(ctk.CTkFrame):
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", pady=(0, 15))
         ctk.CTkLabel(
-            header, text="Quản Lý Đơn Hàng (F&B)", font=FONT_TITLE, text_color=COLOR_TEXT
+            header,
+            text="Quản Lý Đơn Hàng (F&B)",
+            font=FONT_TITLE,
+            text_color=COLOR_TEXT,
         ).pack(side="left")
 
         toolbar = ctk.CTkFrame(
@@ -27,7 +31,7 @@ class OrderMgmtFrame(ctk.CTkFrame):
 
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.filter_data)
-        
+
         ctk.CTkEntry(
             toolbar,
             placeholder_text="Tìm kiếm nhanh...",
@@ -97,7 +101,14 @@ class OrderMgmtFrame(ctk.CTkFrame):
         )
         f.pack(fill="both", expand=True)
 
-        cols = ("ID", "Mã Phòng", "Chi Tiết Món", "Tổng Tiền", "Thời Gian", "Trạng Thái")
+        cols = (
+            "ID",
+            "Mã Phòng",
+            "Chi Tiết Món",
+            "Tổng Tiền",
+            "Thời Gian",
+            "Trạng Thái",
+        )
 
         style = ttk.Style()
         style.theme_use("default")
@@ -140,9 +151,13 @@ class OrderMgmtFrame(ctk.CTkFrame):
             self.tree.delete(row)
         for row in data_list:
             o_id, rm, detail, total, date, status = row
-            date_f = datetime.strptime(date, "%Y-%m-%d %H:%M").strftime("%d/%m/%Y %H:%M")
+            date_f = datetime.strptime(date, "%Y-%m-%d %H:%M").strftime(
+                "%d/%m/%Y %H:%M"
+            )
             total_f = f"{int(total):,}".replace(",", ".")
-            self.tree.insert("", "end", values=(o_id, rm, detail, total_f, date_f, status))
+            self.tree.insert(
+                "", "end", values=(o_id, rm, detail, total_f, date_f, status)
+            )
 
     def filter_data(self, *args):
         search_text = self.search_var.get().lower()
@@ -159,10 +174,14 @@ class OrderMgmtFrame(ctk.CTkFrame):
         o_id, _, _, _, _, status = self.tree.item(item, "values")
 
         if status != "Chờ xử lý":
-            return messagebox.showerror("Lỗi", "Đơn hàng này đã được xác nhận trước đó!")
+            return messagebox.showerror(
+                "Lỗi", "Đơn hàng này đã được xác nhận trước đó!"
+            )
 
         if messagebox.askyesno("Xác nhận", "Sếp duyệt chuẩn bị làm món cho đơn này?"):
-            db.cursor.execute("UPDATE service_orders SET status='Đã xác nhận' WHERE id=?", (o_id,))
+            db.cursor.execute(
+                "UPDATE service_orders SET status='Đã xác nhận' WHERE id=?", (o_id,)
+            )
             db.conn.commit()
             self.load_data()
 
@@ -175,10 +194,14 @@ class OrderMgmtFrame(ctk.CTkFrame):
         if status == "Đang giao":
             return messagebox.showerror("Lỗi", "Đơn hàng này đang trên đường giao rồi!")
         if status == "Chờ xử lý":
-            return messagebox.showerror("Lỗi", "Đơn chưa được XÁC NHẬN, không thể đi giao!")
+            return messagebox.showerror(
+                "Lỗi", "Đơn chưa được XÁC NHẬN, không thể đi giao!"
+            )
 
         if messagebox.askyesno("Xác nhận", "Xác nhận nhân viên bắt đầu đi giao món?"):
-            db.cursor.execute("UPDATE service_orders SET status='Đang giao' WHERE id=?", (o_id,))
+            db.cursor.execute(
+                "UPDATE service_orders SET status='Đang giao' WHERE id=?", (o_id,)
+            )
             db.conn.commit()
             self.load_data()
 
@@ -189,25 +212,41 @@ class OrderMgmtFrame(ctk.CTkFrame):
         o_id, rm_id, _, total, _, status = self.tree.item(item, "values")
 
         if status != "Đang giao":
-            return messagebox.showerror("Lỗi", "Chỉ đơn hàng đang đi giao mới có thể thanh toán!")
+            return messagebox.showerror(
+                "Lỗi", "Chỉ đơn hàng đang đi giao mới có thể thanh toán!"
+            )
 
-        if messagebox.askyesno("Thanh toán", f"Xác nhận đã thu {total} VNĐ từ phòng {rm_id}?"):
+        if messagebox.askyesno(
+            "Thanh toán", f"Xác nhận đã thu {total} VNĐ từ phòng {rm_id}?"
+        ):
             try:
                 real_price = float(total.replace(".", ""))
-                
-                db.cursor.execute("SELECT location FROM rooms WHERE room_id=?", (rm_id,))
+
+                db.cursor.execute(
+                    "SELECT location FROM rooms WHERE room_id=?", (rm_id,)
+                )
                 loc = db.cursor.fetchone()[0]
-                db.cursor.execute("INSERT INTO revenue_history (date, amount, location) VALUES (?,?,?)",
-                                  (datetime.now().strftime("%Y-%m-%d"), real_price, loc))
-                
-                db.cursor.execute("SELECT customer_name FROM bookings WHERE room_id=? AND status='Stay-in'", (rm_id,))
+                db.cursor.execute(
+                    "INSERT INTO revenue_history (date, amount, location) VALUES (?,?,?)",
+                    (datetime.now().strftime("%Y-%m-%d"), real_price, loc),
+                )
+
+                db.cursor.execute(
+                    "SELECT customer_name FROM bookings WHERE room_id=? AND status='Stay-in'",
+                    (rm_id,),
+                )
                 res = db.cursor.fetchone()
                 guest_name = res[0] if res else "Khách vãng lai"
-                
+
                 if guest_name != "Khách vãng lai":
-                    db.cursor.execute("UPDATE customers SET total_spending = total_spending + ? WHERE full_name=?", (real_price, guest_name))
-                
-                db.cursor.execute("UPDATE service_orders SET status='Completed' WHERE id=?", (o_id,))
+                    db.cursor.execute(
+                        "UPDATE customers SET total_spending = total_spending + ? WHERE full_name=?",
+                        (real_price, guest_name),
+                    )
+
+                db.cursor.execute(
+                    "UPDATE service_orders SET status='Completed' WHERE id=?", (o_id,)
+                )
                 db.conn.commit()
                 messagebox.showinfo("Thành công", "Đã thanh toán đơn hàng thành công!")
                 self.load_data()
@@ -221,7 +260,9 @@ class OrderMgmtFrame(ctk.CTkFrame):
             return messagebox.showwarning("Chú ý", "Hãy chọn đơn cần hủy!")
         o_id, _, detail, _, _, _ = self.tree.item(item, "values")
 
-        if messagebox.askyesno("Hủy đơn", "Sếp chắc chắn muốn hủy đơn và hoàn trả kho?"):
+        if messagebox.askyesno(
+            "Hủy đơn", "Sếp chắc chắn muốn hủy đơn và hoàn trả kho?"
+        ):
             try:
                 items = detail.split(", ")
                 for item_str in items:
@@ -229,12 +270,16 @@ class OrderMgmtFrame(ctk.CTkFrame):
                     qty = int(item_str.split(" (x")[1].replace(")", ""))
                     db.cursor.execute(
                         "UPDATE inventory SET stock = stock + ? WHERE item_name = ?",
-                        (qty, name)
+                        (qty, name),
                     )
-                
-                db.cursor.execute("UPDATE service_orders SET status='Cancelled' WHERE id=?", (o_id,))
+
+                db.cursor.execute(
+                    "UPDATE service_orders SET status='Cancelled' WHERE id=?", (o_id,)
+                )
                 db.conn.commit()
-                messagebox.showinfo("Thành công", "Đã hủy đơn hàng và hoàn lại tồn kho!")
+                messagebox.showinfo(
+                    "Thành công", "Đã hủy đơn hàng và hoàn lại tồn kho!"
+                )
                 self.load_data()
             except Exception as e:
                 db.conn.rollback()

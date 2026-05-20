@@ -22,6 +22,25 @@ from ui.profile_frame import ProfileFrame
 
 class HotelApp(ctk.CTk):
     def __init__(self):
+        if not os.path.exists("User_Guide.pdf"):
+            try:
+                pdf_data = (
+                    b"%PDF-1.4\n"
+                    b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
+                    b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"
+                    b"3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /MediaBox [0 0 595 842] /Contents 4 0 R >>\nendobj\n"
+                    b"4 0 obj\n<< /Length 332 >>\nstream\n"
+                    b"BT\n/F1 18 Tf\n50 780 Td\n(DREAMSTAY RESORT SYSTEM - USER GUIDE) Tj\n/F1 12 Tf\n0 -40 Td\n(1. TAI TY GIA LIVE: Fetch real-time exchange rates via public REST API.) Tj\n0 -25 Td\n(2. FRONT DESK: Approve bookings, check-in, check-out, and log revenue.) Tj\n0 -25 Td\n(3. SYSTEM CRUD: Insert, Edit, Delete, and Search database items.) Tj\n0 -25 Td\n(4. TOOLBAR QUERY: Instant search entry filter in real-time.) Tj\n0 -25 Td\n(5. EXPORT/IMPORT CSV: Fully compatible with Excel UTF-8 with BOM.) Tj\n0 -25 Td\n(6. ANALYTICS: Dynamic Matplotlib charts powered by Pandas and NumPy.) Tj\nET\n"
+                    b"endstream\nendobj\n"
+                    b"xref\n0 5\n0000000000 65535 f\n0000000009 00000 n\n0000000056 00000 n\n0000000111 00000 n\n0000000244 00000 n\n"
+                    b"trailer\n<< /Size 5 /Root 1 0 R >>\n"
+                    b"startxref\n627\n%%EOF"
+                )
+                with open("User_Guide.pdf", "wb") as f:
+                    f.write(pdf_data)
+            except Exception:
+                pass
+
         super().__init__()
         self.title("DreamStay")
         self.geometry("1300x850")

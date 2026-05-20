@@ -20,11 +20,32 @@ class RoomView(ctk.CTkScrollableFrame):
             text_color=COLOR_TEXT,
         ).pack(pady=30)
 
-        self.filter_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.filter_frame.pack(fill="x", padx=50, pady=(0, 20))
+        self.filter_frame = ctk.CTkFrame(
+            self,
+            fg_color=COLOR_WHITE,
+            corner_radius=15,
+            border_width=1,
+            border_color=COLOR_BORDER,
+        )
+        self.filter_frame.pack(anchor="center", pady=(0, 25))
+
+        self.search_var = ctk.StringVar()
+        self.search_var.trace_add("write", self.trigger_search)
+
+        search_entry = ctk.CTkEntry(
+            self.filter_frame,
+            placeholder_text="Tìm kiếm nhanh...",
+            width=200,
+            textvariable=self.search_var,
+            fg_color=COLOR_NAVY,
+            border_color=COLOR_BORDER,
+            text_color=COLOR_TEXT,
+            height=35,
+        )
+        search_entry.pack(side="left", padx=(20, 10), pady=15)
 
         self.filter_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
-        self.filter_container.pack(anchor="center", pady=10)
+        self.filter_container.pack(side="left", padx=(10, 20), pady=15)
 
         self.filter_vars = {}
         filters = [
@@ -48,7 +69,7 @@ class RoomView(ctk.CTkScrollableFrame):
                 f,
                 values=vals,
                 variable=var,
-                fg_color=COLOR_WHITE,
+                fg_color=COLOR_NAVY,
                 text_color=COLOR_TEXT,
                 button_color=COLOR_GOLD,
                 width=150,
@@ -56,17 +77,22 @@ class RoomView(ctk.CTkScrollableFrame):
                 dynamic_resizing=False,
             ).pack(pady=(5, 0))
 
+        btn_container = ctk.CTkFrame(self.filter_container, fg_color="transparent")
+        btn_container.pack(side="left", padx=(15, 0))
+
+        ctk.CTkLabel(btn_container, text=" ", font=FONT_BODY_BOLD).pack(anchor="w")
+
         self.apply_btn = ctk.CTkButton(
-            self.filter_container,
+            btn_container,
             text="LỌC PHÒNG",
             width=140,
-            height=45,
+            height=35,
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,
             text_color="white",
             command=self.apply_filter,
         )
-        self.apply_btn.pack(side="left", padx=(15, 0), pady=(18, 0))
+        self.apply_btn.pack(pady=(5, 0))
 
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=50)
@@ -205,6 +231,10 @@ class RoomView(ctk.CTkScrollableFrame):
         if filters and filters.get("status") and filters["status"] != "Mọi trạng thái":
             status_filter = filters["status"]
 
+        search_text = (
+            self.search_var.get().lower() if hasattr(self, "search_var") else ""
+        )
+
         filtered_rooms = []
         for room in rooms_db:
             room_id = room[0]
@@ -214,6 +244,11 @@ class RoomView(ctk.CTkScrollableFrame):
                 continue
             if status_filter == "Đã đặt" and not is_currently_booked:
                 continue
+
+            if search_text:
+                if not any(search_text in str(val).lower() for val in room):
+                    continue
+
             filtered_rooms.append(room)
 
         count = len(filtered_rooms)
@@ -412,7 +447,7 @@ class RoomView(ctk.CTkScrollableFrame):
                     height=35,
                     width=80,
                     command=lambda r=rooms_db[i]: self.open_booking_modal(r),
-                ).pack(side="left", expand=True, fill="x")
+                ).pack(side="left", padx=(5, 0), expand=True, fill="x")
 
         self.render_pagination()
 
@@ -487,11 +522,8 @@ class RoomView(ctk.CTkScrollableFrame):
         else:
             messagebox.showwarning("Lỗi", "Vui lòng nhập số trang hợp lệ")
 
-    def prev_page(self):
-        pass
-
-    def next_page(self):
-        pass
+    def trigger_search(self, *args):
+        self.load_data(self.filters, 1)
 
     def show_details(self, data, img_path):
         app = self.winfo_toplevel()

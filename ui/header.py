@@ -84,16 +84,17 @@ class Header(ctk.CTkFrame):
             btn = ctk.CTkButton(
                 self.menu_frame,
                 text=menu,
-                font=FONT_BODY_BOLD,
+                font=FONT_LABEL,
                 fg_color="transparent",
                 text_color="white",
                 hover_color=COLOR_GOLD,
-                width=80,
+                width=110,
+                height=40,
                 border_width=2 if is_active else 0,
                 border_color=COLOR_GOLD,
                 command=lambda m=menu: self.switch_func(m),
             )
-            btn.pack(side="left", padx=2)
+            btn.pack(side="left", padx=8)
 
     def handle_user_click(self):
         if self.app.current_user is None:

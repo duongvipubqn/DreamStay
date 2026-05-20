@@ -13,7 +13,7 @@ class AboutFrame(ctk.CTkScrollableFrame):
         img_frame = ctk.CTkFrame(
             about_frame,
             fg_color=COLOR_WHITE,
-            border_width=2,
+            border_width=4,
             border_color=COLOR_GOLD,
             corner_radius=10,
         )
@@ -30,7 +30,7 @@ class AboutFrame(ctk.CTkScrollableFrame):
                     light_image=pil_img, dark_image=pil_img, size=(640, 360)
                 )
                 img_lbl = ctk.CTkLabel(img_frame, image=ctk_img, text="")
-                img_lbl.pack(padx=0, pady=0)
+                img_lbl.pack(padx=4, pady=4)
                 self.ctk_img_cache = ctk_img
 
                 def make_zoom_handler(lbl, p_img, base_img, w, h):

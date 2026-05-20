@@ -58,9 +58,12 @@ class OrderModal(ctk.CTkToplevel):
         self.configure(fg_color=COLOR_CREAM)
         self.grab_set()
 
-        db.cursor.execute("SELECT item_name, price, stock FROM inventory WHERE category=?", (category_name,))
-        self.items = db.cursor.fetchall() # Mỗi dòng là (tên, giá, tồn kho)
-        
+        db.cursor.execute(
+            "SELECT item_name, price, stock FROM inventory WHERE category=?",
+            (category_name,),
+        )
+        self.items = db.cursor.fetchall()
+
         self.quantities = {}
         for item in self.items:
             var = ctk.IntVar(value=0)
@@ -74,15 +77,26 @@ class OrderModal(ctk.CTkToplevel):
         self.scroll = ctk.CTkScrollableFrame(self, fg_color="transparent", height=350)
         self.scroll.pack(fill="both", expand=True, padx=20)
 
+        app = parent.winfo_toplevel()
+        user_role = getattr(app, "current_role", None)
+
         for name, price, stock in self.items:
             f = ctk.CTkFrame(self.scroll, fg_color=COLOR_WHITE, corner_radius=10)
             f.pack(fill="x", pady=5)
 
-            # Hiển thị luôn số lượng tồn kho bên cạnh tên món
-            display_name = f"{name}\n(Còn {stock})"
-            ctk.CTkLabel(f, text=display_name, font=FONT_BODY_BOLD, text_color=COLOR_NAVY, justify="left").pack(
-                side="left", padx=15, pady=5
-            )
+            if user_role in ["manager", "staff"]:
+                display_name = f"{name}\n(Còn {stock})"
+            else:
+                status_text = "Còn" if stock > 0 else "Hết"
+                display_name = f"{name}\n({status_text})"
+
+            ctk.CTkLabel(
+                f,
+                text=display_name,
+                font=FONT_BODY_BOLD,
+                text_color=COLOR_TEXT,
+                justify="left",
+            ).pack(side="left", padx=15, pady=5)
 
             qty_f = ctk.CTkFrame(f, fg_color="transparent")
             qty_f.pack(side="right", padx=10)
@@ -127,9 +141,9 @@ class OrderModal(ctk.CTkToplevel):
         room_f = ctk.CTkFrame(bottom_f, fg_color="transparent")
         room_f.pack(fill="x", padx=30, pady=15)
 
-        ctk.CTkLabel(room_f, text="Giao đến phòng:", font=FONT_BODY_BOLD).pack(
-            side="left"
-        )
+        ctk.CTkLabel(
+            room_f, text="Giao đến phòng:", font=FONT_BODY_BOLD, text_color=COLOR_TEXT
+        ).pack(side="left")
 
         db.cursor.execute("SELECT room_id FROM rooms WHERE status='Đã đặt'")
         occupied_rooms = [r[0] for r in db.cursor.fetchall()]
@@ -140,8 +154,11 @@ class OrderModal(ctk.CTkToplevel):
             room_f,
             values=occupied_rooms,
             fg_color=COLOR_WHITE,
-            text_color=COLOR_NAVY,
+            text_color=COLOR_TEXT,
             button_color=COLOR_GOLD,
+            button_hover_color=COLOR_GOLD_HOVER,
+            dropdown_fg_color=COLOR_NAVY,
+            dropdown_text_color=COLOR_TEXT,
         )
         self.room_cb.pack(side="right", fill="x", expand=True, padx=(10, 0))
 
@@ -189,7 +206,8 @@ class OrderModal(ctk.CTkToplevel):
             if q > 0:
                 if q > stock:
                     return messagebox.showerror(
-                        "Hết hàng", f"Món '{name}' trong kho chỉ còn {stock} phần, không đủ để giao!"
+                        "Hết hàng",
+                        f"Món '{name}' trong kho chỉ còn {stock} phần, không đủ để giao!",
                     )
                 total += q * price
                 order_details.append(f"{name} (x{q})")
@@ -205,7 +223,7 @@ class OrderModal(ctk.CTkToplevel):
             for qty, name in updates:
                 db.cursor.execute(
                     "UPDATE inventory SET stock = stock - ? WHERE item_name = ?",
-                    (qty, name)
+                    (qty, name),
                 )
 
             db.cursor.execute(
@@ -213,7 +231,7 @@ class OrderModal(ctk.CTkToplevel):
                 INSERT INTO service_orders (room_id, items_detail, total_price, order_date, status)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                (room, items_str, total, now_str, "Chờ xử lý")
+                (room, items_str, total, now_str, "Chờ xử lý"),
             )
             db.conn.commit()
 
@@ -387,7 +405,7 @@ class ServiceFrame(ctk.CTkScrollableFrame):
                 height=35,
                 width=80,
                 command=lambda n=name, d=desc, p=img_path: self.show_details(n, d, p),
-            ).pack(side="left", padx=5, expand=True, fill="x")
+            ).pack(side="left", padx=(0, 5), expand=True, fill="x")
 
             ctk.CTkButton(
                 btn_f,
@@ -398,7 +416,7 @@ class ServiceFrame(ctk.CTkScrollableFrame):
                 height=35,
                 width=80,
                 command=lambda n=name: self.open_order_modal(n),
-            ).pack(side="left", padx=5, expand=True, fill="x")
+            ).pack(side="left", padx=(5, 0), expand=True, fill="x")
 
     def show_details(self, name, desc, img_path):
         app = self.winfo_toplevel()
