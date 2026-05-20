@@ -1,5 +1,6 @@
 import csv
 from tkinter import filedialog, ttk, messagebox
+from datetime import datetime
 from config import *
 from database import db
 
@@ -109,12 +110,76 @@ class FormModal(ctk.CTkToplevel):
         ).pack(fill="x", pady=30, padx=20)
 
     def submit(self):
-        vals = [self.entries[col].get() for col in self.columns]
-        if "" in vals:
-            return messagebox.showwarning("Chú ý", "Vui lòng nhập đủ tin!")
+        vals = [self.entries[col].get().strip() for col in self.columns]
+        if any(v == "" for v in vals):
+            messagebox.showwarning(
+                "Chú ý",
+                "Mời sếp nhập đầy đủ thông tin, không được để trống trường nào!",
+            )
+            return
+
+        if self.table_name == "rooms":
+            price_val = vals[5]
+            try:
+                price_f = float(price_val)
+                if price_f <= 0:
+                    raise ValueError
+            except ValueError:
+                messagebox.showerror(
+                    "Sai kiểu dữ liệu",
+                    "Mời sếp nhập lại mức giá hợp lệ (phải là số dương lớn hơn 0)!",
+                )
+                return
+
+        elif self.table_name == "employees":
+            phone_val = vals[4]
+            salary_val = vals[5]
+            if not phone_val.isdigit():
+                messagebox.showerror(
+                    "Sai kiểu dữ liệu",
+                    "Mời sếp nhập lại số điện thoại hợp lệ (chỉ bao gồm các chữ số)!",
+                )
+                return
+            try:
+                salary_f = float(salary_val)
+                if salary_f <= 0:
+                    raise ValueError
+            except ValueError:
+                messagebox.showerror(
+                    "Sai kiểu dữ liệu",
+                    "Mời sếp nhập lại mức lương hợp lệ (phải là số dương lớn hơn 0)!",
+                )
+                return
+
+        elif self.table_name == "customers":
+            email_val = vals[2]
+            phone_val = vals[3]
+            spending_val = vals[5]
+            if "@" not in email_val or "." not in email_val:
+                messagebox.showerror(
+                    "Sai kiểu dữ liệu",
+                    "Mời sếp nhập lại địa chỉ email hợp lệ (phải có định dạng chứa ký tự @ và dấu chấm)!",
+                )
+                return
+            if not phone_val.isdigit():
+                messagebox.showerror(
+                    "Sai kiểu dữ liệu",
+                    "Mời sếp nhập lại số điện thoại hợp lệ (chỉ chứa chữ số)!",
+                )
+                return
+            try:
+                spending_f = float(spending_val)
+                if spending_f < 0:
+                    raise ValueError
+            except ValueError:
+                messagebox.showerror(
+                    "Sai kiểu dữ liệu",
+                    "Mời sếp nhập lại tổng chi tiêu hợp lệ (phải là số không âm)!",
+                )
+                return
+
         self.callback(vals)
         self.destroy()
-        return None
 
 
 class CRUDFrame(ctk.CTkFrame):
@@ -259,10 +324,14 @@ class CRUDFrame(ctk.CTkFrame):
         )
 
     def open_edit_modal(self):
-        item = self.tree.selection()
-        if not item:
+        items = self.tree.selection()
+        if not items:
             return messagebox.showwarning("Chú ý", "Hãy chọn dòng cần sửa!")
-        vals = self.tree.item(item[0], "values")
+        if len(items) > 1:
+            return messagebox.showwarning(
+                "Chú ý", "Chỉ được chọn duy nhất một dòng để sửa thông tin!"
+            )
+        vals = self.tree.item(items[0], "values")
         title = "Cập nhật phòng" if self.table_name == "rooms" else "Cập nhật dữ liệu"
         FormModal(
             self.winfo_toplevel(),

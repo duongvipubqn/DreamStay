@@ -18,12 +18,77 @@ class StatisticsFrame(ctk.CTkFrame):
             text_color=COLOR_TEXT,
         ).pack(pady=15)
 
+        self.stats_panel = ctk.CTkFrame(
+            self,
+            fg_color=COLOR_WHITE,
+            corner_radius=15,
+            border_width=1,
+            border_color=COLOR_BORDER,
+        )
+        self.stats_panel.pack(fill="x", padx=20, pady=(0, 10))
+
+        for idx in range(4):
+            self.stats_panel.grid_columnconfigure(idx, weight=1)
+
+        self.lbl_total = ctk.CTkLabel(
+            self.stats_panel,
+            text="Tổng số phòng: --",
+            font=FONT_BODY_BOLD,
+            text_color=COLOR_TEXT,
+        )
+        self.lbl_total.grid(row=0, column=0, padx=15, pady=15, sticky="nsew")
+
+        self.lbl_avg = ctk.CTkLabel(
+            self.stats_panel,
+            text="Giá trung bình: --",
+            font=FONT_BODY_BOLD,
+            text_color=COLOR_GOLD,
+        )
+        self.lbl_avg.grid(row=0, column=1, padx=15, pady=15, sticky="nsew")
+
+        self.lbl_max = ctk.CTkLabel(
+            self.stats_panel,
+            text="Mức giá cao nhất: --",
+            font=FONT_BODY_BOLD,
+            text_color=COLOR_TEXT,
+        )
+        self.lbl_max.grid(row=0, column=2, padx=15, pady=15, sticky="nsew")
+
+        self.lbl_ratio = ctk.CTkLabel(
+            self.stats_panel,
+            text="Tỷ lệ lấp đầy: --",
+            font=FONT_BODY_BOLD,
+            text_color="#2ecc71",
+        )
+        self.lbl_ratio.grid(row=0, column=3, padx=15, pady=15, sticky="nsew")
+
         self.chart_container = ctk.CTkFrame(self, fg_color="transparent")
         self.chart_container.pack(fill="both", expand=True, padx=20, pady=10)
 
     def load_data(self):
         for widget in self.chart_container.winfo_children():
             widget.destroy()
+
+        stats = db.get_room_stats()
+        self.lbl_total.configure(text=f"Tổng số phòng: {stats['total']}")
+        avg_price_f = (
+            f"{int(stats['avg_price']):,}".replace(",", ".") + " VNĐ"
+            if stats["avg_price"] > 0
+            else "0 VNĐ"
+        )
+        self.lbl_avg.configure(text=f"Giá trung bình: {avg_price_f}")
+        max_price_f = (
+            f"{int(stats['max_price']):,}".replace(",", ".") + " VNĐ"
+            if stats["max_price"] > 0
+            else "0 VNĐ"
+        )
+        self.lbl_max.configure(text=f"Mức giá cao nhất: {max_price_f}")
+
+        status_counts = stats["status_counts"]
+        booked = status_counts.get("Đã đặt", 0) + status_counts.get("Bảo trì", 0)
+        total = stats["total"]
+        ratio_pct = (booked / total * 100) if total > 0 else 0.0
+        self.lbl_ratio.configure(text=f"Hiệu suất phòng: {ratio_pct:.1f}%")
 
         plt.close("all")
 

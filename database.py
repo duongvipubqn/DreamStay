@@ -1,6 +1,8 @@
 import sqlite3
 import hashlib
 import os
+import pandas as pd
+import numpy as np
 
 
 class Database:
@@ -115,7 +117,7 @@ class Database:
                 order_date TEXT,
                 status TEXT DEFAULT 'Chờ xử lý'
             )""")
-        
+
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS inventory (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -173,11 +175,11 @@ class Database:
                 ("Nước Khoáng Tinh Khiết", "Lavie 500ml", 15000, 300),
                 ("Nước Khoáng Tinh Khiết", "Aquafina 500ml", 15000, 300),
                 ("Nước Khoáng Tinh Khiết", "Evian Glass Bottle", 110000, 50),
-                ("Nước Khoáng Tinh Khiết", "Perrier Sparkling", 95000, 60)
+                ("Nước Khoáng Tinh Khiết", "Perrier Sparkling", 95000, 60),
             ]
             self.cursor.executemany(
                 "INSERT INTO inventory (category, item_name, price, stock) VALUES (?,?,?,?)",
-                seed_data
+                seed_data,
             )
             self.conn.commit()
 
@@ -244,6 +246,40 @@ class Database:
             (full_name,),
         )
         return self.cursor.fetchone()[0]
+
+    def get_room_stats(self):
+        try:
+            df = pd.read_sql_query(
+                "SELECT price, status, capacity FROM rooms", self.conn
+            )
+            if df.empty:
+                return {
+                    "total": 0,
+                    "avg_price": 0.0,
+                    "max_price": 0.0,
+                    "status_counts": {},
+                    "capacity_counts": {},
+                }
+            prices = df["price"].to_numpy()
+            avg_price = float(np.mean(prices))
+            max_price = float(np.max(prices))
+            status_counts = df["status"].value_counts().to_dict()
+            capacity_counts = df["capacity"].value_counts().to_dict()
+            return {
+                "total": len(df),
+                "avg_price": avg_price,
+                "max_price": max_price,
+                "status_counts": status_counts,
+                "capacity_counts": capacity_counts,
+            }
+        except Exception:
+            return {
+                "total": 0,
+                "avg_price": 0.0,
+                "max_price": 0.0,
+                "status_counts": {},
+                "capacity_counts": {},
+            }
 
 
 db = Database()

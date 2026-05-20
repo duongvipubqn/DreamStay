@@ -1,4 +1,8 @@
 import sqlite3
+import webbrowser
+import threading
+import requests
+import time
 from config import *
 from ui.reception import ReceptionFrame
 from ui.order_mgmt_frame import OrderMgmtFrame
@@ -29,7 +33,7 @@ class MainFrame(ctk.CTkFrame):
             "Đơn hàng": OrderMgmtFrame(self.content),
             "Phòng": CRUDFrame(
                 self.content,
-                "Hệ Thống Quản Lý Phòng",
+                "Quản Lý Phòng",
                 "rooms",
                 [
                     "Mã Phòng",
@@ -122,6 +126,51 @@ class MainFrame(ctk.CTkFrame):
             command=self.open_voucher_modal,
         )
 
+        self.api_label = ctk.CTkLabel(
+            self.sidebar,
+            text="Tỷ giá live: Chưa có dữ liệu",
+            font=("Segoe UI", 12),
+            text_color=COLOR_GOLD,
+            anchor="w",
+        )
+        self.api_label.pack(side="bottom", pady=(5, 5), padx=20, fill="x")
+
+        ctk.CTkButton(
+            self.sidebar,
+            text="⚙ TẢI TỶ GIÁ LIVE",
+            fg_color="#3a3a50",
+            text_color="white",
+            hover_color=COLOR_GOLD_HOVER,
+            anchor="w",
+            height=35,
+            font=FONT_BODY_BOLD,
+            command=self.fetch_api_data,
+        ).pack(side="bottom", pady=5, padx=15, fill="x")
+
+        ctk.CTkButton(
+            self.sidebar,
+            text="📖 HƯỚNG DẪN (PDF)",
+            fg_color="#3a3a50",
+            text_color="white",
+            hover_color=COLOR_GOLD_HOVER,
+            anchor="w",
+            height=35,
+            font=FONT_BODY_BOLD,
+            command=self.open_pdf,
+        ).pack(side="bottom", pady=5, padx=15, fill="x")
+
+        ctk.CTkButton(
+            self.sidebar,
+            text="ℹ GIỚI THIỆU",
+            fg_color="#3a3a50",
+            text_color="white",
+            hover_color=COLOR_GOLD_HOVER,
+            anchor="w",
+            height=35,
+            font=FONT_BODY_BOLD,
+            command=self.show_about,
+        ).pack(side="bottom", pady=5, padx=15, fill="x")
+
         ctk.CTkButton(
             self.sidebar,
             text="  Đăng Xuất",
@@ -131,7 +180,7 @@ class MainFrame(ctk.CTkFrame):
             height=45,
             font=FONT_BODY_BOLD,
             command=self.logout_clicked,
-        ).pack(side="bottom", pady=20, padx=15, fill="x")
+        ).pack(side="bottom", pady=(20, 5), padx=15, fill="x")
 
         self.switch("Lễ Tân")
 
@@ -333,6 +382,113 @@ class MainFrame(ctk.CTkFrame):
             font=FONT_BODY_BOLD,
             command=confirm_grant,
         ).pack(pady=40, padx=40, fill="x")
+
+    def show_about(self):
+        from datetime import datetime
+
+        current_date = datetime.now().strftime("%d/%m/%Y")
+        messagebox.showinfo(
+            "Giới thiệu Phần mềm",
+            "Tên phần mềm: DreamStay Resort Management System\n"
+            "Phiên bản: v2.5.0 Premium\n"
+            "Tác giả: Nhóm Phát triển DreamStay\n"
+            "Ngày phát hành: " + current_date + " (Bản cập nhật mới nhất)\n"
+            "Mô tả: Hệ thống quản lý toàn diện bao gồm đặt phòng, lễ tân, dịch vụ F&B, quản lý kho hàng và báo cáo tài chính tích hợp.",
+        )
+
+    def open_pdf(self):
+        try:
+            webbrowser.open("User_Guide.pdf")
+        except Exception:
+            messagebox.showerror(
+                "Lỗi", "Không thể mở file tài liệu hướng dẫn sử dụng User_Guide.pdf!"
+            )
+
+    def fetch_api_data(self):
+        loading_win = ctk.CTkToplevel(self)
+        loading_win.title("Đang xử lý")
+        w, h = 300, 150
+        loading_win.update_idletasks()
+        main_win = self.winfo_toplevel()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        loading_win.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
+        loading_win.configure(fg_color=COLOR_CREAM)
+        loading_win.transient(self.winfo_toplevel())
+        loading_win.grab_set()
+        loading_win.resizable(False, False)
+
+        ctk.CTkLabel(
+            loading_win,
+            text="🔄 Đang tải dữ liệu từ REST API...",
+            font=FONT_BODY_BOLD,
+            text_color=COLOR_TEXT,
+        ).pack(pady=30)
+
+        progress = ctk.CTkProgressBar(loading_win, width=200, progress_color=COLOR_GOLD)
+        progress.pack(pady=5)
+        progress.start()
+
+        def worker():
+            time.sleep(3)
+            try:
+                response = requests.get(
+                    "https://open.er-api.com/v6/latest/USD", timeout=5
+                )
+                if response.status_code == 401:
+                    raise PermissionError("Unauthorized access (401)")
+                if response.status_code != 200:
+                    raise ConnectionError(f"HTTP Error {response.status_code}")
+
+                data = response.json()
+                rates = data.get("rates", {})
+                vnd_rate = rates.get("VND", 25000.0)
+                vnd_f = f"{int(vnd_rate):,}".replace(",", ".")
+
+                def success_ui():
+                    self.api_label.configure(text=f"Tỷ giá live: 1 USD = {vnd_f} VND")
+                    loading_win.destroy()
+                    messagebox.showinfo(
+                        "Thành công",
+                        f"Đã cập nhật tỷ giá thực tế hôm nay: 1 USD = {vnd_f} VNĐ",
+                    )
+
+                self.after(0, success_ui)
+
+            except requests.exceptions.Timeout:
+
+                def error_ui():
+                    loading_win.destroy()
+                    messagebox.showerror(
+                        "Lỗi kết nối",
+                        "Hết thời gian chờ phản hồi (Timeout)! Xin sếp vui lòng kiểm tra lại đường truyền mạng.",
+                    )
+
+                self.after(0, error_ui)
+
+            except PermissionError:
+
+                def error_ui():
+                    loading_win.destroy()
+                    messagebox.showerror(
+                        "Lỗi xác thực",
+                        "Yêu cầu API bị từ chối do lỗi xác thực người dùng (Mã 401 Unauthorized)!",
+                    )
+
+                self.after(0, error_ui)
+
+            except Exception as e:
+
+                def error_ui():
+                    loading_win.destroy()
+                    messagebox.showerror(
+                        "Lỗi hệ thống",
+                        f"Không thể lấy thông tin tỷ giá trực tuyến: {str(e)}",
+                    )
+
+                self.after(0, error_ui)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def load_data(self):
         pass
