@@ -1,6 +1,7 @@
 import sqlite3
 from config import *
 from ui.reception import ReceptionFrame
+from ui.order_mgmt_frame import OrderMgmtFrame
 from ui.crud_frame import CRUDFrame
 from ui.statistics import StatisticsFrame
 from tkinter import messagebox
@@ -25,6 +26,7 @@ class MainFrame(ctk.CTkFrame):
 
         self.frames = {
             "Lễ Tân": ReceptionFrame(self.content),
+            "Đơn hàng": OrderMgmtFrame(self.content),
             "Phòng": CRUDFrame(
                 self.content,
                 "Hệ Thống Quản Lý Phòng",
@@ -65,17 +67,16 @@ class MainFrame(ctk.CTkFrame):
                     "Trạng thái",
                 ],
             ),
-            "Đơn Hàng": CRUDFrame(
+            "Kho Hàng": CRUDFrame(
                 self.content,
-                "Danh Sách Đơn Dịch Vụ (F&B)",
-                "service_orders",
+                "Quản Lý Kho Hàng (F&B)",
+                "inventory",
                 [
                     "ID",
-                    "Mã Phòng",
-                    "Chi Tiết Món",
-                    "Tổng Tiền",
-                    "Thời Gian",
-                    "Trạng Thái",
+                    "Danh Mục",
+                    "Tên Món",
+                    "Giá (VNĐ)",
+                    "Số Lượng Tồn",
                 ],
             ),
             "Thống Kê": StatisticsFrame(self.content),

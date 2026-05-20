@@ -9,17 +9,15 @@ class ReceptionFrame(ctk.CTkFrame):
         super().__init__(master, fg_color="transparent")
         self.tree = None
 
-        # 1. Header giống CRUD: Tiêu đề nằm bên trái
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", pady=(0, 15))
         ctk.CTkLabel(
             header,
-            text="Hệ Thống Quản Lý Lễ Tân",
+            text="Quản Lý Lễ Tân",
             font=FONT_TITLE,
             text_color=COLOR_TEXT,
         ).pack(side="left")
 
-        # 2. Toolbar giống CRUD: Bo góc, có viền, chứa các nút bấm
         toolbar = ctk.CTkFrame(
             self,
             fg_color=COLOR_WHITE,
@@ -31,7 +29,19 @@ class ReceptionFrame(ctk.CTkFrame):
         toolbar.pack(fill="x", pady=(0, 20))
         toolbar.pack_propagate(False)
 
-        # Cụm nút bấm nằm bên phải Toolbar cho giống CRUD
+        self.search_var = ctk.StringVar()
+        self.search_var.trace_add("write", self.filter_data)
+        
+        ctk.CTkEntry(
+            toolbar,
+            placeholder_text="Tìm kiếm nhanh...",
+            width=250,
+            textvariable=self.search_var,
+            fg_color=COLOR_NAVY,
+            border_color=COLOR_BORDER,
+            text_color=COLOR_TEXT,
+        ).pack(side="left", padx=20, pady=15)
+
         btn_f = ctk.CTkFrame(toolbar, fg_color="transparent")
         btn_f.pack(side="right", padx=15)
 
@@ -79,11 +89,9 @@ class ReceptionFrame(ctk.CTkFrame):
             command=self.cancel_booking,
         ).pack(side="left", padx=5)
 
-        # 3. Khu vực bảng dữ liệu
         self.setup_treeview()
 
     def setup_treeview(self):
-        # Frame bao quanh Treeview có bo góc và viền giống CRUD
         f = ctk.CTkFrame(
             self,
             fg_color=COLOR_WHITE,
@@ -128,20 +136,29 @@ class ReceptionFrame(ctk.CTkFrame):
         self.tree.pack(fill="both", expand=True, padx=2, pady=2)
 
     def load_data(self):
-        for row in self.tree.get_children():
-            self.tree.delete(row)
         db.cursor.execute(
             "SELECT id, customer_name, room_id, checkin_date, checkout_date, total_price, status FROM bookings WHERE status NOT IN ('Completed', 'Cancelled')"
         )
-        for row in db.cursor.fetchall():
+        self.all_data = db.cursor.fetchall()
+        self.display_data(self.all_data)
+
+    def display_data(self, data_list):
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+        for row in data_list:
             b_id, cus, rm, cin, cout, price, status = row
-            # Format chuẩn Việt Nam
             cin_f = datetime.strptime(cin, "%Y-%m-%d").strftime("%d/%m/%Y")
             cout_f = datetime.strptime(cout, "%Y-%m-%d").strftime("%d/%m/%Y")
             price_f = f"{int(price):,}".replace(",", ".")
-            self.tree.insert(
-                "", "end", values=(b_id, cus, rm, cin_f, cout_f, price_f, status)
-            )
+            self.tree.insert("", "end", values=(b_id, cus, rm, cin_f, cout_f, price_f, status))
+
+    def filter_data(self, *args):
+        search_text = self.search_var.get().lower()
+        filtered = []
+        for row in self.all_data:
+            if any(search_text in str(val).lower() for val in row):
+                filtered.append(row)
+        self.display_data(filtered)
 
     def confirm_booking(self):
         item = self.tree.selection()

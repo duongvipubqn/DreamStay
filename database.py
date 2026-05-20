@@ -11,6 +11,7 @@ class Database:
         self.cursor = self.conn.cursor()
         self.create_tables()
         self.seed_manager()
+        self.seed_inventory()
 
     @staticmethod
     def hash_password(password):
@@ -114,6 +115,15 @@ class Database:
                 order_date TEXT,
                 status TEXT DEFAULT 'Chờ xử lý'
             )""")
+        
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS inventory (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category TEXT,
+                item_name TEXT UNIQUE,
+                price REAL,
+                stock INTEGER DEFAULT 50
+            )""")
 
         self.conn.commit()
 
@@ -134,6 +144,40 @@ class Database:
                     hashed_pw,
                     "manager",
                 ),
+            )
+            self.conn.commit()
+
+    def seed_inventory(self):
+        self.cursor.execute("SELECT COUNT(*) FROM inventory")
+        if self.cursor.fetchone()[0] == 0:
+            seed_data = [
+                ("Rượu Vang Đỏ Cao Cấp", "Chateau Margaux 2015", 5500000, 10),
+                ("Rượu Vang Đỏ Cao Cấp", "Penfolds Bin 389", 2800000, 15),
+                ("Rượu Vang Đỏ Cao Cấp", "Casillero del Diablo", 850000, 30),
+                ("Bia Nhập Khẩu", "Heineken Silver", 45000, 100),
+                ("Bia Nhập Khẩu", "Tiger Crystal", 40000, 120),
+                ("Bia Nhập Khẩu", "Bia Thủ Công IPA", 95000, 50),
+                ("Bia Nhập Khẩu", "Corona Extra", 55000, 80),
+                ("Nước Ngọt & Soda", "Coca Cola Classic", 25000, 200),
+                ("Nước Ngọt & Soda", "Pepsi Black", 25000, 200),
+                ("Nước Ngọt & Soda", "7Up Lemon", 25000, 150),
+                ("Nước Ngọt & Soda", "Sprite", 25000, 150),
+                ("Nước Ngọt & Soda", "Schweppes Soda", 30000, 100),
+                ("Champagne Sang Trọng", "Moët & Chandon", 3500000, 8),
+                ("Champagne Sang Trọng", "Dom Pérignon", 8200000, 5),
+                ("Champagne Sang Trọng", "Veuve Clicquot", 4100000, 12),
+                ("Nước Ép Trái Cây", "Nước Ép Cam Tươi", 65000, 50),
+                ("Nước Ép Trái Cây", "Nước Ép Dưa Hấu", 60000, 50),
+                ("Nước Ép Trái Cây", "Nước Ép Thơm", 60000, 50),
+                ("Nước Ép Trái Cây", "Sinh Tố Bơ", 85000, 30),
+                ("Nước Khoáng Tinh Khiết", "Lavie 500ml", 15000, 300),
+                ("Nước Khoáng Tinh Khiết", "Aquafina 500ml", 15000, 300),
+                ("Nước Khoáng Tinh Khiết", "Evian Glass Bottle", 110000, 50),
+                ("Nước Khoáng Tinh Khiết", "Perrier Sparkling", 95000, 60)
+            ]
+            self.cursor.executemany(
+                "INSERT INTO inventory (category, item_name, price, stock) VALUES (?,?,?,?)",
+                seed_data
             )
             self.conn.commit()
 

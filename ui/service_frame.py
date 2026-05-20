@@ -3,6 +3,7 @@ from config import *
 from PIL import Image
 from tkinter import messagebox
 from database import db
+from datetime import datetime
 
 SUB_SERVICES = {
     "Rượu Vang Đỏ Cao Cấp": [
@@ -57,7 +58,9 @@ class OrderModal(ctk.CTkToplevel):
         self.configure(fg_color=COLOR_CREAM)
         self.grab_set()
 
-        self.items = SUB_SERVICES.get(category_name, [])
+        db.cursor.execute("SELECT item_name, price, stock FROM inventory WHERE category=?", (category_name,))
+        self.items = db.cursor.fetchall() # Mỗi dòng là (tên, giá, tồn kho)
+        
         self.quantities = {}
         for item in self.items:
             var = ctk.IntVar(value=0)
@@ -71,12 +74,14 @@ class OrderModal(ctk.CTkToplevel):
         self.scroll = ctk.CTkScrollableFrame(self, fg_color="transparent", height=350)
         self.scroll.pack(fill="both", expand=True, padx=20)
 
-        for name, price in self.items:
+        for name, price, stock in self.items:
             f = ctk.CTkFrame(self.scroll, fg_color=COLOR_WHITE, corner_radius=10)
             f.pack(fill="x", pady=5)
 
-            ctk.CTkLabel(f, text=name, font=FONT_BODY_BOLD, text_color=COLOR_NAVY).pack(
-                side="left", padx=15, pady=10
+            # Hiển thị luôn số lượng tồn kho bên cạnh tên món
+            display_name = f"{name}\n(Còn {stock})"
+            ctk.CTkLabel(f, text=display_name, font=FONT_BODY_BOLD, text_color=COLOR_NAVY, justify="left").pack(
+                side="left", padx=15, pady=5
             )
 
             qty_f = ctk.CTkFrame(f, fg_color="transparent")
@@ -110,7 +115,7 @@ class OrderModal(ctk.CTkToplevel):
 
             ctk.CTkLabel(
                 f,
-                text=f"{price:,.0f}đ",
+                text=f"{int(price):,}".replace(",", ".") + "đ",
                 font=FONT_BODY,
                 text_color=COLOR_GOLD,
                 width=80,
@@ -177,11 +182,18 @@ class OrderModal(ctk.CTkToplevel):
 
         total = 0
         order_details = []
-        for name, price in self.items:
+        updates = []
+
+        for name, price, stock in self.items:
             q = self.quantities[name].get()
             if q > 0:
+                if q > stock:
+                    return messagebox.showerror(
+                        "Hết hàng", f"Món '{name}' trong kho chỉ còn {stock} phần, không đủ để giao!"
+                    )
                 total += q * price
                 order_details.append(f"{name} (x{q})")
+                updates.append((q, name))
 
         if total == 0:
             return messagebox.showwarning("Chú ý", "Vui lòng chọn ít nhất một món đồ!")
@@ -190,21 +202,29 @@ class OrderModal(ctk.CTkToplevel):
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
 
         try:
+            for qty, name in updates:
+                db.cursor.execute(
+                    "UPDATE inventory SET stock = stock - ? WHERE item_name = ?",
+                    (qty, name)
+                )
+
             db.cursor.execute(
                 """
                 INSERT INTO service_orders (room_id, items_detail, total_price, order_date, status)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                (room, items_str, total, now_str, "Chờ xử lý"),
+                (room, items_str, total, now_str, "Chờ xử lý")
             )
             db.conn.commit()
 
+            total_f = f"{int(total):,}".replace(",", ".")
             messagebox.showinfo(
                 "Thành công",
-                f"Đơn hàng đã được tiếp nhận!\nPhòng: {room}\nTổng: {total:,.0f} VNĐ",
+                f"Đơn hàng đã được tiếp nhận!\nPhòng: {room}\nTổng: {total_f} VNĐ",
             )
             self.destroy()
         except Exception as e:
+            db.conn.rollback()
             messagebox.showerror("Lỗi", f"Không thể lưu đơn: {str(e)}")
 
 
