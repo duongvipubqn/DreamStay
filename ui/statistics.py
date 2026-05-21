@@ -69,76 +69,101 @@ class StatisticsFrame(ctk.CTkFrame):
         for widget in self.chart_container.winfo_children():
             widget.destroy()
 
-        stats = db.get_room_stats()
-        self.lbl_total.configure(text=f"Tổng số phòng: {stats['total']}")
-        avg_price_f = (
-            f"{int(stats['avg_price']):,}".replace(",", ".") + " VNĐ"
-            if stats["avg_price"] > 0
-            else "0 VNĐ"
+        loading_lbl = ctk.CTkLabel(
+            self.chart_container,
+            text="🔄 Đang phân tích dữ liệu doanh thu & vẽ biểu đồ...",
+            font=FONT_LABEL,
+            text_color=COLOR_GOLD,
         )
-        self.lbl_avg.configure(text=f"Giá trung bình: {avg_price_f}")
-        max_price_f = (
-            f"{int(stats['max_price']):,}".replace(",", ".") + " VNĐ"
-            if stats["max_price"] > 0
-            else "0 VNĐ"
-        )
-        self.lbl_max.configure(text=f"Mức giá cao nhất: {max_price_f}")
+        loading_lbl.pack(expand=True)
 
-        status_counts = stats["status_counts"]
-        booked = status_counts.get("Đã đặt", 0) + status_counts.get("Bảo trì", 0)
-        total = stats["total"]
-        ratio_pct = (booked / total * 100) if total > 0 else 0.0
-        self.lbl_ratio.configure(text=f"Hiệu suất phòng: {ratio_pct:.1f}%")
+        def worker():
+            stats = db.get_room_stats()
 
-        plt.close("all")
+            plt.close("all")
+            plt.rcParams["font.family"] = "sans-serif"
+            plt.rcParams["font.sans-serif"] = ["Arial", "Tahoma", "Verdana"]
 
-        plt.rcParams["font.family"] = "sans-serif"
-        plt.rcParams["font.sans-serif"] = ["Arial", "Tahoma", "Verdana"]
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+            fig.patch.set_facecolor(COLOR_CREAM)
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
-        fig.patch.set_facecolor(COLOR_CREAM)
+            ax1.set_facecolor(COLOR_WHITE)
+            ax1.tick_params(colors=COLOR_TEXT)
+            ax1.xaxis.label.set_color(COLOR_TEXT)
+            ax1.yaxis.label.set_color(COLOR_TEXT)
+            for spine in ax1.spines.values():
+                spine.set_color(COLOR_BORDER)
 
-        ax1.set_facecolor(COLOR_WHITE)
-        ax1.tick_params(colors=COLOR_TEXT)
-        ax1.xaxis.label.set_color(COLOR_TEXT)
-        ax1.yaxis.label.set_color(COLOR_TEXT)
-        for spine in ax1.spines.values():
-            spine.set_color(COLOR_BORDER)
+            db.cursor.execute(
+                "SELECT location, SUM(amount) FROM revenue_history GROUP BY location"
+            )
+            data = db.cursor.fetchall()
+            locs = [r[0] for r in data] if data else ["Trống"]
+            amounts = [r[1] for r in data] if data else [0]
 
-        db.cursor.execute(
-            "SELECT location, SUM(amount) FROM revenue_history GROUP BY location"
-        )
-        data = db.cursor.fetchall()
-        locs = [r[0] for r in data] if data else ["Trống"]
-        amounts = [r[1] for r in data] if data else [0]
+            ax1.bar(locs, amounts, color=COLOR_GOLD)
+            ax1.set_title(
+                "Doanh thu khu vực", fontweight="bold", color=COLOR_TEXT, pad=20
+            )
+            ax1.tick_params(axis="x", rotation=30)
 
-        ax1.bar(locs, amounts, color=COLOR_GOLD)
-        ax1.set_title("Doanh thu khu vực", fontweight="bold", color=COLOR_TEXT, pad=20)
-        ax1.tick_params(axis="x", rotation=30)
+            db.cursor.execute("SELECT status, COUNT(*) FROM rooms GROUP BY status")
+            status_data = db.cursor.fetchall()
+            labels = (
+                [r[0] for r in status_data] if status_data else ["Không có dữ liệu"]
+            )
+            sizes = [r[1] for r in status_data] if status_data else [1]
 
-        db.cursor.execute("SELECT status, COUNT(*) FROM rooms GROUP BY status")
-        status_data = db.cursor.fetchall()
-        labels = [r[0] for r in status_data] if status_data else ["Không có dữ liệu"]
-        sizes = [r[1] for r in status_data] if status_data else [1]
+            colors = [COLOR_GOLD, COLOR_NAVY, "#e74c3c", "#95a5a6"]
 
-        colors = [COLOR_GOLD, COLOR_NAVY, "#e74c3c", "#95a5a6"]
+            wedges, texts, autotexts = ax2.pie(
+                sizes,
+                labels=labels,
+                autopct="%1.1f%%",
+                colors=colors,
+                startangle=140,
+                textprops={"color": COLOR_TEXT},
+            )
 
-        wedges, texts, autotexts = ax2.pie(
-            sizes,
-            labels=labels,
-            autopct="%1.1f%%",
-            colors=colors,
-            startangle=140,
-            textprops={"color": COLOR_TEXT},
-        )
+            for autotext in autotexts:
+                autotext.set_color("white")
+                autotext.set_weight("bold")
 
-        for autotext in autotexts:
-            autotext.set_color("white")
-            autotext.set_weight("bold")
+            ax2.set_title(
+                "Tình trạng phòng", fontweight="bold", color=COLOR_TEXT, pad=20
+            )
+            fig.tight_layout()
 
-        ax2.set_title("Tình trạng phòng", fontweight="bold", color=COLOR_TEXT, pad=20)
+            def update_ui():
+                loading_lbl.destroy()
+                self.lbl_total.configure(text=f"Tổng số phòng: {stats['total']}")
+                avg_price_f = (
+                    f"{int(stats['avg_price']):,}".replace(",", ".") + " VNĐ"
+                    if stats["avg_price"] > 0
+                    else "0 VNĐ"
+                )
+                self.lbl_avg.configure(text=f"Giá trung bình: {avg_price_f}")
+                max_price_f = (
+                    f"{int(stats['max_price']):,}".replace(",", ".") + " VNĐ"
+                    if stats["max_price"] > 0
+                    else "0 VNĐ"
+                )
+                self.lbl_max.configure(text=f"Mức giá cao nhất: {max_price_f}")
 
-        fig.tight_layout()
-        canvas = FigureCanvasTkAgg(fig, master=self.chart_container)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
+                status_counts = stats["status_counts"]
+                booked = status_counts.get("Đã đặt", 0) + status_counts.get(
+                    "Bảo trì", 0
+                )
+                total = stats["total"]
+                ratio_pct = (booked / total * 100) if total > 0 else 0.0
+                self.lbl_ratio.configure(text=f"Hiệu suất phòng: {ratio_pct:.1f}%")
+
+                canvas = FigureCanvasTkAgg(fig, master=self.chart_container)
+                canvas.draw()
+                canvas.get_tk_widget().pack(fill="both", expand=True)
+
+            self.after(0, update_ui)
+
+        import threading
+
+        threading.Thread(target=worker, daemon=True).start()

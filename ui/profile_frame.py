@@ -1,4 +1,5 @@
 from tkinter import messagebox, ttk
+from datetime import datetime
 from config import *
 from database import db
 
@@ -122,12 +123,12 @@ class ProfileFrame(ctk.CTkFrame):
         self.coupon_scroll.pack(fill="both", expand=True)
 
     def load_data(self):
-        if not self.app.current_user:
+        if not hasattr(self.app, "current_username") or not self.app.current_username:
             return
 
         db.cursor.execute(
-            "SELECT full_name, email, phone, username FROM users WHERE full_name=?",
-            (self.app.current_user,),
+            "SELECT full_name, email, phone, username FROM users WHERE username=?",
+            (self.app.current_username,),
         )
         user_res = db.cursor.fetchone()
         if user_res:

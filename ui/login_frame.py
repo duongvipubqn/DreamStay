@@ -108,7 +108,7 @@ class LoginFrame(ctk.CTkFrame):
         u, p = self.user_entry.get(), self.pass_entry.get()
         hashed_pw = db.hash_password(p)
         db.cursor.execute(
-            "SELECT full_name, role FROM users WHERE username=? AND password=?",
+            "SELECT username, full_name, role FROM users WHERE username=? AND password=?",
             (u, hashed_pw),
         )
         res = db.cursor.fetchone()
@@ -116,6 +116,6 @@ class LoginFrame(ctk.CTkFrame):
             app = self.winfo_toplevel()
             func = getattr(app, "login_success", None)
             if callable(func):
-                func(res[0], res[1])
+                func(res[0], res[1], res[2])
         else:
             messagebox.showerror("Từ chối", "Tài khoản hoặc mật khẩu không đúng!")

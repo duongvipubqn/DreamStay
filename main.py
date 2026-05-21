@@ -90,10 +90,34 @@ class HotelApp(ctk.CTk):
                     encoded_data = f.read()
                     decoded_str = base64.b64decode(encoded_data).decode("utf-8")
                     data = decoded_str.split("|")
-                    if len(data) == 2:
-                        self.login_success(data[0], data[1], save_session=False)
+                    if len(data) == 3:
+                        self.login_success(
+                            data[0], data[1], data[2], save_session=False
+                        )
             except Exception:
                 pass
+
+    def login_success(self, username, name, role, save_session=True):
+        self.current_username = username
+        self.current_user = name
+        self.current_role = role
+
+        if save_session:
+            raw_str = f"{username}|{name}|{role}"
+            encoded_bytes = base64.b64encode(raw_str.encode("utf-8"))
+            with open("session.txt", "wb") as f:
+                f.write(encoded_bytes)
+
+        self.header.user_btn.configure(
+            text="👤", width=40, corner_radius=20, font=FONT_LABEL
+        )
+        self.header.update_menu(True, role)
+        self.switch_page("Trang chủ")
+
+        mgmt_page = self.pages.get("Quản lý")
+        update_func = getattr(mgmt_page, "update_user", None)
+        if callable(update_func):
+            update_func(name, role)
 
     def switch_page(self, name, filters=None):
         for page_name, page in self.pages.items():
@@ -140,27 +164,6 @@ class HotelApp(ctk.CTk):
         self.header.update_menu(False, None)
         self.switch_page("Trang chủ")
         messagebox.showinfo("Thông báo", "Sếp đã đăng xuất an toàn!")
-
-    def login_success(self, name, role, save_session=True):
-        self.current_user = name
-        self.current_role = role
-
-        if save_session:
-            raw_str = f"{name}|{role}"
-            encoded_bytes = base64.b64encode(raw_str.encode("utf-8"))
-            with open("session.txt", "wb") as f:
-                f.write(encoded_bytes)
-
-        self.header.user_btn.configure(
-            text="👤", width=40, corner_radius=20, font=FONT_LABEL
-        )
-        self.header.update_menu(True, role)
-        self.switch_page("Trang chủ")
-
-        mgmt_page = self.pages.get("Quản lý")
-        update_func = getattr(mgmt_page, "update_user", None)
-        if callable(update_func):
-            update_func(name, role)
 
 
 if __name__ == "__main__":

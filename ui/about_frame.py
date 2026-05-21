@@ -33,47 +33,6 @@ class AboutFrame(ctk.CTkScrollableFrame):
                 img_lbl.pack(padx=4, pady=4)
                 self.ctk_img_cache = ctk_img
 
-                def make_zoom_handler(lbl, p_img, base_img, w, h):
-                    state = {"current_step": 0.0, "after_id": None}
-                    max_zoom_factor = 0.05
-                    total_steps = 5
-
-                    def update_display():
-                        if state["current_step"] <= 0:
-                            lbl.configure(image=base_img)
-                            return
-                        zoom_val = state["current_step"] * max_zoom_factor
-                        iw, ih = p_img.size
-                        cw, ch = iw / (1 + zoom_val), ih / (1 + zoom_val)
-                        l, t, r, b = (
-                            (iw - cw) / 2,
-                            (ih - ch) / 2,
-                            (iw + cw) / 2,
-                            (ih + ch) / 2,
-                        )
-                        zoomed_pil = p_img.crop((l, t, r, b))
-                        zoomed_ctk = ctk.CTkImage(
-                            light_image=zoomed_pil, dark_image=zoomed_pil, size=(w, h)
-                        )
-                        lbl.configure(image=zoomed_ctk)
-
-                    def animate(direction):
-                        if state["after_id"]:
-                            lbl.after_cancel(state["after_id"])
-                            state["after_id"] = None
-                        if direction == "in":
-                            if state["current_step"] < 1.0:
-                                state["current_step"] += 1.0 / total_steps
-                                if state["current_step"] > 1.0:
-                                    state["current_step"] = 1.0
-                                update_display()
-                                state["after_id"] = lbl.after(15, lambda: animate("in"))
-                        else:
-                            state["current_step"] = 0.0
-                            lbl.configure(image=base_img)
-
-                    return lambda e: animate("in"), lambda e: animate("out")
-
                 in_f, out_f = make_zoom_handler(img_lbl, pil_img, ctk_img, 640, 360)
                 img_lbl.bind("<Enter>", in_f)
                 img_lbl.bind("<Leave>", out_f)

@@ -135,7 +135,7 @@ class MainFrame(ctk.CTkFrame):
         )
         self.api_label.pack(side="bottom", pady=(5, 5), padx=20, fill="x")
 
-        ctk.CTkButton(
+        self.api_btn = ctk.CTkButton(
             self.sidebar,
             text="⚙ TẢI TỶ GIÁ LIVE",
             fg_color="#3a3a50",
@@ -145,7 +145,8 @@ class MainFrame(ctk.CTkFrame):
             height=35,
             font=FONT_BODY_BOLD,
             command=self.fetch_api_data,
-        ).pack(side="bottom", pady=5, padx=15, fill="x")
+        )
+        self.api_btn.pack(side="bottom", pady=5, padx=15, fill="x")
 
         ctk.CTkButton(
             self.sidebar,
@@ -405,6 +406,7 @@ class MainFrame(ctk.CTkFrame):
             )
 
     def fetch_api_data(self):
+        self.api_btn.configure(state="disabled")
         loading_win = ctk.CTkToplevel(self)
         loading_win.title("Đang xử lý")
         w, h = 300, 150
@@ -448,6 +450,7 @@ class MainFrame(ctk.CTkFrame):
                 def success_ui():
                     self.api_label.configure(text=f"Tỷ giá live: 1 USD = {vnd_f} VND")
                     loading_win.destroy()
+                    self.api_btn.configure(state="normal")
                     messagebox.showinfo(
                         "Thành công",
                         f"Đã cập nhật tỷ giá thực tế hôm nay: 1 USD = {vnd_f} VNĐ",
@@ -459,6 +462,7 @@ class MainFrame(ctk.CTkFrame):
 
                 def error_ui():
                     loading_win.destroy()
+                    self.api_btn.configure(state="normal")
                     messagebox.showerror(
                         "Lỗi kết nối",
                         "Hết thời gian chờ phản hồi (Timeout)! Xin sếp vui lòng kiểm tra lại đường truyền mạng.",
@@ -470,6 +474,7 @@ class MainFrame(ctk.CTkFrame):
 
                 def error_ui():
                     loading_win.destroy()
+                    self.api_btn.configure(state="normal")
                     messagebox.showerror(
                         "Lỗi xác thực",
                         "Yêu cầu API bị từ chối do lỗi xác thực người dùng (Mã 401 Unauthorized)!",
@@ -481,6 +486,7 @@ class MainFrame(ctk.CTkFrame):
 
                 def error_ui():
                     loading_win.destroy()
+                    self.api_btn.configure(state="normal")
                     messagebox.showerror(
                         "Lỗi hệ thống",
                         f"Không thể lấy thông tin tỷ giá trực tuyến: {str(e)}",

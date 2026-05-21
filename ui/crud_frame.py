@@ -343,18 +343,21 @@ class CRUDFrame(ctk.CTkFrame):
         )
         return None
 
-    def save_to_db(self, vals):
+    def save_to_db(self, data_tuple):
+        vals, original_id = data_tuple
         try:
             db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
             col_names = [d[0] for d in db.cursor.description]
+
+            lookup_id = original_id if original_id else vals[0]
             db.cursor.execute(
-                f"SELECT * FROM {self.table_name} WHERE {col_names[0]}=?", (vals[0],)
+                f"SELECT * FROM {self.table_name} WHERE {col_names[0]}=?", (lookup_id,)
             )
             if db.cursor.fetchone():
                 set_str = ", ".join([f"{n}=?" for n in col_names])
                 db.cursor.execute(
                     f"UPDATE {self.table_name} SET {set_str} WHERE {col_names[0]}=?",
-                    (*vals, vals[0]),
+                    (*vals, lookup_id),
                 )
             else:
                 db.cursor.execute(
@@ -386,7 +389,15 @@ class CRUDFrame(ctk.CTkFrame):
                 col_name = self.columns[i]
                 if any(x in col_name for x in ["Giá", "Tiền", "Lương", "chi tiêu"]):
                     try:
-                        formatted_row.append(f"{int(float(val)):,}".replace(",", "."))
+                        val_f = float(val)
+                        if val_f.is_integer():
+                            formatted_row.append(f"{int(val_f):,}".replace(",", "."))
+                        else:
+                            formatted_row.append(
+                                f"{val_f:,.2f}".replace(",", "X")
+                                .replace(".", ",")
+                                .replace("X", ".")
+                            )
                     except:
                         formatted_row.append(val)
                 elif (

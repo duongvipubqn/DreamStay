@@ -222,9 +222,13 @@ class OrderModal(ctk.CTkToplevel):
         try:
             for qty, name in updates:
                 db.cursor.execute(
-                    "UPDATE inventory SET stock = stock - ? WHERE item_name = ?",
-                    (qty, name),
+                    "UPDATE inventory SET stock = stock - ? WHERE item_name = ? AND stock >= ?",
+                    (qty, name, qty),
                 )
+                if db.cursor.rowcount == 0:
+                    raise ValueError(
+                        f"Sản phẩm '{name}' vừa mới hết hàng hoặc không đủ tồn kho để cung cấp!"
+                    )
 
             db.cursor.execute(
                 """
@@ -326,47 +330,6 @@ class ServiceFrame(ctk.CTkScrollableFrame):
                     )
                     img_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                     img_lbl.pack(pady=10, padx=10, fill="x")
-
-                    def make_zoom_handler(lbl, p_img, base_img, w, h):
-                        state = {"current_step": 0.0, "after_id": None}
-                        max_zoom_factor = 0.05
-                        total_steps = 5
-
-                        def update_display():
-                            if state["current_step"] <= 0:
-                                lbl.configure(image=base_img)
-                                return
-                            zv = state["current_step"] * max_zoom_factor
-                            iw, ih = p_img.size
-                            cw, ch = iw / (1 + zv), ih / (1 + zv)
-                            l, t, r, b = (
-                                (iw - cw) / 2,
-                                (ih - ch) / 2,
-                                (iw + cw) / 2,
-                                (ih + ch) / 2,
-                            )
-                            zp = p_img.crop((l, t, r, b))
-                            zc = ctk.CTkImage(
-                                light_image=zp, dark_image=zp, size=(w, h)
-                            )
-                            lbl.configure(image=zc)
-
-                        def animate(direction):
-                            if state["after_id"]:
-                                lbl.after_cancel(state["after_id"])
-                                state["after_id"] = None
-                            if direction == "in":
-                                if state["current_step"] < 1.0:
-                                    state["current_step"] += 1.0 / total_steps
-                                    update_display()
-                                    state["after_id"] = lbl.after(
-                                        15, lambda: animate("in")
-                                    )
-                            else:
-                                state["current_step"] = 0.0
-                                lbl.configure(image=base_img)
-
-                        return lambda e: animate("in"), lambda e: animate("out")
 
                     in_f, out_f = make_zoom_handler(
                         img_lbl, pil_img, ctk_img, img_w, img_h

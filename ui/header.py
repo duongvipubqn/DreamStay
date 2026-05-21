@@ -1,5 +1,14 @@
 import colorsys
+import os
 from config import *
+
+try:
+    import pygame
+
+    pygame.mixer.init()
+    PYGAME_AVAILABLE = True
+except Exception:
+    PYGAME_AVAILABLE = False
 
 
 class Header(ctk.CTkFrame):
@@ -39,6 +48,122 @@ class Header(ctk.CTkFrame):
         self.active_menu = None
         self.update_menu(False, None, "Trang chủ")
         self.animate_rainbow()
+
+        roman_nums = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+        arcade_tracks = [
+            {
+                "title": f"Sunlit Arcade {roman_nums[i]}",
+                "file": f"musics/Sunlit Arcade {i+1}.mp3",
+            }
+            for i in range(10)
+        ]
+        self.music_albums = [
+            {"name": "Sunlit Arcade Collection", "tracks": arcade_tracks}
+        ]
+
+        self.cur_album = 0
+        self.cur_track = 0
+        self.is_playing = False
+        self.volume_level = 0.5
+        self.hide_timer_id = None
+
+        self.music_panel = ctk.CTkFrame(self, fg_color="transparent")
+        self.music_panel.pack(side="left", padx=15)
+
+        self.controls_frame = ctk.CTkFrame(
+            self.music_panel,
+            fg_color=COLOR_WHITE,
+            corner_radius=10,
+            border_width=1,
+            border_color=COLOR_BORDER,
+            height=40,
+        )
+        self.controls_frame.pack(side="left")
+
+        ctk.CTkButton(
+            self.controls_frame,
+            text="⏮",
+            width=32,
+            height=32,
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            font=("Segoe UI", 13, "bold"),
+            hover_color="#252538",
+            command=self.prev_album,
+        ).pack(side="left", padx=1)
+
+        ctk.CTkButton(
+            self.controls_frame,
+            text="⏪",
+            width=32,
+            height=32,
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            font=("Segoe UI", 13, "bold"),
+            hover_color="#252538",
+            command=self.prev_track,
+        ).pack(side="left", padx=1)
+
+        self.music_btn = ctk.CTkButton(
+            self.controls_frame,
+            text="▶",
+            width=32,
+            height=32,
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            hover_color="#252538",
+            font=("Segoe UI", 13, "bold"),
+            command=self.toggle_play,
+        )
+        self.music_btn.pack(side="left", padx=1)
+
+        ctk.CTkButton(
+            self.controls_frame,
+            text="⏩",
+            width=32,
+            height=32,
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            font=("Segoe UI", 13, "bold"),
+            hover_color="#252538",
+            command=self.next_track,
+        ).pack(side="left", padx=1)
+
+        ctk.CTkButton(
+            self.controls_frame,
+            text="⏭",
+            width=32,
+            height=32,
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            font=("Segoe UI", 13, "bold"),
+            hover_color="#252538",
+            command=self.next_album,
+        ).pack(side="left", padx=1)
+
+        self.track_label = ctk.CTkLabel(
+            self.controls_frame,
+            text="DreamStay Player",
+            font=("Segoe UI", 11, "bold"),
+            text_color=COLOR_TEXT,
+            width=180,
+        )
+        self.track_label.pack(side="left", padx=10)
+
+        self.volume_slider = ctk.CTkSlider(
+            self.controls_frame,
+            width=80,
+            height=15,
+            from_=0,
+            to=100,
+            number_of_steps=100,
+            button_color=COLOR_GOLD,
+            button_hover_color=COLOR_GOLD_HOVER,
+            progress_color=COLOR_GOLD,
+            command=self.change_volume,
+        )
+        self.volume_slider.pack(side="left", padx=(5, 10))
+        self.volume_slider.set(50)
 
     def animate_rainbow(self, *_args):
         self.hue += 0.005
@@ -101,3 +226,89 @@ class Header(ctk.CTkFrame):
             self.app.show_login()
         else:
             self.app.switch_page("Hồ sơ")
+
+    def toggle_play(self):
+        self.is_playing = not self.is_playing
+        if self.is_playing:
+            self.play_current()
+            self.music_btn.configure(text="⏸")
+        else:
+            self.stop_current()
+            self.music_btn.configure(text="▶")
+
+    def play_current(self):
+        album = self.music_albums[self.cur_album]
+        track = album["tracks"][self.cur_track]
+        track_name = f"{track['title']}"
+        self.track_label.configure(text=track_name)
+
+        if PYGAME_AVAILABLE and os.path.exists(track["file"]):
+            try:
+                pygame.mixer.music.load(track["file"])
+                pygame.mixer.music.set_volume(self.volume_level)
+                pygame.mixer.music.play()
+            except Exception:
+                pass
+        else:
+            self.track_label.configure(text=f"🎵 {track_name} (Demo)")
+
+    def stop_current(self):
+        self.track_label.configure(text="Player Paused")
+        if PYGAME_AVAILABLE:
+            try:
+                pygame.mixer.music.stop()
+            except Exception:
+                pass
+
+    def next_track(self):
+        album = self.music_albums[self.cur_album]
+        self.cur_track = (self.cur_track + 1) % len(album["tracks"])
+        if self.is_playing:
+            self.play_current()
+
+    def prev_track(self):
+        album = self.music_albums[self.cur_album]
+        self.cur_track = (self.cur_track - 1) % len(album["tracks"])
+        if self.is_playing:
+            self.play_current()
+
+    def next_album(self):
+        self.cur_album = (self.cur_album + 1) % len(self.music_albums)
+        self.cur_track = 0
+        if self.is_playing:
+            self.play_current()
+
+    def prev_album(self):
+        self.cur_album = (self.cur_album - 1) % len(self.music_albums)
+        self.cur_track = 0
+        if self.is_playing:
+            self.play_current()
+
+    def change_volume(self, val):
+        self.volume_level = float(val) / 100.0
+        if PYGAME_AVAILABLE:
+            try:
+                pygame.mixer.music.set_volume(self.volume_level)
+            except Exception:
+                pass
+        self.controls_frame.pack(side="left", padx=10)
+
+    def on_music_leave(self, event):
+        self.update_music_icon(hover=False)
+        self.start_hide_timer()
+
+    def on_panel_enter(self, event):
+        if self.hide_timer_id:
+            self.after_cancel(self.hide_timer_id)
+            self.hide_timer_id = None
+
+    def on_panel_leave(self, event):
+        self.start_hide_timer()
+
+    def start_hide_timer(self):
+        if self.hide_timer_id is None:
+            self.hide_timer_id = self.after(800, self.hide_controls)
+
+    def hide_controls(self):
+        self.controls_frame.pack_forget()
+        self.hide_timer_id = None

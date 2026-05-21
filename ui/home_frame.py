@@ -138,7 +138,7 @@ class HomeFrame(ctk.CTkFrame):
             self.anim_id = self.after(5000, self.rotate_image, "loop")
             return
 
-        alpha -= 0.05
+        alpha -= 0.1
         faded = self.fade_images(
             self.raw_images[self.current_idx], self.raw_images[nxt_idx], 1.0 - alpha
         )
@@ -151,7 +151,7 @@ class HomeFrame(ctk.CTkFrame):
                 )
                 self.bg_1.configure(image=self.current_blend)
         self.search_bar.lift()
-        self.anim_id = self.after(15, self.animate_fade, alpha, nxt_idx)
+        self.anim_id = self.after(35, self.animate_fade, alpha, nxt_idx)
 
     def destroy(self):
         if hasattr(self, "anim_id") and self.anim_id:

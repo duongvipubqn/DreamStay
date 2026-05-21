@@ -32,8 +32,13 @@ class RoomView(ctk.CTkScrollableFrame):
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.trigger_search)
 
+        search_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
+        search_container.pack(side="left", padx=(20, 10), pady=15)
+
+        ctk.CTkLabel(search_container, text=" ", font=FONT_BODY_BOLD).pack(anchor="w")
+
         search_entry = ctk.CTkEntry(
-            self.filter_frame,
+            search_container,
             placeholder_text="Tìm kiếm nhanh...",
             width=200,
             textvariable=self.search_var,
@@ -42,7 +47,7 @@ class RoomView(ctk.CTkScrollableFrame):
             text_color=COLOR_TEXT,
             height=35,
         )
-        search_entry.pack(side="left", padx=(20, 10), pady=15)
+        search_entry.pack(pady=(5, 0))
 
         self.filter_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
         self.filter_container.pack(side="left", padx=(10, 20), pady=15)
@@ -218,11 +223,14 @@ class RoomView(ctk.CTkScrollableFrame):
 
             p_range = filters["price"]
             if p_range == "Dưới 3tr":
-                query += " AND price < 3000000"
+                query += " AND price < ?"
+                params.append(3000000)
             elif p_range == "3tr - 6tr":
-                query += " AND price BETWEEN 3000000 AND 6000000"
+                query += " AND price BETWEEN ? AND ?"
+                params.extend([3000000, 6000000])
             elif p_range == "Trên 10tr":
-                query += " AND price > 10000000"
+                query += " AND price > ?"
+                params.append(10000000)
 
         db.cursor.execute(query, params)
         rooms_db = db.cursor.fetchall()
@@ -322,53 +330,6 @@ class RoomView(ctk.CTkScrollableFrame):
                 if ctk_img:
                     img_label = ctk.CTkLabel(card, image=ctk_img, text="")
                     img_label.pack(pady=10, padx=10, fill="x")
-
-                    def make_zoom_handler(lbl, p_img, base_img, w, h):
-                        state = {"current_step": 0.0, "after_id": None}
-                        max_zoom_factor = 0.05
-                        total_steps = 5
-
-                        def update_display():
-                            if state["current_step"] <= 0:
-                                lbl.configure(image=base_img)
-                                return
-
-                            zoom_val = state["current_step"] * max_zoom_factor
-                            iw, ih = p_img.size
-                            cw, ch = iw / (1 + zoom_val), ih / (1 + zoom_val)
-                            l, t, r, b = (
-                                (iw - cw) / 2,
-                                (ih - ch) / 2,
-                                (iw + cw) / 2,
-                                (ih + ch) / 2,
-                            )
-                            zoomed_pil = p_img.crop((l, t, r, b))
-                            zoomed_ctk = ctk.CTkImage(
-                                light_image=zoomed_pil,
-                                dark_image=zoomed_pil,
-                                size=(w, h),
-                            )
-                            lbl.configure(image=zoomed_ctk)
-
-                        def animate(direction):
-                            if state["after_id"]:
-                                lbl.after_cancel(state["after_id"])
-                                state["after_id"] = None
-
-                            if direction == "in":
-                                if state["current_step"] < 1.0:
-                                    state["current_step"] += 1.0 / total_steps
-                                    if state["current_step"] > 1.0:
-                                        state["current_step"] = 1.0
-                                    update_display()
-                                    state["after_id"] = lbl.after(
-                                        15, lambda: animate("in")
-                                    )
-                            else:
-                                state["current_step"] = 0.0
-                                lbl.configure(image=base_img)
-
-                        return lambda e: animate("in"), lambda e: animate("out")
 
                     enter_fn, leave_fn = make_zoom_handler(
                         img_label, pil_ref, ctk_img, img_w, img_h

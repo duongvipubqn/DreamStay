@@ -31,7 +31,7 @@ class ReceptionFrame(ctk.CTkFrame):
 
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.filter_data)
-        
+
         ctk.CTkEntry(
             toolbar,
             placeholder_text="Tìm kiếm nhanh...",
@@ -150,7 +150,9 @@ class ReceptionFrame(ctk.CTkFrame):
             cin_f = datetime.strptime(cin, "%Y-%m-%d").strftime("%d/%m/%Y")
             cout_f = datetime.strptime(cout, "%Y-%m-%d").strftime("%d/%m/%Y")
             price_f = f"{int(price):,}".replace(",", ".")
-            self.tree.insert("", "end", values=(b_id, cus, rm, cin_f, cout_f, price_f, status))
+            self.tree.insert(
+                "", "end", values=(b_id, cus, rm, cin_f, cout_f, price_f, status)
+            )
 
     def filter_data(self, *args):
         search_text = self.search_var.get().lower()
@@ -215,7 +217,9 @@ class ReceptionFrame(ctk.CTkFrame):
             "Thanh toán", f"Khách {cus} trả phòng {rm_id}. Xong chưa sếp?"
         ):
             try:
-                real_price = float(price.replace(".", ""))
+                import re
+
+                real_price = float(re.sub(r"[^\d]", "", price))
                 db.cursor.execute(
                     "SELECT location FROM rooms WHERE room_id=?", (rm_id,)
                 )
@@ -232,7 +236,7 @@ class ReceptionFrame(ctk.CTkFrame):
                     "UPDATE bookings SET status='Completed' WHERE id=?", (b_id,)
                 )
                 db.cursor.execute(
-                    "UPDATE rooms SET status='Trống' WHERE room_id=?", (rm_id,)
+                    "UPDATE rooms SET status='Đang dọn' WHERE room_id=?", (rm_id,)
                 )
                 db.conn.commit()
                 messagebox.showinfo("Thành công", "Đã thanh toán xong!")

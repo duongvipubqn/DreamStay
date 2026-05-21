@@ -1,11 +1,9 @@
-import urllib.request
 import webbrowser
-from io import BytesIO
-from PIL import Image
+import tkintermapview
 from config import *
 
 
-class ContactFrame(ctk.CTkScrollableFrame):
+class ContactFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
 
@@ -14,69 +12,80 @@ class ContactFrame(ctk.CTkScrollableFrame):
         ).pack(pady=(36, 14))
 
         body = ctk.CTkFrame(self, fg_color="transparent")
-        body.pack(fill="both", expand=True, padx=60, pady=(0, 20))
+        body.pack(fill="both", expand=True, padx=40, pady=(0, 20))
 
-        self.left = ctk.CTkFrame(
+        body.grid_rowconfigure(0, weight=1)
+        body.grid_columnconfigure(0, weight=3)
+        body.grid_columnconfigure(1, weight=2)
+        body.grid_columnconfigure(2, weight=5)
+
+        self.col1 = ctk.CTkFrame(
             body,
             fg_color=COLOR_WHITE,
             corner_radius=14,
             border_width=1,
             border_color=COLOR_BORDER,
         )
-        self.left.pack(side="left", fill="both", expand=True, padx=(0, 24), pady=12)
+        self.col1.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
-        self.right = ctk.CTkFrame(
+        self.col2 = ctk.CTkFrame(
             body,
             fg_color=COLOR_WHITE,
             corner_radius=14,
             border_width=1,
             border_color=COLOR_BORDER,
         )
-        self.right.pack(side="right", fill="both", expand=True, padx=(24, 0), pady=12)
+        self.col2.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+
+        self.col3 = ctk.CTkFrame(
+            body,
+            fg_color=COLOR_WHITE,
+            corner_radius=14,
+            border_width=1,
+            border_color=COLOR_BORDER,
+        )
+        self.col3.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
 
         ctk.CTkLabel(
-            self.left, text="Gửi Tin Nhắn", font=FONT_TITLE, text_color=COLOR_TEXT
+            self.col1, text="Gửi Tin Nhắn", font=FONT_TITLE, text_color=COLOR_TEXT
         ).pack(pady=(24, 12))
 
         self.name_entry = ctk.CTkEntry(
-            self.left, placeholder_text="Họ và tên", width=340, height=44
+            self.col1, placeholder_text="Họ và tên", height=44
         )
-        self.name_entry.pack(pady=10, padx=20)
+        self.name_entry.pack(pady=10, padx=20, fill="x")
 
-        self.email_entry = ctk.CTkEntry(
-            self.left, placeholder_text="Email", width=340, height=44
-        )
-        self.email_entry.pack(pady=10, padx=20)
+        self.email_entry = ctk.CTkEntry(self.col1, placeholder_text="Email", height=44)
+        self.email_entry.pack(pady=10, padx=20, fill="x")
 
         self.subject_entry = ctk.CTkEntry(
-            self.left, placeholder_text="Chủ đề", width=340, height=44
+            self.col1, placeholder_text="Chủ đề", height=44
         )
-        self.subject_entry.pack(pady=10, padx=20)
+        self.subject_entry.pack(pady=10, padx=20, fill="x")
 
         self.message_box = ctk.CTkTextbox(
-            self.left, width=340, height=160, border_width=1, border_color=COLOR_BORDER
+            self.col1, height=180, border_width=1, border_color=COLOR_BORDER
         )
-        self.message_box.pack(pady=10, padx=20)
+        self.message_box.pack(pady=10, padx=20, fill="both", expand=True)
 
         self.feedback_label = ctk.CTkLabel(
-            self.left, text="", font=FONT_BODY, text_color=COLOR_TEXT
+            self.col1, text="", font=FONT_BODY, text_color=COLOR_TEXT
         )
-        self.feedback_label.pack(pady=(0, 10))
+        self.feedback_label.pack(pady=(5, 5))
 
         ctk.CTkButton(
-            self.left,
+            self.col1,
             text="GỬI TIN NHẮN",
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,
             text_color="white",
             font=FONT_LABEL,
-            width=340,
             height=44,
             command=self._send_message,
-        ).pack(pady=(0, 24))
+        ).pack(pady=(0, 24), padx=20, fill="x")
 
         ctk.CTkLabel(
-            self.right, text="Thông Tin Liên Hệ", font=FONT_TITLE, text_color=COLOR_TEXT
+            self.col2, text="Thông Tin Liên Hệ", font=FONT_TITLE, text_color=COLOR_TEXT
         ).pack(pady=(24, 16), padx=20, anchor="w")
 
         info = [
@@ -87,57 +96,43 @@ class ContactFrame(ctk.CTkScrollableFrame):
         ]
 
         for head, txt in info:
-            frame = ctk.CTkFrame(self.right, fg_color="transparent")
-            frame.pack(fill="x", padx=24, pady=8)
+            frame = ctk.CTkFrame(self.col2, fg_color="transparent")
+            frame.pack(fill="x", padx=24, pady=12)
 
             ctk.CTkLabel(
                 frame,
                 text=head + ":",
-                font=("Segoe UI", 15, "bold"),
+                font=("Segoe UI", 16, "bold"),
                 text_color=COLOR_GOLD,
             ).pack(anchor="w")
 
             ctk.CTkLabel(frame, text=txt, font=FONT_BODY, text_color=COLOR_TEXT).pack(
-                anchor="w"
+                anchor="w", pady=(2, 0)
             )
 
-        map_frame = ctk.CTkFrame(
-            self.right,
-            fg_color=COLOR_CREAM,
-            corner_radius=10,
-            border_width=1,
-            border_color=COLOR_BORDER,
-        )
-        map_frame.pack(fill="both", expand=True, padx=20, pady=16)
-
         ctk.CTkLabel(
-            map_frame,
-            text="Vị trí của chúng tôi",
-            font=FONT_BODY,
+            self.col3,
+            text="Vị Trí Của Chúng Tôi",
+            font=FONT_TITLE,
             text_color=COLOR_TEXT,
-        ).pack(pady=(20, 8))
+        ).pack(pady=(24, 12))
 
-        self.map_label = ctk.CTkLabel(
-            map_frame,
-            text="Đang tải bản đồ...",
-            fg_color=COLOR_BORDER,
-            corner_radius=10,
-            width=1,
-            height=120,
-        )
-        self.map_label.pack(fill="both", expand=True, padx=20, pady=10)
+        self.map_widget = tkintermapview.TkinterMapView(self.col3, corner_radius=10)
+        self.map_widget.pack(fill="both", expand=True, padx=20, pady=(10, 15))
+        self.map_widget.set_position(12.2388, 109.1678)
+        self.map_widget.set_zoom(15)
+        self.map_widget.set_marker(12.2388, 109.1678, text="DreamStay Resort")
 
         ctk.CTkButton(
-            map_frame,
+            self.col3,
             text="Mở Google Maps",
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,
             text_color="white",
             font=FONT_BODY_BOLD,
+            height=44,
             command=self._open_google_maps,
-        ).pack(pady=(0, 18), padx=20)
-
-        self._load_map_image()
+        ).pack(pady=(0, 24), padx=20, fill="x")
 
     def _send_message(self):
         name = self.name_entry.get().strip()
@@ -164,26 +159,6 @@ class ContactFrame(ctk.CTkScrollableFrame):
     def _open_google_maps(self):
         url = "https://www.google.com/maps/search/?api=1&query=12.2388,109.1678"
         webbrowser.open(url)
-
-    def _load_map_image(self):
-        map_url = (
-            "https://staticmap.openstreetmap.de/staticmap.php?center=12.2388,109.1678"
-            "&zoom=13&size=600x320&markers=12.2388,109.1678,red-pushpin"
-        )
-        try:
-            with urllib.request.urlopen(map_url, timeout=10) as resp:
-                data = resp.read()
-            image = Image.open(BytesIO(data)).convert("RGB")
-            self.map_image = ctk.CTkImage(
-                light_image=image, dark_image=image, size=(640, 320)
-            )
-            self.map_label.configure(image=self.map_image, text="")
-        except Exception:
-            image = Image.new("RGB", (640, 320), (28, 34, 59))
-            self.map_image = ctk.CTkImage(
-                light_image=image, dark_image=image, size=(640, 320)
-            )
-            self.map_label.configure(image=self.map_image, text="Bản đồ offline")
 
     def load_data(self):
         pass

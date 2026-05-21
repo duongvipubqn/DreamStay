@@ -220,11 +220,14 @@ class OrderMgmtFrame(ctk.CTkFrame):
             "Thanh toán", f"Xác nhận đã thu {total} VNĐ từ phòng {rm_id}?"
         ):
             try:
-                real_price = float(total.replace(".", ""))
+                import re
+
+                real_price = float(re.sub(r"[^\d]", "", total))
 
                 db.cursor.execute(
                     "SELECT location FROM rooms WHERE room_id=?", (rm_id,)
                 )
+
                 loc = db.cursor.fetchone()[0]
                 db.cursor.execute(
                     "INSERT INTO revenue_history (date, amount, location) VALUES (?,?,?)",
