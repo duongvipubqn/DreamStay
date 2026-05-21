@@ -57,8 +57,24 @@ class Header(ctk.CTkFrame):
             }
             for i in range(10)
         ]
+        velvet_tracks = [
+            {
+                "title": f"Velvet Suitcase {roman_nums[i]}",
+                "file": f"musics/Velvet Suitcase {i+1}.mp3",
+            }
+            for i in range(10)
+        ]
+        concrete_tracks = [
+            {
+                "title": f"Concrete Oasis {roman_nums[i]}",
+                "file": f"musics/Concrete Oasis {i+1}.mp3",
+            }
+            for i in range(10)
+        ]
         self.music_albums = [
-            {"name": "Sunlit Arcade Collection", "tracks": arcade_tracks}
+            {"name": "Sunlit Arcade Collection", "tracks": arcade_tracks},
+            {"name": "Velvet Suitcase Collection", "tracks": velvet_tracks},
+            {"name": "Concrete Oasis Collection", "tracks": concrete_tracks},
         ]
 
         self.cur_album = 0
@@ -76,9 +92,11 @@ class Header(ctk.CTkFrame):
             corner_radius=10,
             border_width=1,
             border_color=COLOR_BORDER,
+            width=470,
             height=40,
         )
         self.controls_frame.pack(side="left")
+        self.controls_frame.pack_propagate(False)
 
         ctk.CTkButton(
             self.controls_frame,
@@ -162,8 +180,11 @@ class Header(ctk.CTkFrame):
             progress_color=COLOR_GOLD,
             command=self.change_volume,
         )
+        self.volume_slider._canvas.configure(takefocus=0)
         self.volume_slider.pack(side="left", padx=(5, 10))
         self.volume_slider.set(50)
+
+        self.update_idletasks()
 
     def animate_rainbow(self, *_args):
         self.hue += 0.005
@@ -291,7 +312,6 @@ class Header(ctk.CTkFrame):
                 pygame.mixer.music.set_volume(self.volume_level)
             except Exception:
                 pass
-        self.controls_frame.pack(side="left", padx=10)
 
     def on_music_leave(self, event):
         self.update_music_icon(hover=False)
