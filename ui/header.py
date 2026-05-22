@@ -82,6 +82,9 @@ class Header(ctk.CTkFrame):
         self.is_playing = False
         self.volume_level = 0.5
         self.hide_timer_id = None
+        self.play_mode = 2
+
+        self.load_music_state()
 
         self.music_panel = ctk.CTkFrame(self, fg_color="transparent")
         self.music_panel.pack(side="left", padx=15)
@@ -92,7 +95,7 @@ class Header(ctk.CTkFrame):
             corner_radius=10,
             border_width=1,
             border_color=COLOR_BORDER,
-            width=470,
+            width=540,
             height=40,
         )
         self.controls_frame.pack(side="left")
@@ -164,9 +167,9 @@ class Header(ctk.CTkFrame):
             text="DreamStay Player",
             font=("Segoe UI", 11, "bold"),
             text_color=COLOR_TEXT,
-            width=180,
+            width=160,
         )
-        self.track_label.pack(side="left", padx=10)
+        self.track_label.pack(side="left", padx=5)
 
         self.volume_slider = ctk.CTkSlider(
             self.controls_frame,
@@ -181,8 +184,59 @@ class Header(ctk.CTkFrame):
             command=self.change_volume,
         )
         self.volume_slider._canvas.configure(takefocus=0)
-        self.volume_slider.pack(side="left", padx=(5, 10))
-        self.volume_slider.set(50)
+        self.volume_slider.pack(side="left", padx=(2, 5))
+        self.volume_slider.set(self.volume_level * 100.0)
+
+        self.mode_btn_single = ctk.CTkButton(
+            self.controls_frame,
+            text="✖",
+            width=32,
+            height=32,
+            fg_color="transparent",
+            font=("Segoe UI Symbol", 18, "bold"),
+            hover_color="#252538",
+            command=lambda: self.set_play_mode(1),
+        )
+        self.mode_btn_single.pack(side="left", padx=1)
+
+        self.mode_btn_album = ctk.CTkButton(
+            self.controls_frame,
+            text="⇄",
+            width=32,
+            height=32,
+            fg_color="transparent",
+            font=("Segoe UI Symbol", 18, "bold"),
+            hover_color="#252538",
+            command=lambda: self.set_play_mode(2),
+        )
+        self.mode_btn_album.pack(side="left", padx=1)
+
+        self.mode_btn_one = ctk.CTkButton(
+            self.controls_frame,
+            text="↻",
+            width=32,
+            height=32,
+            fg_color="transparent",
+            font=("Segoe UI Symbol", 18, "bold"),
+            hover_color="#252538",
+            command=lambda: self.set_play_mode(3),
+        )
+        self.mode_btn_one.pack(side="left", padx=1)
+
+        self.update_mode_buttons_ui()
+
+        album = self.music_albums[self.cur_album]
+        track = album["tracks"][self.cur_track]
+        self.track_label.configure(text=f"🎵 {track['title']}")
+
+        if self.is_playing:
+            self.play_current()
+            self.music_btn.configure(text="⏸")
+        else:
+            self.stop_current()
+            self.music_btn.configure(text="▶")
+
+        self.check_music_end()
 
         self.update_idletasks()
 
@@ -215,7 +269,7 @@ class Header(ctk.CTkFrame):
         menus = [
             "Trang chủ",
             "Giới thiệu",
-            "Phòng",
+            "Phòng nghỉ",
             "Dịch vụ",
             "Tiện ích",
             "Sự kiện",
@@ -248,6 +302,69 @@ class Header(ctk.CTkFrame):
         else:
             self.app.switch_page("Hồ sơ")
 
+    def save_music_state(self):
+        try:
+            state_str = f"{1 if self.is_playing else 0}|{self.cur_album}|{self.cur_track}|{self.volume_level}|{self.play_mode}"
+            with open("music_state.txt", "w") as f:
+                f.write(state_str)
+        except Exception:
+            pass
+
+    def load_music_state(self):
+        if os.path.exists("music_state.txt"):
+            try:
+                with open("music_state.txt", "r") as f:
+                    data = f.read().strip().split("|")
+                if len(data) >= 4:
+                    self.is_playing = data[0] == "1"
+                    self.cur_album = int(data[1])
+                    self.cur_track = int(data[2])
+                    self.volume_level = float(data[3])
+                    if len(data) == 5:
+                        self.play_mode = int(data[4])
+                    else:
+                        self.play_mode = 2
+                    return True
+            except Exception:
+                pass
+        return False
+
+    def set_play_mode(self, mode):
+        self.play_mode = mode
+        self.update_mode_buttons_ui()
+        self.save_music_state()
+
+    def update_mode_buttons_ui(self):
+        self.mode_btn_single.configure(
+            text_color=COLOR_GOLD if self.play_mode == 1 else "white"
+        )
+        self.mode_btn_album.configure(
+            text_color=COLOR_GOLD if self.play_mode == 2 else "white"
+        )
+        self.mode_btn_one.configure(
+            text_color=COLOR_GOLD if self.play_mode == 3 else "white"
+        )
+
+    def check_music_end(self):
+        if self.is_playing and PYGAME_AVAILABLE:
+            try:
+                if not pygame.mixer.music.get_busy():
+                    self.handle_track_end()
+            except Exception:
+                pass
+        self.after(1000, self.check_music_end)
+
+    def handle_track_end(self):
+        if self.play_mode == 1:
+            self.is_playing = False
+            self.stop_current()
+            self.music_btn.configure(text="▶")
+            self.save_music_state()
+        elif self.play_mode == 2:
+            self.next_track()
+        elif self.play_mode == 3:
+            self.play_current()
+
     def toggle_play(self):
         self.is_playing = not self.is_playing
         if self.is_playing:
@@ -256,6 +373,7 @@ class Header(ctk.CTkFrame):
         else:
             self.stop_current()
             self.music_btn.configure(text="▶")
+        self.save_music_state()
 
     def play_current(self):
         album = self.music_albums[self.cur_album]
@@ -274,7 +392,9 @@ class Header(ctk.CTkFrame):
             self.track_label.configure(text=f"🎵 {track_name} (Demo)")
 
     def stop_current(self):
-        self.track_label.configure(text="Player Paused")
+        album = self.music_albums[self.cur_album]
+        track = album["tracks"][self.cur_track]
+        self.track_label.configure(text=f"🎵 {track['title']} (Paused)")
         if PYGAME_AVAILABLE:
             try:
                 pygame.mixer.music.stop()
@@ -284,26 +404,38 @@ class Header(ctk.CTkFrame):
     def next_track(self):
         album = self.music_albums[self.cur_album]
         self.cur_track = (self.cur_track + 1) % len(album["tracks"])
+        self.save_music_state()
         if self.is_playing:
             self.play_current()
+        else:
+            self.stop_current()
 
     def prev_track(self):
         album = self.music_albums[self.cur_album]
         self.cur_track = (self.cur_track - 1) % len(album["tracks"])
+        self.save_music_state()
         if self.is_playing:
             self.play_current()
+        else:
+            self.stop_current()
 
     def next_album(self):
         self.cur_album = (self.cur_album + 1) % len(self.music_albums)
         self.cur_track = 0
+        self.save_music_state()
         if self.is_playing:
             self.play_current()
+        else:
+            self.stop_current()
 
     def prev_album(self):
         self.cur_album = (self.cur_album - 1) % len(self.music_albums)
         self.cur_track = 0
+        self.save_music_state()
         if self.is_playing:
             self.play_current()
+        else:
+            self.stop_current()
 
     def change_volume(self, val):
         self.volume_level = float(val) / 100.0
@@ -312,6 +444,7 @@ class Header(ctk.CTkFrame):
                 pygame.mixer.music.set_volume(self.volume_level)
             except Exception:
                 pass
+        self.save_music_state()
 
     def on_music_leave(self, event):
         self.update_music_icon(hover=False)

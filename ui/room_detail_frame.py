@@ -28,7 +28,7 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
             app = self.winfo_toplevel()
             switch_func = getattr(app, "switch_page", None)
             if callable(switch_func):
-                switch_func("Phòng")
+                switch_func("Phòng nghỉ")
 
         ctk.CTkButton(
             self,

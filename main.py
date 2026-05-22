@@ -75,7 +75,7 @@ class HotelApp(ctk.CTk):
         self.pages = {
             "Trang chủ": HomeFrame(self.container),
             "Giới thiệu": AboutFrame(self.container),
-            "Phòng": RoomView(self.container),
+            "Phòng nghỉ": RoomView(self.container),
             "Chi tiết phòng": RoomDetailFrame(self.container),
             "Dịch vụ": ServiceFrame(self.container),
             "Chi tiết dịch vụ": ServiceDetailFrame(self.container),

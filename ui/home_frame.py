@@ -81,7 +81,9 @@ class HomeFrame(ctk.CTkFrame):
             if os.path.exists(img_path):
                 try:
                     raw = Image.open(img_path)
-                    raw_resized = raw.resize((2000, 1000), Image.Resampling.LANCZOS).convert("RGB")
+                    raw_resized = raw.resize(
+                        (2000, 1000), Image.Resampling.LANCZOS
+                    ).convert("RGB")
                     self.raw_images.append(raw_resized)
                 except (IOError, OSError):
                     pass
@@ -154,4 +156,4 @@ class HomeFrame(ctk.CTkFrame):
         app = self.winfo_toplevel()
         switch_func = getattr(app, "switch_page", None)
         if callable(switch_func):
-            switch_func("Phòng")
+            switch_func("Phòng nghỉ")
