@@ -7,11 +7,12 @@ class HomeFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
 
-        self.hero_section = ctk.CTkFrame(
-            self, fg_color="transparent", corner_radius=0, border_width=0
-        )
-        self.hero_section.pack(fill="x")
+        self.hero_section = ctk.CTkFrame(self, fg_color="transparent", corner_radius=0)
+        self.hero_section.pack(fill="both", expand=True)
         self.hero_section.pack_propagate(False)
+
+        self.current_w = 2000
+        self.current_h = 1000
 
         self.raw_images = []
         self.images_ctk = []
@@ -21,10 +22,21 @@ class HomeFrame(ctk.CTkFrame):
         self.current_blend = None
         self.load_all_images_raw()
 
-        self.bg_1 = ctk.CTkLabel(self.hero_section, text="", fg_color=COLOR_CREAM)
-        self.bg_1.place(relx=0, rely=0, relwidth=1, relheight=1)
+        for raw in self.raw_images:
+            self.images_ctk.append(
+                ctk.CTkImage(
+                    light_image=raw,
+                    dark_image=raw,
+                    size=(2000, 1000),
+                )
+            )
 
-        self.bg_2 = ctk.CTkLabel(self.hero_section, text="", fg_color=COLOR_CREAM)
+        self.bg_1 = ctk.CTkLabel(self.hero_section, text="", fg_color="transparent")
+        self.bg_1.place(relx=0, rely=0, relwidth=1, relheight=1)
+        if self.images_ctk:
+            self.bg_1.configure(image=self.images_ctk[self.current_idx])
+
+        self.bg_2 = ctk.CTkLabel(self.hero_section, text="", fg_color="transparent")
         self.bg_2.place(relx=1, rely=0, relwidth=1, relheight=1)
 
         self.search_bar = ctk.CTkFrame(
@@ -69,38 +81,18 @@ class HomeFrame(ctk.CTkFrame):
             if os.path.exists(img_path):
                 try:
                     raw = Image.open(img_path)
-                    self.raw_images.append(raw)
+                    raw_resized = raw.resize((2000, 1000), Image.Resampling.LANCZOS).convert("RGB")
+                    self.raw_images.append(raw_resized)
                 except (IOError, OSError):
                     pass
 
     def on_resize(self, _event=None):
         if not self.raw_images:
             return
-        toplevel = self.winfo_toplevel()
-        toplevel.update_idletasks()
-
-        window_width = toplevel.winfo_width()
-        window_height = toplevel.winfo_height()
-        available_height = window_height - 70
-
-        self.hero_section.configure(width=window_width, height=available_height)
-
-        self.images_ctk = []
-        for raw in self.raw_images:
-            self.images_ctk.append(
-                ctk.CTkImage(
-                    light_image=raw,
-                    dark_image=raw,
-                    size=(window_width, available_height),
-                )
-            )
-
-        if self.images_ctk:
-            self.bg_1.configure(image=self.images_ctk[self.current_idx])
-            self._update_search_bar_overlay()
-            if not self.anim_started:
-                self.anim_started = True
-                self.anim_id = self.after(5000, self.rotate_image, "start")
+        self._update_search_bar_overlay()
+        if not self.anim_started:
+            self.anim_started = True
+            self.anim_id = self.after(5000, self.rotate_image, "start")
 
     def rotate_image(self, *_args):
         if not self.images_ctk:
@@ -120,13 +112,10 @@ class HomeFrame(ctk.CTkFrame):
             self.search_bar_bg.configure(image=self.search_bar_bg_image)
 
     def fade_images(self, img1, img2, alpha):
-        """Blend hai ảnh PIL: dùng Image.blend() để tối ưu"""
         if not img1 or not img2:
             return img1 or img2
         try:
-            if img1.size != img2.size:
-                img2 = img2.resize(img1.size, Image.Resampling.BILINEAR)
-            return Image.blend(img1.convert("RGB"), img2.convert("RGB"), alpha)
+            return Image.blend(img1, img2, alpha)
         except Exception:
             return img1
 
@@ -138,20 +127,20 @@ class HomeFrame(ctk.CTkFrame):
             self.anim_id = self.after(5000, self.rotate_image, "loop")
             return
 
-        alpha -= 0.1
-        faded = self.fade_images(
-            self.raw_images[self.current_idx], self.raw_images[nxt_idx], 1.0 - alpha
-        )
-        if faded:
-            w = self.hero_section.winfo_width()
-            h = self.hero_section.winfo_height()
-            if w > 1 and h > 1:
+        alpha -= 0.05
+        w = self.current_w
+        h = self.current_h
+        if w > 1 and h > 1:
+            faded = self.fade_images(
+                self.raw_images[self.current_idx], self.raw_images[nxt_idx], 1.0 - alpha
+            )
+            if faded:
                 self.current_blend = ctk.CTkImage(
                     light_image=faded, dark_image=faded, size=(w, h)
                 )
                 self.bg_1.configure(image=self.current_blend)
         self.search_bar.lift()
-        self.anim_id = self.after(35, self.animate_fade, alpha, nxt_idx)
+        self.anim_id = self.after(15, self.animate_fade, alpha, nxt_idx)
 
     def destroy(self):
         if hasattr(self, "anim_id") and self.anim_id:
