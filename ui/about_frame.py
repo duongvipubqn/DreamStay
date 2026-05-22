@@ -6,6 +6,7 @@ from PIL import Image
 class AboutFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
+        self.easter_egg_clicks = 0
 
         about_frame = ctk.CTkFrame(self, fg_color="transparent")
         about_frame.pack(padx=50, pady=60, anchor="center")
@@ -121,8 +122,11 @@ class AboutFrame(ctk.CTkScrollableFrame):
             ("util-restaurant.png", "Nhà Hàng The Golden"),
             ("util-spa.png", "Mộng Mơ Spa"),
             ("util-gym.png", "Fitness Center"),
-            ("util-skybar.png", "Sky Bar Tầng Thượng"),
+            ("Final Lesson.png", "Bài Học Cuối Cùng"),
             ("util-ballroom.png", "Phòng Đại Tiệc"),
+            ("util-lobby.png", "Sảnh Đón Hoàng Gia"),
+            ("util-garden.png", "Vườn Thượng Uyển"),
+            ("util-beach.png", "Bãi Biển Riêng Tư"),
         ]
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -150,51 +154,11 @@ class AboutFrame(ctk.CTkScrollableFrame):
                     gallery_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                     gallery_lbl.pack(pady=10, padx=10, fill="x")
 
-                    def make_zoom_handler(lbl, p_img, base_img, w, h):
-                        state = {"current_step": 0.0, "after_id": None}
-
-                        def update_display():
-                            if state["current_step"] <= 0:
-                                lbl.configure(image=base_img)
-                                return
-                            zv = state["current_step"] * 0.05
-                            iw, ih = p_img.size
-                            cw, ch = iw / (1 + zv), ih / (1 + zv)
-                            l, t, r, b = (
-                                (iw - cw) / 2,
-                                (ih - ch) / 2,
-                                (iw + cw) / 2,
-                                (ih + ch) / 2,
-                            )
-                            zoomed_pil = p_img.crop((l, t, r, b))
-                            zoomed_ctk = ctk.CTkImage(
-                                light_image=zoomed_pil,
-                                dark_image=zoomed_pil,
-                                size=(w, h),
-                            )
-                            lbl.configure(image=zoomed_ctk)
-
-                        def animate(direction):
-                            if state["after_id"]:
-                                lbl.after_cancel(state["after_id"])
-                            if direction == "in":
-                                if state["current_step"] < 1.0:
-                                    state["current_step"] += 0.2
-                                    update_display()
-                                    state["after_id"] = lbl.after(
-                                        15, lambda: animate("in")
-                                    )
-                            else:
-                                state["current_step"] = 0.0
-                                lbl.configure(image=base_img)
-
-                        return lambda e: animate("in"), lambda e: animate("out")
-
-                    in_f, out_f = make_zoom_handler(
+                    enter_fn, leave_fn = make_zoom_handler(
                         gallery_lbl, pil_img, ctk_img, img_w, img_h
                     )
-                    gallery_lbl.bind("<Enter>", in_f)
-                    gallery_lbl.bind("<Leave>", out_f)
+                    gallery_lbl.bind("<Enter>", enter_fn)
+                    gallery_lbl.bind("<Leave>", leave_fn)
                 except:
                     ctk.CTkLabel(
                         card, text="[ Lỗi tải ảnh ]", width=img_w, height=img_h
@@ -204,6 +168,23 @@ class AboutFrame(ctk.CTkScrollableFrame):
                     card, text="[ Ảnh chưa cập nhật ]", width=img_w, height=img_h
                 ).pack()
 
-            ctk.CTkLabel(
+            lbl_text = ctk.CTkLabel(
                 card, text=label_text, font=FONT_LABEL, text_color=COLOR_GOLD
-            ).pack(pady=(10, 20))
+            )
+            lbl_text.pack(pady=(10, 20))
+
+            if i == 4:
+
+                def on_click(event):
+                    self.easter_egg_clicks += 1
+                    if self.easter_egg_clicks == 3:
+                        self.easter_egg_clicks = 0
+                        app = self.winfo_toplevel()
+                        header = getattr(app, "header", None)
+                        if header and hasattr(header, "play_easter_egg"):
+                            header.play_easter_egg("musics/Nightglow.mp3", "Nightglow")
+
+                card.bind("<Button-1>", on_click)
+                if "gallery_lbl" in locals():
+                    gallery_lbl.bind("<Button-1>", on_click)
+                lbl_text.bind("<Button-1>", on_click)

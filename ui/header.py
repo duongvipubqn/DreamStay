@@ -71,10 +71,26 @@ class Header(ctk.CTkFrame):
             }
             for i in range(10)
         ]
+        heavy_tracks = [
+            {
+                "title": f"Heavy Caffeine {roman_nums[i]}",
+                "file": f"musics/Heavy Caffeine {i+1}.mp3",
+            }
+            for i in range(10)
+        ]
+        drizzle_tracks = [
+            {
+                "title": f"Midnight Drizzle {roman_nums[i]}",
+                "file": f"musics/Midnight Drizzle {i+1}.mp3",
+            }
+            for i in range(10)
+        ]
         self.music_albums = [
             {"name": "Sunlit Arcade Collection", "tracks": arcade_tracks},
             {"name": "Velvet Suitcase Collection", "tracks": velvet_tracks},
             {"name": "Concrete Oasis Collection", "tracks": concrete_tracks},
+            {"name": "Heavy Caffeine Collection", "tracks": heavy_tracks},
+            {"name": "Midnight Drizzle Collection", "tracks": drizzle_tracks},
         ]
 
         self.cur_album = 0
@@ -83,6 +99,9 @@ class Header(ctk.CTkFrame):
         self.volume_level = 0.5
         self.hide_timer_id = None
         self.play_mode = 2
+        self.is_paused = False
+        self.current_playing_file = None
+        self.is_easter_egg = False
 
         self.load_music_state()
 
@@ -383,23 +402,22 @@ class Header(ctk.CTkFrame):
 
         if PYGAME_AVAILABLE and os.path.exists(track["file"]):
             try:
-                pygame.mixer.music.load(track["file"])
-                pygame.mixer.music.set_volume(self.volume_level)
-                pygame.mixer.music.play()
+                if (
+                    self.is_paused
+                    and getattr(self, "current_playing_file", None) == track["file"]
+                ):
+                    pygame.mixer.music.unpause()
+                    self.is_paused = False
+                else:
+                    pygame.mixer.music.load(track["file"])
+                    pygame.mixer.music.set_volume(self.volume_level)
+                    pygame.mixer.music.play()
+                    self.current_playing_file = track["file"]
+                    self.is_paused = False
             except Exception:
                 pass
         else:
             self.track_label.configure(text=f"🎵 {track_name} (Demo)")
-
-    def stop_current(self):
-        album = self.music_albums[self.cur_album]
-        track = album["tracks"][self.cur_track]
-        self.track_label.configure(text=f"🎵 {track['title']} (Paused)")
-        if PYGAME_AVAILABLE:
-            try:
-                pygame.mixer.music.stop()
-            except Exception:
-                pass
 
     def next_track(self):
         album = self.music_albums[self.cur_album]
@@ -445,6 +463,44 @@ class Header(ctk.CTkFrame):
             except Exception:
                 pass
         self.save_music_state()
+
+    def play_easter_egg(self, file_path, title_name):
+        self.is_playing = True
+        self.is_easter_egg = True
+        self.is_paused = False
+        self.music_btn.configure(text="⏸")
+        self.track_label.configure(text=f"🎵 {title_name}")
+        if PYGAME_AVAILABLE:
+            try:
+                pygame.mixer.music.load(file_path)
+                pygame.mixer.music.set_volume(self.volume_level)
+                pygame.mixer.music.play()
+            except Exception:
+                pass
+        self.save_music_state()
+
+    def stop_current(self):
+        if getattr(self, "is_easter_egg", False):
+            self.is_easter_egg = False
+            self.is_paused = False
+            album = self.music_albums[self.cur_album]
+            track = album["tracks"][self.cur_track]
+            self.track_label.configure(text=f"🎵 {track['title']} (Paused)")
+            if PYGAME_AVAILABLE:
+                try:
+                    pygame.mixer.music.stop()
+                except Exception:
+                    pass
+        else:
+            album = self.music_albums[self.cur_album]
+            track = album["tracks"][self.cur_track]
+            self.track_label.configure(text=f"🎵 {track['title']} (Paused)")
+            if PYGAME_AVAILABLE:
+                try:
+                    pygame.mixer.music.pause()
+                    self.is_paused = True
+                except Exception:
+                    pass
 
     def on_music_leave(self, event):
         self.update_music_icon(hover=False)

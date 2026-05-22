@@ -5,44 +5,6 @@ from tkinter import messagebox
 from database import db
 from datetime import datetime
 
-SUB_SERVICES = {
-    "Rượu Vang Đỏ Cao Cấp": [
-        ("Chateau Margaux 2015", 5500000),
-        ("Penfolds Bin 389", 2800000),
-        ("Casillero del Diablo", 850000),
-    ],
-    "Bia Nhập Khẩu": [
-        ("Heineken Silver", 45000),
-        ("Tiger Crystal", 40000),
-        ("Bia Thủ Công IPA", 95000),
-        ("Corona Extra", 55000),
-    ],
-    "Nước Ngọt & Soda": [
-        ("Coca Cola Classic", 25000),
-        ("Pepsi Black", 25000),
-        ("7Up Lemon", 25000),
-        ("Sprite", 25000),
-        ("Schweppes Soda", 30000),
-    ],
-    "Champagne Sang Trọng": [
-        ("Moët & Chandon", 3500000),
-        ("Dom Pérignon", 8200000),
-        ("Veuve Clicquot", 4100000),
-    ],
-    "Nước Ép Trái Cây": [
-        ("Nước Ép Cam Tươi", 65000),
-        ("Nước Ép Dưa Hấu", 60000),
-        ("Nước Ép Thơm", 60000),
-        ("Sinh Tố Bơ", 85000),
-    ],
-    "Nước Khoáng Tinh Khiết": [
-        ("Lavie 500ml", 15000),
-        ("Aquafina 500ml", 15000),
-        ("Evian Glass Bottle", 110000),
-        ("Perrier Sparkling", 95000),
-    ],
-}
-
 
 class OrderModal(ctk.CTkToplevel):
     def __init__(self, parent, category_name):
@@ -63,6 +25,37 @@ class OrderModal(ctk.CTkToplevel):
             (category_name,),
         )
         self.items = db.cursor.fetchall()
+
+        if not self.items:
+            default_items = {
+                "Cà Phê Đặc Sản": [
+                    ("Cà Phê Phin Truyền Thống", 45000, 100),
+                    ("Espresso Macchiato", 55000, 80),
+                    ("Cappuccino Cốt Dừa", 65000, 60),
+                ],
+                "Trà Hoa Thượng Hạng": [
+                    ("Trà Sen Tây Hồ", 75000, 50),
+                    ("Trà Hoa Cúc Mật Ong", 60000, 70),
+                    ("Trà Đào Cam Sả", 65000, 80),
+                ],
+                "Bánh Ngọt Pháp": [
+                    ("Bánh Croissant Bơ Tỏi", 45000, 40),
+                    ("Bánh Mousse Sô-cô-la", 55000, 30),
+                    ("Bánh Macaron Sắc Màu", 65000, 50),
+                ],
+            }
+            if category_name in default_items:
+                for name, price, stock in default_items[category_name]:
+                    db.cursor.execute(
+                        "INSERT OR IGNORE INTO inventory (category, item_name, price, stock) VALUES (?,?,?,?)",
+                        (category_name, name, price, stock),
+                    )
+                db.conn.commit()
+                db.cursor.execute(
+                    "SELECT item_name, price, stock FROM inventory WHERE category=?",
+                    (category_name,),
+                )
+                self.items = db.cursor.fetchall()
 
         self.quantities = {}
         for item in self.items:
@@ -258,12 +251,102 @@ class ServiceFrame(ctk.CTkScrollableFrame):
         ctk.CTkLabel(
             self, text="Dịch Vụ Đồ Uống & F&B", font=FONT_HEADER, text_color=COLOR_TEXT
         ).pack(pady=30)
+
+        self.filter_frame = ctk.CTkFrame(
+            self,
+            fg_color=COLOR_WHITE,
+            corner_radius=15,
+            border_width=1,
+            border_color=COLOR_BORDER,
+        )
+        self.filter_frame.pack(anchor="center", pady=(0, 25))
+
+        self.search_var = ctk.StringVar()
+        self.search_var.trace_add("write", self.trigger_search)
+
+        search_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
+        search_container.pack(side="left", padx=(20, 10), pady=15)
+
+        ctk.CTkLabel(search_container, text=" ", font=FONT_BODY_BOLD).pack(anchor="w")
+
+        search_entry = ctk.CTkEntry(
+            search_container,
+            placeholder_text="Tìm kiếm nhanh...",
+            width=200,
+            textvariable=self.search_var,
+            fg_color=COLOR_NAVY,
+            border_color=COLOR_BORDER,
+            text_color=COLOR_TEXT,
+            height=35,
+        )
+        search_entry.pack(pady=(5, 0))
+
+        self.filter_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
+        self.filter_container.pack(side="left", padx=(10, 20), pady=15)
+
+        self.filter_vars = {}
+        filters = [
+            ("Phân loại", ["Mọi phân loại", "Đồ ăn", "Đồ uống"]),
+            ("Mức giá", ["Mọi mức giá", "Dưới 50k", "50k - 100k", "Trên 100k"]),
+        ]
+
+        for label, vals in filters:
+            f = ctk.CTkFrame(self.filter_container, fg_color="transparent")
+            f.pack(side="left", padx=12)
+            ctk.CTkLabel(f, text=label, font=FONT_BODY_BOLD, text_color="#aaa").pack(
+                anchor="w"
+            )
+
+            var = ctk.StringVar(value=vals[0])
+            self.filter_vars[label] = var
+            ctk.CTkOptionMenu(
+                f,
+                values=vals,
+                variable=var,
+                fg_color=COLOR_NAVY,
+                text_color=COLOR_TEXT,
+                button_color=COLOR_GOLD,
+                width=150,
+                height=35,
+                dynamic_resizing=False,
+            ).pack(pady=(5, 0))
+
+        btn_container = ctk.CTkFrame(self.filter_container, fg_color="transparent")
+        btn_container.pack(side="left", padx=(15, 0))
+
+        ctk.CTkLabel(btn_container, text=" ", font=FONT_BODY_BOLD).pack(anchor="w")
+
+        self.apply_btn = ctk.CTkButton(
+            btn_container,
+            text="LỌC DỊCH VỤ",
+            width=140,
+            height=35,
+            fg_color=COLOR_GOLD,
+            hover_color=COLOR_GOLD_HOVER,
+            text_color="white",
+            command=self.apply_filter,
+        )
+        self.apply_btn.pack(pady=(5, 0))
+
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=50)
         for col in range(3):
             self.grid_frame.grid_columnconfigure(col, weight=1)
 
-    def load_data(self):
+        self.filters = None
+
+    def trigger_search(self, *args):
+        self.load_data(self.filters)
+
+    def apply_filter(self):
+        data = {
+            "category": self.filter_vars["Phân loại"].get(),
+            "price_range": self.filter_vars["Mức giá"].get(),
+        }
+        self.load_data(data)
+
+    def load_data(self, filters=None):
+        self.filters = filters
         for widget in self.grid_frame.winfo_children():
             widget.destroy()
 
@@ -271,53 +354,110 @@ class ServiceFrame(ctk.CTkScrollableFrame):
         window_width = self.winfo_toplevel().winfo_width()
         if window_width < 100:
             window_width = 1300
-
         scale = self._widget_scaling if hasattr(self, "_widget_scaling") else 1.0
         if scale == 0:
             scale = 1.0
 
-        logical_window_width = window_width / scale
-        card_width = (logical_window_width - 150) // 3
+        card_width = (window_width - 150) // 3
         img_w = int(card_width * 0.9)
         img_h = int(img_w * 0.65)
+
+        logical_img_w = int(img_w / scale)
+        logical_img_h = int(img_h / scale)
 
         services = [
             (
                 "Rượu Vang Đỏ Cao Cấp",
                 "Hương vị nồng nàn từ những vùng nho nổi tiếng thế giới.",
                 "service-wine.png",
+                "Đồ uống",
+                "Trên 100k",
             ),
             (
                 "Bia Nhập Khẩu",
                 "Tiger, Heineken và các dòng bia thủ công mát lạnh.",
                 "service-beer.png",
+                "Đồ uống",
+                "Dưới 50k",
             ),
             (
                 "Nước Ngọt & Soda",
                 "Coca-Cola, Pepsi và các loại nước giải khát đa dạng.",
                 "service-softdrink.png",
+                "Đồ uống",
+                "Dưới 50k",
             ),
             (
                 "Champagne Sang Trọng",
                 "Dành cho những khoảnh khắc kỷ niệm đặc biệt.",
                 "service-champagne.png",
+                "Đồ uống",
+                "Trên 100k",
             ),
             (
                 "Nước Ép Trái Cây",
                 "Nguồn vitamin tự nhiên từ trái cây tươi trong ngày.",
                 "service-juice.png",
+                "Đồ uống",
+                "50k - 100k",
             ),
             (
                 "Nước Khoáng Tinh Khiết",
                 "Sự lựa chọn thanh khiết và đảm bảo sức khỏe.",
                 "service-water.png",
+                "Đồ uống",
+                "Dưới 50k",
+            ),
+            (
+                "Cà Phê Đặc Sản",
+                "Pha phin truyền thống hoặc Espresso thơm nồng đánh thức mọi giác quan buổi sáng.",
+                "service-coffee.png",
+                "Đồ uống",
+                "50k - 100k",
+            ),
+            (
+                "Trà Hoa Thượng Hạng",
+                "Trà sen Tây Hồ, trà đào cam sả thanh khiết mang lại sự tĩnh tâm tinh tế.",
+                "service-tea.png",
+                "Đồ uống",
+                "50k - 100k",
+            ),
+            (
+                "Bánh Ngọt Pháp",
+                "Bánh sừng bò croissant bơ tỏi, bánh mousse mềm mịn chuẩn vị Âu.",
+                "service-pastry.png",
+                "Đồ ăn",
+                "50k - 100k",
             ),
         ]
+
+        search_text = (
+            self.search_var.get().lower() if hasattr(self, "search_var") else ""
+        )
+        cat_filter = filters["category"] if filters else "Mọi phân loại"
+        price_filter = filters["price_range"] if filters else "Mọi mức giá"
+
+        filtered_services = []
+        for item in services:
+            name, desc, img, cat, prc_cat = item
+
+            if (
+                search_text
+                and search_text not in name.lower()
+                and search_text not in desc.lower()
+            ):
+                continue
+            if cat_filter != "Mọi phân loại" and cat != cat_filter:
+                continue
+            if price_filter != "Mọi mức giá" and prc_cat != price_filter:
+                continue
+
+            filtered_services.append(item)
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
         img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
 
-        for i, (name, desc, img_name) in enumerate(services):
+        for i, (name, desc, img_name, _, _) in enumerate(filtered_services):
             card = ctk.CTkFrame(
                 self.grid_frame,
                 fg_color=COLOR_WHITE,
@@ -332,7 +472,9 @@ class ServiceFrame(ctk.CTkScrollableFrame):
                 try:
                     pil_img = Image.open(img_path).convert("RGB")
                     ctk_img = ctk.CTkImage(
-                        light_image=pil_img, dark_image=pil_img, size=(img_w, img_h)
+                        light_image=pil_img,
+                        dark_image=pil_img,
+                        size=(logical_img_w, logical_img_h),
                     )
                     img_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                     img_lbl.pack(pady=10, padx=10, fill="x")

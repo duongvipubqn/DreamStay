@@ -130,7 +130,7 @@ class HotelApp(ctk.CTk):
         if callable(update_func):
             update_func(name, role)
 
-    def switch_page(self, name, filters=None):
+    def switch_page(self, name):
         for page_name, page in self.pages.items():
             if page.winfo_ismapped():
                 page.pack_forget()
@@ -148,10 +148,7 @@ class HotelApp(ctk.CTk):
 
             load_func = getattr(target_page, "load_data", None)
             if callable(load_func):
-                if name == "Phòng":
-                    load_func(filters)
-                else:
-                    load_func()
+                load_func()
 
         self.header.update_menu(self.current_user is not None, self.current_role, name)
 
