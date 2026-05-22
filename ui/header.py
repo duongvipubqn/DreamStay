@@ -261,7 +261,7 @@ class Header(ctk.CTkFrame):
         album = self.music_albums[self.cur_album]
         track = album["tracks"][self.cur_track]
         track_name = f"{track['title']}"
-        self.track_label.configure(text=track_name)
+        self.track_label.configure(text=f"🎵 {track_name}")
 
         if PYGAME_AVAILABLE and os.path.exists(track["file"]):
             try:

@@ -281,7 +281,12 @@ class RoomView(ctk.CTkScrollableFrame):
         if window_width < 100:
             window_width = 1300
 
-        card_width = (window_width - 150) // 3
+        scale = self._widget_scaling if hasattr(self, "_widget_scaling") else 1.0
+        if scale == 0:
+            scale = 1.0
+
+        logical_window_width = window_width / scale
+        card_width = (logical_window_width - 150) // 3
         img_w = int(card_width * 0.92)
         img_h = int(img_w * 0.62)
 

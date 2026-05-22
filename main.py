@@ -49,17 +49,17 @@ class HotelApp(ctk.CTk):
         except:
             self.attributes("-zoomed", True)
         self.update()
-        
+
         window_width = self.winfo_width()
         if window_width < 500:
             window_width = self.winfo_screenwidth()
-        
+
         scale_factor = window_width / 1920.0
         scale_factor = max(0.7, min(scale_factor, 1.4))
-        
+
         ctk.set_widget_scaling(scale_factor)
         ctk.set_window_scaling(scale_factor)
-        
+
         self.configure(fg_color=COLOR_CREAM)
 
         self.current_user = None

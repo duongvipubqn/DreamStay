@@ -107,7 +107,12 @@ class AboutFrame(ctk.CTkScrollableFrame):
         if window_width < 100:
             window_width = 1300
 
-        card_width = (window_width - 150) // 3
+        scale = self._widget_scaling if hasattr(self, "_widget_scaling") else 1.0
+        if scale == 0:
+            scale = 1.0
+
+        logical_window_width = window_width / scale
+        card_width = (logical_window_width - 150) // 3
         img_w = int(card_width * 0.9)
         img_h = int(img_w * 0.65)
 
@@ -138,7 +143,9 @@ class AboutFrame(ctk.CTkScrollableFrame):
                 try:
                     pil_img = Image.open(img_path).convert("RGB")
                     ctk_img = ctk.CTkImage(
-                        light_image=pil_img, dark_image=pil_img, size=(img_w, img_h)
+                        light_image=pil_img,
+                        dark_image=pil_img,
+                        size=(img_w, img_h),
                     )
                     gallery_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                     gallery_lbl.pack(pady=10, padx=10, fill="x")

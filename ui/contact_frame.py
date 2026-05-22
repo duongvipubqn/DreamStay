@@ -117,8 +117,13 @@ class ContactFrame(ctk.CTkFrame):
             text_color=COLOR_TEXT,
         ).pack(pady=(24, 12))
 
-        self.map_widget = tkintermapview.TkinterMapView(self.col3, corner_radius=10)
+        self.map_widget = tkintermapview.TkinterMapView(
+            self.col3, width=600, height=450, corner_radius=10
+        )
         self.map_widget.pack(fill="both", expand=True, padx=20, pady=(10, 15))
+
+        self.winfo_toplevel().update_idletasks()
+
         self.map_widget.set_position(12.2388, 109.1678)
         self.map_widget.set_zoom(15)
         self.map_widget.set_marker(12.2388, 109.1678, text="DreamStay Resort")
