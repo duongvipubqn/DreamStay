@@ -174,10 +174,9 @@ class AboutFrame(ctk.CTkScrollableFrame):
             lbl_text.pack(pady=(10, 20))
 
             if i == 4:
-
                 def on_click(event):
                     self.easter_egg_clicks += 1
-                    if self.easter_egg_clicks == 3:
+                    if self.easter_egg_clicks == 9:
                         self.easter_egg_clicks = 0
                         app = self.winfo_toplevel()
                         header = getattr(app, "header", None)

@@ -69,9 +69,9 @@ class ContactFrame(ctk.CTkFrame):
         self.message_box.pack(pady=10, padx=20, fill="both", expand=True)
 
         self.feedback_label = ctk.CTkLabel(
-            self.col1, text="", font=FONT_BODY, text_color=COLOR_TEXT
+            self.col1, text="", font=FONT_BODY, text_color=COLOR_TEXT, wraplength=200, justify="center"
         )
-        self.feedback_label.pack(pady=(5, 5))
+        self.feedback_label.pack(pady=(5, 5), fill="x", padx=10)
 
         ctk.CTkButton(
             self.col1,
@@ -118,17 +118,13 @@ class ContactFrame(ctk.CTkFrame):
         ).pack(pady=(24, 12))
 
         self.map_widget = tkintermapview.TkinterMapView(
-            self.col3, width=600, height=450, corner_radius=10
+            self.col3,
+            width=600,
+            height=450,
+            corner_radius=10
         )
-        self.map_widget.pack(fill="both", expand=True, padx=20, pady=(10, 15))
 
-        self.winfo_toplevel().update_idletasks()
-
-        self.map_widget.set_position(12.2388, 109.1678)
-        self.map_widget.set_zoom(15)
-        self.map_widget.set_marker(12.2388, 109.1678, text="DreamStay Resort")
-
-        ctk.CTkButton(
+        google_maps_btn = ctk.CTkButton(
             self.col3,
             text="Mở Google Maps",
             fg_color=COLOR_GOLD,
@@ -137,7 +133,16 @@ class ContactFrame(ctk.CTkFrame):
             font=FONT_BODY_BOLD,
             height=44,
             command=self._open_google_maps,
-        ).pack(pady=(0, 24), padx=20, fill="x")
+        )
+        google_maps_btn.pack(side="bottom", pady=(0, 24), padx=20, fill="x")
+
+        self.map_widget.pack(fill="both", expand=True, padx=20, pady=(10, 15))
+
+        self.winfo_toplevel().update_idletasks()
+
+        self.map_widget.set_position(12.2388, 109.1678)
+        self.map_widget.set_zoom(15)
+        self.map_widget.set_marker(12.2388, 109.1678, text="DreamStay Resort")
 
     def _send_message(self):
         name = self.name_entry.get().strip()
@@ -147,7 +152,7 @@ class ContactFrame(ctk.CTkFrame):
 
         if not name or not email or not message:
             self.feedback_label.configure(
-                text="Vui lòng điền đầy đủ họ tên, email và nội dung tin nhắn.",
+                text="Vui lòng điền đầy đủ các trường thông tin!",
                 text_color="#d64545",
             )
             return

@@ -23,10 +23,14 @@ class Header(ctk.CTkFrame):
         self.brand_container.pack(side="left", padx=30)
 
         self.letters = []
-        for char in "DreamStay":
+        for idx, char in enumerate("DreamStay"):
             lbl = ctk.CTkLabel(self.brand_container, text=char, font=FONT_LOGO)
             lbl.pack(side="left", padx=0)
             self.letters.append(lbl)
+            
+            def make_click_handler(i):
+                return lambda event: self.handle_logo_click(i)
+            lbl.bind("<Button-1>", make_click_handler(idx))
 
         self.user_btn = ctk.CTkButton(
             self,
@@ -102,6 +106,7 @@ class Header(ctk.CTkFrame):
         self.is_paused = False
         self.current_playing_file = None
         self.is_easter_egg = False
+        self.logo_state = 0
 
         self.load_music_state()
 
@@ -478,6 +483,18 @@ class Header(ctk.CTkFrame):
             except Exception:
                 pass
         self.save_music_state()
+
+    def handle_logo_click(self, index):
+        if index == self.logo_state:
+            self.logo_state += 1
+            if self.logo_state == 9:
+                self.logo_state = 0
+                self.play_easter_egg("musics/Sthlm Sunset.mp3", "Sthlm Sunset")
+        else:
+            if index == 0:
+                self.logo_state = 1
+            else:
+                self.logo_state = 0
 
     def stop_current(self):
         if getattr(self, "is_easter_egg", False):
