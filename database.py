@@ -16,8 +16,11 @@ class Database:
         self.seed_inventory()
 
     @staticmethod
-    def hash_password(password):
-        return hashlib.sha256(password.encode()).hexdigest()
+    def hash_password(password, username):
+        pepper = "DreamStaySecretPepper2026"
+        salt = username + pepper
+        salted_pass = password + salt
+        return hashlib.sha256(salted_pass.encode()).hexdigest()
 
     def create_tables(self):
         self.cursor.execute("""
@@ -130,9 +133,10 @@ class Database:
         self.conn.commit()
 
     def seed_manager(self):
-        self.cursor.execute("SELECT * FROM users WHERE role='manager'")
-        if not self.cursor.fetchone():
-            hashed_pw = self.hash_password("admin123")
+        self.cursor.execute("SELECT * FROM users WHERE username='admin'")
+        res = self.cursor.fetchone()
+        if not res:
+            hashed_pw = self.hash_password("admin123", "admin")
             self.cursor.execute(
                 """
                 INSERT INTO users (full_name, username, email, phone, password, role)
@@ -148,6 +152,12 @@ class Database:
                 ),
             )
             self.conn.commit()
+        else:
+            old_hash = "2407519bfb85c15e8b417c80526e03f905fb55de21fbfb1cfa69bdf0af07a829"
+            if res[5] == old_hash:
+                new_hash = self.hash_password("admin123", "admin")
+                self.cursor.execute("UPDATE users SET password=? WHERE username='admin'", (new_hash,))
+                self.conn.commit()
 
     def seed_inventory(self):
         self.cursor.execute("SELECT COUNT(*) FROM inventory")

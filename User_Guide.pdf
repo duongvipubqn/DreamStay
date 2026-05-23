@@ -9,7 +9,7 @@ endobj
 << /Type /Page /Parent 2 0 R /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /MediaBox [0 0 595 842] /Contents 4 0 R >>
 endobj
 4 0 obj
-<< /Length 330 >>
+<< /Length 332 >>
 stream
 BT
 /F1 18 Tf
@@ -17,17 +17,17 @@ BT
 (DREAMSTAY RESORT SYSTEM - USER GUIDE) Tj
 /F1 12 Tf
 0 -40 Td
-(1. TAI TY GIA LIVE: Lay du lieu ti gia thoi gian thuc qua REST API.) Tj
+(1. TAI TY GIA LIVE: Fetch real-time exchange rates via public REST API.) Tj
 0 -25 Td
-(2. QUAN LY LE TAN: Phe duyet, nhan phong, thanh toan va xoa dat phong.) Tj
+(2. FRONT DESK: Approve bookings, check-in, check-out, and log revenue.) Tj
 0 -25 Td
-(3. DANH MUC QUAN LY: Them, sua, xoa va tim kiem thong tin nhanh chong.) Tj
+(3. SYSTEM CRUD: Insert, Edit, Delete, and Search database items.) Tj
 0 -25 Td
-(4. TIM KIEM & LOC: Dung o tim kiem tren toolbar de tra cuu nhanh.) Tj
+(4. TOOLBAR QUERY: Instant search entry filter in real-time.) Tj
 0 -25 Td
-(5. EXPORT/IMPORT CSV: Ho tro nhap xuat du lieu Excel chuan UTF-8.) Tj
+(5. EXPORT/IMPORT CSV: Fully compatible with Excel UTF-8 with BOM.) Tj
 0 -25 Td
-(6. THONG KE: Bieu do Matplotlib ket hop Pandas/Numpy tu dong cap nhat.) Tj
+(6. ANALYTICS: Dynamic Matplotlib charts powered by Pandas and NumPy.) Tj
 ET
 endstream
 endobj
@@ -41,5 +41,5 @@ xref
 trailer
 << /Size 5 /Root 1 0 R >>
 startxref
-625
+627
 %%EOF

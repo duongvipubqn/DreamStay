@@ -454,9 +454,6 @@ class ServiceFrame(ctk.CTkScrollableFrame):
 
             filtered_services.append(item)
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
-
         for i, (name, desc, img_name, _, _) in enumerate(filtered_services):
             card = ctk.CTkFrame(
                 self.grid_frame,
@@ -467,7 +464,7 @@ class ServiceFrame(ctk.CTkScrollableFrame):
             )
             card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
 
-            img_path = os.path.join(img_dir, img_name)
+            img_path = os.path.join(IMAGE_DIR, img_name)
             if os.path.exists(img_path):
                 try:
                     pil_img = Image.open(img_path).convert("RGB")

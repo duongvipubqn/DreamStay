@@ -467,6 +467,42 @@ class CRUDFrame(ctk.CTkFrame):
                 count = 0
                 for row in reader:
                     if len(row) == len(self.columns):
+                        row = [val.strip() for val in row]
+
+                        if self.table_name == "rooms":
+                            try:
+                                if float(row[5]) <= 0:
+                                    continue
+                            except ValueError:
+                                continue
+
+                        elif self.table_name == "employees":
+                            if not row[4].isdigit():
+                                continue
+                            try:
+                                if float(row[5]) <= 0:
+                                    continue
+                            except ValueError:
+                                continue
+
+                        elif self.table_name == "customers":
+                            if "@" not in row[2] or "." not in row[2]:
+                                continue
+                            if not row[3].isdigit():
+                                continue
+                            try:
+                                if float(row[5]) < 0:
+                                    continue
+                            except ValueError:
+                                continue
+
+                        elif self.table_name == "inventory":
+                            try:
+                                if float(row[3]) <= 0 or int(row[4]) < 0:
+                                    continue
+                            except ValueError:
+                                continue
+
                         db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
                         id_col = db.cursor.description[0][0]
                         db.cursor.execute(
@@ -482,7 +518,7 @@ class CRUDFrame(ctk.CTkFrame):
                 db.conn.commit()
                 self.load_data()
                 messagebox.showinfo(
-                    "Thành công", f"Đã nhập thành công {count} dòng dữ liệu mới!"
+                    "Thành công", f"Đã nhập thành công {count} dòng dữ liệu sạch mới!"
                 )
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể đọc file: {str(e)}")

@@ -94,10 +94,8 @@ class ForgotFrame(ctk.CTkFrame):
         if not db.cursor.fetchone():
             return messagebox.showerror("Lỗi", "Tên đăng nhập không tồn tại!")
 
-        hashed_pw = db.hash_password(p)
-        db.cursor.execute(
-            "UPDATE users SET password=? WHERE username=?", (hashed_pw, u)
-        )
+        hashed_pw = db.hash_password(p, u)
+        db.cursor.execute("UPDATE users SET password=? WHERE username=?", (hashed_pw, u))
         db.conn.commit()
         messagebox.showinfo("Thành công", "Mật khẩu đã được thay đổi thành công!")
 

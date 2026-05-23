@@ -20,9 +20,7 @@ class AboutFrame(ctk.CTkScrollableFrame):
         )
         img_frame.pack(side="left", padx=(0, 50))
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
-        img_path = os.path.join(img_dir, "about-main.png")
+        img_path = os.path.join(IMAGE_DIR, "about-main.png")
 
         if os.path.exists(img_path):
             try:
@@ -129,9 +127,6 @@ class AboutFrame(ctk.CTkScrollableFrame):
             ("util-beach.png", "Bãi Biển Riêng Tư"),
         ]
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
-
         for i, (img_name, label_text) in enumerate(utility_images):
             card = ctk.CTkFrame(
                 self.grid_frame,
@@ -142,7 +137,7 @@ class AboutFrame(ctk.CTkScrollableFrame):
             )
             card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
 
-            img_path = os.path.join(img_dir, img_name)
+            img_path = os.path.join(IMAGE_DIR, img_name)
             if os.path.exists(img_path):
                 try:
                     pil_img = Image.open(img_path).convert("RGB")

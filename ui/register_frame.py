@@ -105,7 +105,7 @@ class RegisterFrame(ctk.CTkFrame):
         if d["pass"] != d["confirm"]:
             return messagebox.showerror("Lỗi", "Mật khẩu không khớp!")
         try:
-            hashed_pw = db.hash_password(d["pass"])
+            hashed_pw = db.hash_password(d["pass"], d["username"])
             db.cursor.execute(
                 "INSERT INTO users (full_name, username, email, phone, password, role) VALUES (?,?,?,?,?,?)",
                 (d["name"], d["username"], d["email"], d["phone"], hashed_pw, "user"),

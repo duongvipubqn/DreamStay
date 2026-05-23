@@ -260,7 +260,7 @@ class MainFrame(ctk.CTkFrame):
                 return messagebox.showwarning("Chú ý", "Không được để trống thông tin!")
 
             try:
-                hashed_pw = db.hash_password(vals["pw"])
+                hashed_pw = db.hash_password(vals["pw"], vals["user"])
                 db.cursor.execute(
                     """
                                   INSERT INTO users (full_name, username, email, phone, password, role)

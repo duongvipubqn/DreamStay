@@ -184,8 +184,6 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
         )
         self.lbl_total.pack(side="right")
 
-        self.calculate_total()
-
         self.btn_book = ctk.CTkButton(
             self.right_p,
             text="XÁC NHẬN ĐẶT PHÒNG NGAY",
@@ -197,6 +195,8 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
             command=self.process_booking,
         )
         self.btn_book.pack(anchor="w")
+
+        self.calculate_total()
 
     def open_calendar(self, target_entry):
         top = ctk.CTkToplevel(self)
@@ -259,9 +259,13 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
                 font=FONT_LABEL,
                 text_color="white",
             )
+            if hasattr(self, "btn_book") and self.btn_book:
+                self.btn_book.configure(state="normal")
             return total
         except (ValueError, TypeError, AttributeError):
             self.lbl_total.configure(text="Ngày không hợp lệ", text_color="#e74c3c")
+            if hasattr(self, "btn_book") and self.btn_book:
+                self.btn_book.configure(state="disabled")
             return None
 
     def process_booking(self):

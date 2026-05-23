@@ -290,9 +290,6 @@ class RoomView(ctk.CTkScrollableFrame):
         img_w = int(card_width * 0.92)
         img_h = int(img_w * 0.62)
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        img_dir = os.path.join(str(os.path.dirname(current_dir)), "images")
-
         if not rooms_db:
             ctk.CTkLabel(
                 self.grid_frame,
@@ -313,7 +310,7 @@ class RoomView(ctk.CTkScrollableFrame):
 
                 img_name = self.image_map.get(r_type, "default.png")
                 cache_key = f"{img_name}_{img_w}"
-                img_path = os.path.join(img_dir, img_name)
+                img_path = os.path.join(IMAGE_DIR, img_name)
 
                 if cache_key not in self.ctk_image_cache:
                     if os.path.exists(img_path):
@@ -399,7 +396,7 @@ class RoomView(ctk.CTkScrollableFrame):
                     height=35,
                     width=80,
                     command=lambda d=rooms_db[i], p=os.path.join(
-                        img_dir, img_name
+                        IMAGE_DIR, img_name
                     ): self.show_details(d, p),
                 ).pack(side="left", padx=(0, 5), expand=True, fill="x")
 
@@ -582,24 +579,6 @@ class RoomView(ctk.CTkScrollableFrame):
         )
         lbl_money.pack(pady=10)
 
-        def update_price():
-            try:
-                d1 = datetime.strptime(en_in.get(), "%d/%m/%Y")
-                d2 = datetime.strptime(en_out.get(), "%d/%m/%Y")
-                days = (d2 - d1).days
-                if days > 0:
-                    total = days * room_data[5]
-                    lbl_money.configure(
-                        text=f"Tổng ({days} đêm): {int(total):,}".replace(",", ".")
-                        + " VNĐ"
-                    )
-                else:
-                    lbl_money.configure(text="Ngày không hợp lệ", text_color="red")
-            except (ValueError, TypeError):
-                pass
-
-        update_price()
-
         def confirm():
             d_in = datetime.strptime(en_in.get(), "%d/%m/%Y").strftime("%Y-%m-%d")
             d_out = datetime.strptime(en_out.get(), "%d/%m/%Y").strftime("%Y-%m-%d")
@@ -629,7 +608,28 @@ class RoomView(ctk.CTkScrollableFrame):
             modal.destroy()
             return None
 
-        ctk.CTkButton(
+        btn_confirm = ctk.CTkButton(
             modal, text="XÁC NHẬN ĐẶT", fg_color=COLOR_GOLD, height=45, command=confirm
-        ).pack(pady=30, padx=40, fill="x")
+        )
+        btn_confirm.pack(pady=30, padx=40, fill="x")
+
+        def update_price():
+            try:
+                d1 = datetime.strptime(en_in.get(), "%d/%m/%Y")
+                d2 = datetime.strptime(en_out.get(), "%d/%m/%Y")
+                days = (d2 - d1).days
+                if days > 0:
+                    total = days * room_data[5]
+                    lbl_money.configure(
+                        text=f"Tổng ({days} đêm): {int(total):,}".replace(",", ".")
+                        + " VNĐ"
+                    )
+                    btn_confirm.configure(state="normal")
+                else:
+                    lbl_money.configure(text="Ngày không hợp lệ", text_color="red")
+                    btn_confirm.configure(state="disabled")
+            except (ValueError, TypeError):
+                btn_confirm.configure(state="disabled")
+
+        update_price()
         return None
