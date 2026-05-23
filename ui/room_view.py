@@ -472,7 +472,18 @@ class RoomView(ctk.CTkScrollableFrame):
             last_p = p
 
     def go_to_page(self):
-        val = self.jump_entry.get()
+        val = self.jump_entry.get().strip()
+        if val.lower() == "cyberpunk":
+            self.jump_entry.delete(0, "end")
+            app = self.winfo_toplevel()
+            header = getattr(app, "header", None)
+            if header and hasattr(header, "play_easter_egg"):
+                header.play_easter_egg(
+                    "musics/I Really Want to Stay at Your House.mp3",
+                    "I Really Want to Stay at Your House"
+                )
+            return
+
         if val.isdigit():
             page = int(val)
             if 1 <= page <= self.total_pages:
