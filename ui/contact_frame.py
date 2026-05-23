@@ -1,11 +1,13 @@
 import webbrowser
 import tkintermapview
 from config import *
-
+from tkinter import messagebox
 
 class ContactFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
+        self.konami_state = 0
+        self.ba_state = 0
 
         ctk.CTkLabel(
             self, text="Liên Hệ Với Chúng Tôi", font=FONT_HEADER, text_color=COLOR_TEXT
@@ -144,6 +146,87 @@ class ContactFrame(ctk.CTkFrame):
         self.map_widget.set_zoom(15)
         self.map_widget.set_marker(12.2388, 109.1678, text="DreamStay Resort")
 
+        self.nav_pad = ctk.CTkFrame(self.col3, fg_color="#252538", corner_radius=10, border_width=1, border_color=COLOR_BORDER)
+        self.nav_pad.place(relx=0.05, rely=0.85, anchor="sw")
+        self.nav_pad.lift()
+
+        ctk.CTkButton(
+            self.nav_pad, text="▲", width=26, height=26, fg_color="transparent", text_color=COLOR_GOLD, hover_color="#1a1a2e", corner_radius=6, command=lambda: self.pan_map("up")
+        ).grid(row=0, column=1, padx=2, pady=2)
+
+        ctk.CTkButton(
+            self.nav_pad, text="◀", width=26, height=26, fg_color="transparent", text_color=COLOR_GOLD, hover_color="#1a1a2e", corner_radius=6, command=lambda: self.pan_map("left")
+        ).grid(row=1, column=0, padx=2, pady=2)
+
+        ctk.CTkButton(
+            self.nav_pad, text="▶", width=26, height=26, fg_color="transparent", text_color=COLOR_GOLD, hover_color="#1a1a2e", corner_radius=6, command=lambda: self.pan_map("right")
+        ).grid(row=1, column=2, padx=2, pady=2)
+
+        ctk.CTkButton(
+            self.nav_pad, text="▼", width=26, height=26, fg_color="transparent", text_color=COLOR_GOLD, hover_color="#1a1a2e", corner_radius=6, command=lambda: self.pan_map("down")
+        ).grid(row=2, column=1, padx=2, pady=2)
+
+    def pan_map(self, direction):
+        try:
+            lat, lon = self.map_widget.get_position()
+            step = 0.005
+
+            if direction == "up":
+                lat += step
+            elif direction == "down":
+                lat -= step
+            elif direction == "left":
+                lon -= step
+            elif direction == "right":
+                lon += step
+
+            self.map_widget.set_position(lat, lon)
+
+            sequence = ["up", "up", "down", "down", "left", "right", "left", "right"]
+            if direction == sequence[self.konami_state]:
+                self.konami_state += 1
+                if self.konami_state == 8:
+                    self.konami_state = 0
+                    self.trigger_konami_easter_egg()
+            else:
+                if direction == "up":
+                    self.konami_state = 1
+                else:
+                    self.konami_state = 0
+
+        except Exception as e:
+            messagebox.showerror("Lỗi bản đồ", f"Không thể điều hướng bản đồ: {str(e)}")
+
+    def trigger_konami_easter_egg(self):
+        self.btn_b = ctk.CTkButton(
+            self.nav_pad, text="B", width=26, height=26, fg_color="#e74c3c", text_color="white", hover_color="#c0392b", corner_radius=13, command=self.click_b, font=("Segoe UI", 12, "bold")
+        )
+        self.btn_b.grid(row=1, column=3, padx=(10, 2), pady=2)
+
+        self.btn_a = ctk.CTkButton(
+            self.nav_pad, text="A", width=26, height=26, fg_color="#27ae60", text_color="white", hover_color="#219150", corner_radius=13, command=self.click_a, font=("Segoe UI", 12, "bold")
+        )
+        self.btn_a.grid(row=1, column=4, padx=2, pady=2)
+
+    def click_a(self):
+        if getattr(self, "ba_state", 0) == 1:
+            self.ba_state = 0
+            
+            if hasattr(self, "btn_b") and self.btn_b:
+                self.btn_b.destroy()
+            if hasattr(self, "btn_a") and self.btn_a:
+                self.btn_a.destroy()
+                
+            app = self.winfo_toplevel()
+            header = getattr(app, "header", None)
+            if header and hasattr(header, "play_easter_egg"):
+                header.play_easter_egg("musics/Megalovania.mp3", "Megalovania")
+        else:
+            self.ba_state = 0
+
+    def click_b(self):
+        self.ba_state = 1
+
     def _send_message(self):
         name = self.name_entry.get().strip()
         email = self.email_entry.get().strip()
@@ -167,7 +250,7 @@ class ContactFrame(ctk.CTkFrame):
         self.message_box.delete("1.0", "end")
 
     def _open_google_maps(self):
-        url = "https://www.google.com/maps/search/?api=1&query=12.2388,109.1678"
+        url = "https://www.google.com/maps/place/12.2388,109.1678"
         webbrowser.open(url)
 
     def load_data(self):
