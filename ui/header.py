@@ -11,6 +11,58 @@ except Exception:
     PYGAME_AVAILABLE = False
 
 
+class CTkToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tooltip_window = None
+        self.after_id = None
+        self.widget.bind("<Enter>", self.on_enter)
+        self.widget.bind("<Leave>", self.on_leave)
+        self.widget.bind("<Destroy>", self.on_leave, add="+")
+
+    def on_enter(self, event=None):
+        self.cancel_timer()
+        self.after_id = self.widget.after(1500, self.show_tooltip)
+
+    def on_leave(self, event=None):
+        self.cancel_timer()
+        self.hide_tooltip()
+
+    def cancel_timer(self):
+        if self.after_id:
+            self.widget.after_cancel(self.after_id)
+            self.after_id = None
+
+    def show_tooltip(self):
+        if self.tooltip_window or not self.text:
+            return
+        x = self.widget.winfo_rootx() + (self.widget.winfo_width() // 2) - 50
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 8
+
+        self.tooltip_window = ctk.CTkToplevel(self.widget)
+        self.tooltip_window.wm_overrideredirect(True)
+        self.tooltip_window.geometry(f"+{x}+{y}")
+        self.tooltip_window.configure(fg_color="#131324")
+
+        label = ctk.CTkLabel(
+            self.tooltip_window,
+            text=self.text,
+            font=("Segoe UI", 11, "bold"),
+            text_color="#ffffff",
+            fg_color="#252538",
+            corner_radius=6,
+            padx=8,
+            pady=4,
+        )
+        label.pack()
+
+    def hide_tooltip(self):
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+            self.tooltip_window = None
+
+
 class Header(ctk.CTkFrame):
     def __init__(self, master, switch_func):
         super().__init__(master, fg_color=COLOR_NAVY, height=70, corner_radius=0)
@@ -108,6 +160,7 @@ class Header(ctk.CTkFrame):
         self.current_playing_file = None
         self.is_easter_egg = False
         self.logo_state = 0
+        self.prev_track_clicks = 0
 
         self.load_music_state()
 
@@ -126,7 +179,7 @@ class Header(ctk.CTkFrame):
         self.controls_frame.pack(side="left")
         self.controls_frame.pack_propagate(False)
 
-        ctk.CTkButton(
+        btn_prev_album = ctk.CTkButton(
             self.controls_frame,
             text="⏮",
             width=32,
@@ -136,9 +189,11 @@ class Header(ctk.CTkFrame):
             font=("Segoe UI", 13, "bold"),
             hover_color="#252538",
             command=self.prev_album,
-        ).pack(side="left", padx=1)
+        )
+        btn_prev_album.pack(side="left", padx=1)
+        CTkToolTip(btn_prev_album, "Lùi Album")
 
-        ctk.CTkButton(
+        btn_prev_track = ctk.CTkButton(
             self.controls_frame,
             text="⏪",
             width=32,
@@ -148,7 +203,9 @@ class Header(ctk.CTkFrame):
             font=("Segoe UI", 13, "bold"),
             hover_color="#252538",
             command=self.prev_track,
-        ).pack(side="left", padx=1)
+        )
+        btn_prev_track.pack(side="left", padx=1)
+        CTkToolTip(btn_prev_track, "Bài trước (Tua lùi)")
 
         self.music_btn = ctk.CTkButton(
             self.controls_frame,
@@ -162,8 +219,9 @@ class Header(ctk.CTkFrame):
             command=self.toggle_play,
         )
         self.music_btn.pack(side="left", padx=1)
+        CTkToolTip(self.music_btn, "Phát / Tạm dừng")
 
-        ctk.CTkButton(
+        btn_next_track = ctk.CTkButton(
             self.controls_frame,
             text="⏩",
             width=32,
@@ -173,9 +231,11 @@ class Header(ctk.CTkFrame):
             font=("Segoe UI", 13, "bold"),
             hover_color="#252538",
             command=self.next_track,
-        ).pack(side="left", padx=1)
+        )
+        btn_next_track.pack(side="left", padx=1)
+        CTkToolTip(btn_next_track, "Bài tiếp theo")
 
-        ctk.CTkButton(
+        btn_next_album = ctk.CTkButton(
             self.controls_frame,
             text="⏭",
             width=32,
@@ -185,7 +245,9 @@ class Header(ctk.CTkFrame):
             font=("Segoe UI", 13, "bold"),
             hover_color="#252538",
             command=self.next_album,
-        ).pack(side="left", padx=1)
+        )
+        btn_next_album.pack(side="left", padx=1)
+        CTkToolTip(btn_next_album, "Tiến Album")
 
         self.track_label = ctk.CTkLabel(
             self.controls_frame,
@@ -211,18 +273,7 @@ class Header(ctk.CTkFrame):
         self.volume_slider._canvas.configure(takefocus=0)
         self.volume_slider.pack(side="left", padx=(2, 5))
         self.volume_slider.set(self.volume_level * 100.0)
-
-        self.mode_btn_single = ctk.CTkButton(
-            self.controls_frame,
-            text="✖",
-            width=32,
-            height=32,
-            fg_color="transparent",
-            font=("Segoe UI Symbol", 18, "bold"),
-            hover_color="#252538",
-            command=lambda: self.set_play_mode(1),
-        )
-        self.mode_btn_single.pack(side="left", padx=1)
+        CTkToolTip(self.volume_slider, "Điều chỉnh âm lượng")
 
         self.mode_btn_album = ctk.CTkButton(
             self.controls_frame,
@@ -235,6 +286,7 @@ class Header(ctk.CTkFrame):
             command=lambda: self.set_play_mode(2),
         )
         self.mode_btn_album.pack(side="left", padx=1)
+        CTkToolTip(self.mode_btn_album, "Phát liên tục danh sách")
 
         self.mode_btn_one = ctk.CTkButton(
             self.controls_frame,
@@ -247,6 +299,20 @@ class Header(ctk.CTkFrame):
             command=lambda: self.set_play_mode(3),
         )
         self.mode_btn_one.pack(side="left", padx=1)
+        CTkToolTip(self.mode_btn_one, "Lặp lại bài hiện tại")
+
+        self.mode_btn_single = ctk.CTkButton(
+            self.controls_frame,
+            text="✖",
+            width=32,
+            height=32,
+            fg_color="transparent",
+            font=("Segoe UI Symbol", 18, "bold"),
+            hover_color="#252538",
+            command=lambda: self.set_play_mode(1),
+        )
+        self.mode_btn_single.pack(side="left", padx=1)
+        CTkToolTip(self.mode_btn_single, "Phát xong tự động dừng")
 
         self.update_mode_buttons_ui()
 
@@ -390,16 +456,6 @@ class Header(ctk.CTkFrame):
         elif self.play_mode == 3:
             self.play_current()
 
-    def toggle_play(self):
-        self.is_playing = not self.is_playing
-        if self.is_playing:
-            self.play_current()
-            self.music_btn.configure(text="⏸")
-        else:
-            self.stop_current()
-            self.music_btn.configure(text="▶")
-        self.save_music_state()
-
     def play_current(self):
         album = self.music_albums[self.cur_album]
         track = album["tracks"][self.cur_track]
@@ -425,7 +481,19 @@ class Header(ctk.CTkFrame):
         else:
             self.track_label.configure(text=f"🎵 {track_name} (Demo)")
 
+    def toggle_play(self):
+        self.prev_track_clicks = 0
+        self.is_playing = not self.is_playing
+        if self.is_playing:
+            self.play_current()
+            self.music_btn.configure(text="⏸")
+        else:
+            self.stop_current()
+            self.music_btn.configure(text="▶")
+        self.save_music_state()
+
     def next_track(self):
+        self.prev_track_clicks = 0
         album = self.music_albums[self.cur_album]
         self.cur_track = (self.cur_track + 1) % len(album["tracks"])
         self.save_music_state()
@@ -434,16 +502,8 @@ class Header(ctk.CTkFrame):
         else:
             self.stop_current()
 
-    def prev_track(self):
-        album = self.music_albums[self.cur_album]
-        self.cur_track = (self.cur_track - 1) % len(album["tracks"])
-        self.save_music_state()
-        if self.is_playing:
-            self.play_current()
-        else:
-            self.stop_current()
-
     def next_album(self):
+        self.prev_track_clicks = 0
         self.cur_album = (self.cur_album + 1) % len(self.music_albums)
         self.cur_track = 0
         self.save_music_state()
@@ -453,8 +513,24 @@ class Header(ctk.CTkFrame):
             self.stop_current()
 
     def prev_album(self):
+        self.prev_track_clicks = 0
         self.cur_album = (self.cur_album - 1) % len(self.music_albums)
         self.cur_track = 0
+        self.save_music_state()
+        if self.is_playing:
+            self.play_current()
+        else:
+            self.stop_current()
+
+    def prev_track(self):
+        self.prev_track_clicks += 1
+        if self.prev_track_clicks == 12:
+            self.prev_track_clicks = 0
+            self.play_easter_egg("musics/Pushing Rewind.mp3", "Pushing Rewind")
+            return
+
+        album = self.music_albums[self.cur_album]
+        self.cur_track = (self.cur_track - 1) % len(album["tracks"])
         self.save_music_state()
         if self.is_playing:
             self.play_current()

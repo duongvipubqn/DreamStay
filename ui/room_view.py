@@ -89,7 +89,7 @@ class RoomView(ctk.CTkScrollableFrame):
 
         self.apply_btn = ctk.CTkButton(
             btn_container,
-            text="LỌC PHÒNG",
+            text="LỌC PHÒNG NGHỈ",
             width=140,
             height=35,
             fg_color=COLOR_GOLD,
@@ -480,7 +480,7 @@ class RoomView(ctk.CTkScrollableFrame):
             if header and hasattr(header, "play_easter_egg"):
                 header.play_easter_egg(
                     "musics/I Really Want to Stay at Your House.mp3",
-                    "I Really Want to Stay at Your House"
+                    "I Really Want to Stay at Your House",
                 )
             return
 

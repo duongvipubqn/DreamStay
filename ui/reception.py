@@ -13,7 +13,7 @@ class ReceptionFrame(ctk.CTkFrame):
         header.pack(fill="x", pady=(0, 15))
         ctk.CTkLabel(
             header,
-            text="Quản Lý Lễ Tân",
+            text="Quản Lý Lễ Tân (FOS)",
             font=FONT_TITLE,
             text_color=COLOR_TEXT,
         ).pack(side="left")
