@@ -10,14 +10,15 @@ class LoginFrame(ctk.CTkFrame):
 
         self.panel = ctk.CTkFrame(
             self,
-            width=400,
-            height=550,
+            width=320,
+            height=460,
             fg_color=COLOR_WHITE,
             corner_radius=15,
             border_width=1,
             border_color=COLOR_BORDER,
         )
         self.panel.place(relx=0.5, rely=0.5, anchor="center")
+        self.panel.pack_propagate(False)
 
         ctk.CTkLabel(
             self.panel, text="Đăng Nhập", font=FONT_HEADER, text_color="white"
@@ -28,6 +29,9 @@ class LoginFrame(ctk.CTkFrame):
 
         self.user_entry = self.create_input("Tài khoản nhân viên")
         self.pass_entry = self.create_input("Mật khẩu", is_password=True)
+
+        self.user_entry.bind("<Return>", lambda e: self.login())
+        self.pass_entry.bind("<Return>", lambda e: self.login())
 
         self.show_pass_check = ctk.CTkCheckBox(
             self.panel,
@@ -59,7 +63,7 @@ class LoginFrame(ctk.CTkFrame):
         ctk.CTkButton(
             self.panel,
             text="ĐĂNG NHẬP",
-            width=280,
+            width=300,
             height=45,
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,

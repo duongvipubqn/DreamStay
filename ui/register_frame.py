@@ -11,7 +11,7 @@ class RegisterFrame(ctk.CTkFrame):
 
         self.panel = ctk.CTkFrame(
             self,
-            width=450,
+            width=320,
             height=650,
             fg_color=COLOR_WHITE,
             corner_radius=15,
@@ -19,6 +19,7 @@ class RegisterFrame(ctk.CTkFrame):
             border_color=COLOR_BORDER,
         )
         self.panel.place(relx=0.5, rely=0.5, anchor="center")
+        self.panel.pack_propagate(False)
 
         ctk.CTkLabel(
             self.panel, text="Tạo Tài Khoản", font=FONT_HEADER, text_color="white"
@@ -44,7 +45,7 @@ class RegisterFrame(ctk.CTkFrame):
             entry = ctk.CTkEntry(
                 self.panel,
                 placeholder_text=ph,
-                width=320,
+                width=300,
                 height=45,
                 fg_color="#1a1a2e",
                 border_color=COLOR_BORDER,
@@ -52,6 +53,7 @@ class RegisterFrame(ctk.CTkFrame):
                 show="*" if key in ["pass", "confirm"] else "",
             )
             entry.pack(pady=6)
+            entry.bind("<Return>", lambda e: self.submit())
             self.fields[key] = entry
 
         self.show_pass_check = ctk.CTkCheckBox(
@@ -68,7 +70,7 @@ class RegisterFrame(ctk.CTkFrame):
         ctk.CTkButton(
             self.panel,
             text="ĐĂNG KÝ NGAY",
-            width=320,
+            width=300,
             height=45,
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,

@@ -10,14 +10,15 @@ class ForgotFrame(ctk.CTkFrame):
 
         self.panel = ctk.CTkFrame(
             self,
-            width=450,
-            height=600,
+            width=320,
+            height=480,
             fg_color=COLOR_WHITE,
             corner_radius=15,
             border_width=1,
             border_color=COLOR_BORDER,
         )
         self.panel.place(relx=0.5, rely=0.5, anchor="center")
+        self.panel.pack_propagate(False)
 
         ctk.CTkLabel(
             self.panel, text="Quên Mật Khẩu", font=FONT_HEADER, text_color="white"
@@ -41,7 +42,7 @@ class ForgotFrame(ctk.CTkFrame):
             entry = ctk.CTkEntry(
                 self.panel,
                 placeholder_text=ph,
-                width=320,
+                width=300,
                 height=45,
                 fg_color="#1a1a2e",
                 border_color=COLOR_BORDER,
@@ -49,12 +50,13 @@ class ForgotFrame(ctk.CTkFrame):
                 show="*" if is_pass else "",
             )
             entry.pack(pady=10)
+            entry.bind("<Return>", lambda e: self.reset_password())
             self.fields[key] = entry
 
         ctk.CTkButton(
             self.panel,
             text="CẬP NHẬT MẬT KHẨU",
-            width=320,
+            width=300,
             height=45,
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,
@@ -95,7 +97,9 @@ class ForgotFrame(ctk.CTkFrame):
             return messagebox.showerror("Lỗi", "Tên đăng nhập không tồn tại!")
 
         hashed_pw = db.hash_password(p, u)
-        db.cursor.execute("UPDATE users SET password=? WHERE username=?", (hashed_pw, u))
+        db.cursor.execute(
+            "UPDATE users SET password=? WHERE username=?", (hashed_pw, u)
+        )
         db.conn.commit()
         messagebox.showinfo("Thành công", "Mật khẩu đã được thay đổi thành công!")
 
