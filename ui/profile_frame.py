@@ -207,7 +207,7 @@ class ProfileFrame(ctk.CTkFrame):
 
         modal = ctk.CTkToplevel(self)
         modal.title("Chỉnh sửa hồ sơ")
-        w, h = 400, 500
+        w, h = 400, 650
         modal.update_idletasks()
         main_win = self.winfo_toplevel()
         x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
@@ -219,18 +219,20 @@ class ProfileFrame(ctk.CTkFrame):
 
         ctk.CTkLabel(
             modal, text="CẬP NHẬT THÔNG TIN", font=FONT_LABEL, text_color=COLOR_GOLD
-        ).pack(pady=20)
+        ).pack(pady=15)
 
         entries = {}
         fields = [
-            ("Họ và Tên", data[0]),
-            ("Email", data[1]),
-            ("Số điện thoại", data[2]),
+            ("Họ và Tên", data[0], False),
+            ("Email", data[1], False),
+            ("Số điện thoại", data[2], False),
+            ("Mật khẩu mới (để trống nếu không đổi)", "", True),
+            ("Nhập lại mật khẩu mới", "", True),
         ]
 
-        for label, val in fields:
+        for label, val, is_password in fields:
             f = ctk.CTkFrame(modal, fg_color="transparent")
-            f.pack(fill="x", padx=40, pady=10)
+            f.pack(fill="x", padx=40, pady=5)
             ctk.CTkLabel(f, text=label, font=FONT_BODY, text_color=COLOR_TEXT).pack(
                 anchor="w"
             )
@@ -240,6 +242,7 @@ class ProfileFrame(ctk.CTkFrame):
                 border_color=COLOR_BORDER,
                 text_color=COLOR_TEXT,
                 height=40,
+                show="*" if is_password else "",
             )
             e.insert(0, val)
             e.pack(fill="x", pady=5)
@@ -249,11 +252,17 @@ class ProfileFrame(ctk.CTkFrame):
             new_name = entries["Họ và Tên"].get()
             new_email = entries["Email"].get()
             new_phone = entries["Số điện thoại"].get()
+            new_pass = entries["Mật khẩu mới (để trống nếu không đổi)"].get()
+            confirm_pass = entries["Nhập lại mật khẩu mới"].get()
 
             if not new_name or not new_email:
                 return messagebox.showwarning(
                     "Lỗi", "Không được để trống Tên hoặc Email!"
                 )
+
+            if new_pass:
+                if new_pass != confirm_pass:
+                    return messagebox.showerror("Lỗi", "Mật khẩu mới không trùng khớp!")
 
             try:
                 db.cursor.execute(
@@ -265,6 +274,14 @@ class ProfileFrame(ctk.CTkFrame):
                         getattr(self.app, "current_user", ""),
                     ),
                 )
+
+                if new_pass:
+                    hashed_pw = db.hash_password(new_pass, data[3])
+                    db.cursor.execute(
+                        "UPDATE users SET password=? WHERE username=?",
+                        (hashed_pw, data[3]),
+                    )
+
                 db.conn.commit()
 
                 setattr(self.app, "current_user", new_name)

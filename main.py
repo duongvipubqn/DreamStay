@@ -167,7 +167,7 @@ class HotelApp(ctk.CTk):
         self.current_user = None
         self.current_role = None
         self.header.user_btn.configure(
-            text="ĐĂNG NHẬP", width=90, height=32, corner_radius=6, font=FONT_BODY_BOLD
+            text="ĐĂNG NHẬP", width=110, height=40, corner_radius=6, font=FONT_BODY_BOLD
         )
         self.header.update_menu(False, None)
         self.switch_page("Trang chủ")

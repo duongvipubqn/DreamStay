@@ -135,8 +135,8 @@ class Database:
     def seed_manager(self):
         self.cursor.execute("SELECT * FROM users WHERE username='admin'")
         res = self.cursor.fetchone()
+        hashed_pw = self.hash_password("admin123", "admin")
         if not res:
-            hashed_pw = self.hash_password("admin123", "admin")
             self.cursor.execute(
                 """
                 INSERT INTO users (full_name, username, email, phone, password, role)
@@ -153,11 +153,11 @@ class Database:
             )
             self.conn.commit()
         else:
-            old_hash = "2407519bfb85c15e8b417c80526e03f905fb55de21fbfb1cfa69bdf0af07a829"
-            if res[5] == old_hash:
-                new_hash = self.hash_password("admin123", "admin")
-                self.cursor.execute("UPDATE users SET password=? WHERE username='admin'", (new_hash,))
-                self.conn.commit()
+            self.cursor.execute(
+                "UPDATE users SET password=?, role='manager' WHERE username='admin'",
+                (hashed_pw,),
+            )
+            self.conn.commit()
 
     def seed_inventory(self):
         self.cursor.execute("SELECT COUNT(*) FROM inventory")

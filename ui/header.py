@@ -27,16 +27,17 @@ class Header(ctk.CTkFrame):
             lbl = ctk.CTkLabel(self.brand_container, text=char, font=FONT_LOGO)
             lbl.pack(side="left", padx=0)
             self.letters.append(lbl)
-            
+
             def make_click_handler(i):
                 return lambda event: self.handle_logo_click(i)
+
             lbl.bind("<Button-1>", make_click_handler(idx))
 
         self.user_btn = ctk.CTkButton(
             self,
             text="ĐĂNG NHẬP",
-            width=90,
-            height=32,
+            width=110,
+            height=40,
             corner_radius=6,
             fg_color="white",
             text_color=COLOR_NAVY,
@@ -44,10 +45,10 @@ class Header(ctk.CTkFrame):
             font=FONT_BODY_BOLD,
             command=self.handle_user_click,
         )
-        self.user_btn.pack(side="right", padx=30)
+        self.user_btn.pack(side="right", padx=(4, 20))
 
         self.menu_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.menu_frame.pack(side="right", padx=20)
+        self.menu_frame.pack(side="right", padx=(0, 0))
 
         self.active_menu = None
         self.update_menu(False, None, "Trang chủ")
@@ -119,7 +120,7 @@ class Header(ctk.CTkFrame):
             corner_radius=10,
             border_width=1,
             border_color=COLOR_BORDER,
-            width=540,
+            width=620,
             height=40,
         )
         self.controls_frame.pack(side="left")
@@ -191,7 +192,7 @@ class Header(ctk.CTkFrame):
             text="DreamStay Player",
             font=("Segoe UI", 11, "bold"),
             text_color=COLOR_TEXT,
-            width=160,
+            width=240,
         )
         self.track_label.pack(side="left", padx=5)
 
@@ -318,7 +319,7 @@ class Header(ctk.CTkFrame):
                 border_color=COLOR_GOLD,
                 command=lambda m=menu: self.switch_func(m),
             )
-            btn.pack(side="left", padx=8)
+            btn.pack(side="left", padx=4)
 
     def handle_user_click(self):
         if self.app.current_user is None:
