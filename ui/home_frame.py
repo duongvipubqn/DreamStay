@@ -1,6 +1,6 @@
 import os
 from config import *
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 
 class HomeFrame(ctk.CTkFrame):
@@ -84,7 +84,8 @@ class HomeFrame(ctk.CTkFrame):
                     raw_resized = raw.resize(
                         (2000, 1000), Image.Resampling.LANCZOS
                     ).convert("RGB")
-                    self.raw_images.append(raw_resized)
+                    darkened = ImageEnhance.Brightness(raw_resized).enhance(0.4)
+                    self.raw_images.append(darkened)
                 except (IOError, OSError):
                     pass
 

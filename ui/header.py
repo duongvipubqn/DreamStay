@@ -372,19 +372,44 @@ class Header(ctk.CTkFrame):
 
         for menu in menus:
             is_active = menu == self.active_menu
+
+            if is_active:
+                base_color = COLOR_GOLD
+            else:
+                base_color = "#e74c3c" if menu == "Quản lý" else "white"
+
+            is_manual_hover = is_active or (menu == "Quản lý")
+
             btn = ctk.CTkButton(
                 self.menu_frame,
                 text=menu,
                 font=FONT_LABEL,
                 fg_color="transparent",
-                text_color="white",
+                text_color=base_color,
                 hover_color=COLOR_GOLD,
                 width=110,
                 height=40,
-                border_width=2 if is_active else 0,
-                border_color=COLOR_GOLD,
+                border_width=0,
+                hover=False if is_manual_hover else True,
                 command=lambda m=menu: self.switch_func(m),
             )
+
+            if is_manual_hover:
+                btn.bind(
+                    "<Enter>",
+                    lambda e, b=btn: b.configure(
+                        text_color="white", fg_color=COLOR_GOLD
+                    ),
+                    add="+",
+                )
+                btn.bind(
+                    "<Leave>",
+                    lambda e, b=btn, c=base_color: b.configure(
+                        text_color=c, fg_color="transparent"
+                    ),
+                    add="+",
+                )
+
             btn.pack(side="left", padx=4)
 
     def handle_user_click(self):

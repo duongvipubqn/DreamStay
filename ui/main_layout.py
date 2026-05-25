@@ -128,7 +128,7 @@ class MainFrame(ctk.CTkFrame):
 
         self.api_label = ctk.CTkLabel(
             self.sidebar,
-            text="Tỷ giá live: Chưa có dữ liệu",
+            text="Tỷ giá: Chưa có dữ liệu",
             font=("Segoe UI", 12),
             text_color=COLOR_GOLD,
             anchor="w",
@@ -448,7 +448,7 @@ class MainFrame(ctk.CTkFrame):
                 vnd_f = f"{int(vnd_rate):,}".replace(",", ".")
 
                 def success_ui():
-                    self.api_label.configure(text=f"Tỷ giá live: 1 USD = {vnd_f} VND")
+                    self.api_label.configure(text=f"Tỷ giá: 1 USD = {vnd_f} VND")
                     loading_win.destroy()
                     self.api_btn.configure(state="normal")
                     messagebox.showinfo(
