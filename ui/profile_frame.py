@@ -1,4 +1,6 @@
-from tkinter import messagebox, ttk
+import os
+from PIL import Image, ImageOps
+from tkinter import messagebox, ttk, filedialog
 from datetime import datetime
 from config import *
 from database import db
@@ -33,6 +35,9 @@ class ProfileFrame(ctk.CTkFrame):
             segmented_button_selected_hover_color=COLOR_GOLD_HOVER,
         )
         self.tabview.pack(fill="both", expand=True, padx=20, pady=20)
+        self.tabview._segmented_button.configure(
+            font=("Segoe UI", 14, "bold"), height=38
+        )
 
         self.tab_info = self.tabview.add("👤 THÔNG TIN")
         self.tab_history = self.tabview.add("📜 LỊCH SỬ ĐẶT")
@@ -46,7 +51,33 @@ class ProfileFrame(ctk.CTkFrame):
         container = ctk.CTkFrame(self.tab_info, fg_color="transparent")
         container.pack(expand=True)
 
-        ctk.CTkLabel(container, text="👤", font=FONT_ICON).pack()
+        self.avatar_border_frame = ctk.CTkFrame(
+            container,
+            fg_color="transparent",
+            corner_radius=10,
+            border_width=2,
+            border_color=COLOR_GOLD,
+        )
+        self.avatar_border_frame.pack(pady=(10, 5))
+
+        self.avatar_label = ctk.CTkLabel(
+            self.avatar_border_frame, text="👤", font=FONT_ICON
+        )
+        self.avatar_label.pack(padx=2, pady=2)
+
+        self.btn_change_avatar = ctk.CTkButton(
+            container,
+            text="ĐỔI ẢNH",
+            width=120,
+            height=32,
+            font=("Segoe UI", 14, "bold"),
+            fg_color="#3a3a50",
+            text_color="white",
+            hover_color=COLOR_GOLD_HOVER,
+            command=self.change_avatar,
+        )
+        self.btn_change_avatar.pack(pady=(0, 10))
+
         self.info_label = ctk.CTkLabel(
             container, text="Sếp: ...", font=FONT_TITLE, text_color=COLOR_GOLD
         )
@@ -136,6 +167,8 @@ class ProfileFrame(ctk.CTkFrame):
             self.email_label.configure(text=f"Email: {user_res[1]}")
             self.phone_label.configure(text=f"Số điện thoại: {user_res[2]}")
             username = user_res[3]
+
+            self.load_avatar_image()
 
             for i in self.tree.get_children():
                 self.tree.delete(i)
@@ -308,3 +341,233 @@ class ProfileFrame(ctk.CTkFrame):
             height=45,
             command=save,
         ).pack(pady=30, padx=40, fill="x")
+
+    def load_avatar_image(self):
+        if not hasattr(self.app, "current_username") or not self.app.current_username:
+            return
+
+        avatar_path = os.path.join(
+            IMAGE_DIR, "avatars", f"{self.app.current_username}.png"
+        )
+        if os.path.exists(avatar_path):
+            try:
+                pil_img = Image.open(avatar_path).convert("RGB")
+                ctk_img = ctk.CTkImage(
+                    light_image=pil_img, dark_image=pil_img, size=(300, 300)
+                )
+                self.avatar_label.configure(image=ctk_img, text="")
+                self.avatar_img_ref = ctk_img
+            except:
+                self.avatar_label.configure(text="👤", font=FONT_ICON, image=None)
+        else:
+            self.avatar_label.configure(text="👤", font=FONT_ICON, image=None)
+
+    def change_avatar(self):
+        file_path = filedialog.askopenfilename(
+            title="Chọn ảnh đại diện",
+            filetypes=[("Image Files", "*.png *.jpg *.jpeg *.webp *.bmp")],
+        )
+        if not file_path:
+            return
+
+        def on_crop_success(cropped_img):
+            try:
+                avatar_dir = os.path.join(IMAGE_DIR, "avatars")
+                if not os.path.exists(avatar_dir):
+                    os.makedirs(avatar_dir)
+
+                avatar_path = os.path.join(
+                    avatar_dir, f"{self.app.current_username}.png"
+                )
+                cropped_img.save(avatar_path, "PNG")
+
+                self.load_avatar_image()
+
+                app = self.winfo_toplevel()
+                header = getattr(app, "header", None)
+                if header and hasattr(header, "update_user_avatar"):
+                    header.update_user_avatar(self.app.current_username)
+
+                messagebox.showinfo("Thành công", "Đã cập nhật ảnh đại diện của sếp!")
+            except Exception as e:
+                messagebox.showerror("Lỗi", f"Không thể lưu ảnh: {str(e)}")
+
+        AvatarCropModal(self, file_path, on_crop_success)
+
+
+class AvatarCropModal(ctk.CTkToplevel):
+    def __init__(self, parent, image_path, callback):
+        super().__init__(parent)
+        self.title("Điều chỉnh ảnh đại diện")
+        self.configure(fg_color=COLOR_CREAM)
+        self.transient(parent)
+        self.grab_set()
+
+        w, h = 460, 600
+        self.update_idletasks()
+        main_win = parent.winfo_toplevel()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        self.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
+        self.resizable(False, False)
+
+        self.callback = callback
+        self.original_image = Image.open(image_path)
+
+        orig_w, orig_h = self.original_image.size
+        if orig_w < orig_h:
+            new_w = 200
+            new_h = int(orig_h * (200 / orig_w))
+        else:
+            new_h = 200
+            new_w = int(orig_w * (200 / orig_h))
+
+        self.base_image = self.original_image.resize(
+            (new_w, new_h), Image.Resampling.LANCZOS
+        )
+
+        self.zoom_factor = 1.0
+        self.img_x = (400 - new_w) // 2
+        self.img_y = (400 - new_h) // 2
+        self.clamp_offsets()
+
+        self.drag_start_x = 0
+        self.drag_start_y = 0
+
+        ctk.CTkLabel(
+            self,
+            text="KÉO ĐỂ DI CHUYỂN / THAY ĐỔI KÍCH CỠ",
+            font=FONT_LABEL,
+            text_color=COLOR_GOLD,
+        ).pack(pady=10)
+
+        self.canvas = ctk.CTkCanvas(
+            self, width=400, height=400, bg=COLOR_WHITE, highlightthickness=0
+        )
+        self.canvas.pack(pady=10, padx=30)
+
+        self.canvas.bind("<Button-1>", self.start_drag)
+        self.canvas.bind("<B1-Motion>", self.drag_image)
+
+        slider_f = ctk.CTkFrame(self, fg_color="transparent")
+        slider_f.pack(fill="x", padx=40, pady=5)
+        ctk.CTkLabel(slider_f, text="Phóng to:", font=FONT_BODY).pack(side="left")
+
+        self.zoom_slider = ctk.CTkSlider(
+            slider_f,
+            from_=1.0,
+            to=5.0,
+            number_of_steps=100,
+            button_color=COLOR_GOLD,
+            button_hover_color=COLOR_GOLD_HOVER,
+            progress_color=COLOR_GOLD,
+            command=self.on_zoom,
+        )
+        self.zoom_slider.pack(side="right", fill="x", expand=True, padx=(10, 0))
+        self.zoom_slider.set(1.0)
+
+        ctk.CTkButton(
+            self,
+            text="CẮT & LƯU LÀM AVATAR",
+            fg_color=COLOR_GOLD,
+            hover_color=COLOR_GOLD_HOVER,
+            font=FONT_BODY_BOLD,
+            height=40,
+            command=self.confirm_crop,
+        ).pack(pady=20, padx=40, fill="x")
+
+        self.update_canvas()
+
+    def start_drag(self, event):
+        self.drag_start_x = event.x
+        self.drag_start_y = event.y
+
+    def drag_image(self, event):
+        dx = event.x - self.drag_start_x
+        dy = event.y - self.drag_start_y
+
+        self.img_x += dx
+        self.img_y += dy
+        self.clamp_offsets()
+
+        self.drag_start_x = event.x
+        self.drag_start_y = event.y
+
+        self.update_canvas()
+
+    def on_zoom(self, val):
+        old_zoom = self.zoom_factor
+        self.zoom_factor = float(val)
+
+        center_x, center_y = 200, 200
+        self.img_x = int(
+            center_x - (center_x - self.img_x) * (self.zoom_factor / old_zoom)
+        )
+        self.img_y = int(
+            center_y - (center_y - self.img_y) * (self.zoom_factor / old_zoom)
+        )
+        self.clamp_offsets()
+
+        self.update_canvas()
+
+    def clamp_offsets(self):
+        w = int(self.base_image.width * self.zoom_factor)
+        h = int(self.base_image.height * self.zoom_factor)
+
+        if w >= 200:
+            self.img_x = max(300 - w, min(100, self.img_x))
+        else:
+            self.img_x = (400 - w) // 2
+
+        if h >= 200:
+            self.img_y = max(300 - h, min(100, self.img_y))
+        else:
+            self.img_y = (400 - h) // 2
+
+    def update_canvas(self):
+        self.canvas.delete("all")
+
+        w = int(self.base_image.width * self.zoom_factor)
+        h = int(self.base_image.height * self.zoom_factor)
+        resized = self.base_image.resize((w, h), Image.Resampling.LANCZOS)
+
+        from PIL import ImageTk
+
+        self.tk_image = ImageTk.PhotoImage(resized)
+
+        self.canvas.create_image(
+            self.img_x, self.img_y, anchor="nw", image=self.tk_image
+        )
+
+        self.canvas.create_rectangle(99, 99, 301, 301, outline="#131324", width=3)
+        self.canvas.create_rectangle(
+            100, 100, 300, 300, outline=COLOR_GOLD, width=2, dash=(5, 3)
+        )
+
+    def confirm_crop(self):
+        zoom_w = int(self.base_image.width * self.zoom_factor)
+
+        crop_x1 = 100 - self.img_x
+        crop_y1 = 100 - self.img_y
+        crop_x2 = 300 - self.img_x
+        crop_y2 = 300 - self.img_y
+
+        scale_factor = self.original_image.width / zoom_w
+
+        orig_crop_x1 = int(crop_x1 * scale_factor)
+        orig_crop_y1 = int(crop_y1 * scale_factor)
+        orig_crop_x2 = int(crop_x2 * scale_factor)
+        orig_crop_y2 = int(crop_y2 * scale_factor)
+
+        try:
+            cropped = self.original_image.crop(
+                (orig_crop_x1, orig_crop_y1, orig_crop_x2, orig_crop_y2)
+            )
+            final_avatar = cropped.resize((350, 350), Image.Resampling.LANCZOS)
+            self.callback(final_avatar)
+            self.destroy()
+        except:
+            messagebox.showerror(
+                "Lỗi",
+                "Vùng cắt nằm ngoài phạm vi ảnh hoặc không hợp lệ. Vui lòng kéo ảnh nằm trong khung nét đứt!",
+            )

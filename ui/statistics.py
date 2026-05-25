@@ -73,7 +73,7 @@ class StatisticsFrame(ctk.CTkFrame):
             self.chart_container,
             text="🔄 Đang phân tích dữ liệu doanh thu & vẽ biểu đồ...",
             font=FONT_LABEL,
-            text_color=COLOR_GOLD
+            text_color=COLOR_GOLD,
         )
         loading_lbl.pack(expand=True)
 
@@ -83,19 +83,43 @@ class StatisticsFrame(ctk.CTkFrame):
             import pandas as pd
             import numpy as np
 
-            db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dreamstay.db")
+            db_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                "dreamstay.db",
+            )
             local_conn = sqlite3.connect(db_path)
             local_cursor = local_conn.cursor()
 
             try:
-                df = pd.read_sql_query("SELECT price, status, capacity FROM rooms", local_conn)
+                local_cursor.execute("SELECT COUNT(*) FROM revenue_history")
+                if local_cursor.fetchone()[0] == 0:
+                    import random
+                    from datetime import datetime, timedelta
+
+                    mock_data = []
+                    for loc in LOCATIONS:
+                        for month_offset in range(6):
+                            amount = float(random.randint(150, 1200) * 1000000)
+                            date_str = (
+                                datetime.now() - timedelta(days=month_offset * 30)
+                            ).strftime("%Y-%m-%d")
+                            mock_data.append((date_str, amount, loc))
+                    local_cursor.executemany(
+                        "INSERT INTO revenue_history (date, amount, location) VALUES (?,?,?)",
+                        mock_data,
+                    )
+                    local_conn.commit()
+
+                df = pd.read_sql_query(
+                    "SELECT price, status, capacity FROM rooms", local_conn
+                )
                 if df.empty:
                     stats = {
                         "total": 0,
                         "avg_price": 0.0,
                         "max_price": 0.0,
                         "status_counts": {},
-                        "capacity_counts": {}
+                        "capacity_counts": {},
                     }
                 else:
                     prices = df["price"].to_numpy()
@@ -108,21 +132,33 @@ class StatisticsFrame(ctk.CTkFrame):
                         "avg_price": avg_price,
                         "max_price": max_price,
                         "status_counts": status_counts,
-                        "capacity_counts": capacity_counts
+                        "capacity_counts": capacity_counts,
                     }
 
-                local_cursor.execute("SELECT location, SUM(amount) FROM revenue_history GROUP BY location")
+                local_cursor.execute(
+                    "SELECT location, SUM(amount) FROM revenue_history GROUP BY location"
+                )
                 data = local_cursor.fetchall()
                 locs = [r[0] for r in data] if data else ["Trống"]
                 amounts = [r[1] for r in data] if data else [0]
 
-                local_cursor.execute("SELECT status, COUNT(*) FROM rooms GROUP BY status")
+                local_cursor.execute(
+                    "SELECT status, COUNT(*) FROM rooms GROUP BY status"
+                )
                 status_data = local_cursor.fetchall()
-                labels = [r[0] for r in status_data] if status_data else ["Không có dữ liệu"]
+                labels = (
+                    [r[0] for r in status_data] if status_data else ["Không có dữ liệu"]
+                )
                 sizes = [r[1] for r in status_data] if status_data else [1]
 
             except Exception:
-                stats = {"total": 0, "avg_price": 0.0, "max_price": 0.0, "status_counts": {}, "capacity_counts": {}}
+                stats = {
+                    "total": 0,
+                    "avg_price": 0.0,
+                    "max_price": 0.0,
+                    "status_counts": {},
+                    "capacity_counts": {},
+                }
                 locs = ["Trống"]
                 amounts = [0]
                 labels = ["Không có dữ liệu"]
@@ -130,20 +166,36 @@ class StatisticsFrame(ctk.CTkFrame):
             finally:
                 local_conn.close()
 
-            self.after(0, lambda: self.render_plots_on_main_thread(loading_lbl, stats, locs, amounts, labels, sizes))
+            self.after(
+                0,
+                lambda: self.render_plots_on_main_thread(
+                    loading_lbl, stats, locs, amounts, labels, sizes
+                ),
+            )
 
         import threading
+
         threading.Thread(target=worker, daemon=True).start()
 
-    def render_plots_on_main_thread(self, loading_lbl, stats, locs, amounts, labels, sizes):
+    def render_plots_on_main_thread(
+        self, loading_lbl, stats, locs, amounts, labels, sizes
+    ):
         loading_lbl.destroy()
 
         self.lbl_total.configure(text=f"Tổng số phòng: {stats['total']}")
-        avg_price_f = f"{int(stats['avg_price']):,}".replace(",", ".") + " VNĐ" if stats['avg_price'] > 0 else "0 VNĐ"
+        avg_price_f = (
+            f"{int(stats['avg_price']):,}".replace(",", ".") + " VNĐ"
+            if stats["avg_price"] > 0
+            else "0 VNĐ"
+        )
         self.lbl_avg.configure(text=f"Giá trung bình: {avg_price_f}")
-        max_price_f = f"{int(stats['max_price']):,}".replace(",", ".") + " VNĐ" if stats['max_price'] > 0 else "0 VNĐ"
+        max_price_f = (
+            f"{int(stats['max_price']):,}".replace(",", ".") + " VNĐ"
+            if stats["max_price"] > 0
+            else "0 VNĐ"
+        )
         self.lbl_max.configure(text=f"Mức giá cao nhất: {max_price_f}")
-        
+
         status_counts = stats["status_counts"]
         booked = status_counts.get("Đã đặt", 0) + status_counts.get("Bảo trì", 0)
         total = stats["total"]
@@ -168,7 +220,13 @@ class StatisticsFrame(ctk.CTkFrame):
         ax1.set_title("Doanh thu khu vực", fontweight="bold", color=COLOR_TEXT, pad=20)
         ax1.tick_params(axis="x", rotation=30)
 
-        colors = [COLOR_GOLD, COLOR_NAVY, "#e74c3c", "#95a5a6"]
+        status_colors = {
+            "Trống": "#2ecc71",
+            "Đã đặt": "#e74c3c",
+            "Đang dọn": "#f1c40f",
+            "Bảo trì": "#95a5a6",
+        }
+        colors = [status_colors.get(lbl, COLOR_GOLD) for lbl in labels]
 
         wedges, texts, autotexts = ax2.pie(
             sizes,

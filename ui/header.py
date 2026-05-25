@@ -640,3 +640,47 @@ class Header(ctk.CTkFrame):
     def hide_controls(self):
         self.controls_frame.pack_forget()
         self.hide_timer_id = None
+
+    def update_user_avatar(self, username):
+        if not username:
+            self.user_btn.configure(
+                text="ĐĂNG NHẬP",
+                width=110,
+                height=40,
+                corner_radius=6,
+                font=FONT_BODY_BOLD,
+                image=None,
+            )
+            return
+
+        avatar_path = os.path.join(IMAGE_DIR, "avatars", f"{username}.png")
+        if os.path.exists(avatar_path):
+            try:
+                from PIL import Image
+
+                pil_img = Image.open(avatar_path).convert("RGB")
+                ctk_img = ctk.CTkImage(
+                    light_image=pil_img, dark_image=pil_img, size=(34, 34)
+                )
+                self.user_btn.configure(
+                    image=ctk_img, text="", width=40, height=40, corner_radius=8
+                )
+                self.header_avatar_ref = ctk_img
+            except:
+                self.user_btn.configure(
+                    text="👤",
+                    image=None,
+                    width=40,
+                    height=40,
+                    corner_radius=8,
+                    font=FONT_LABEL,
+                )
+        else:
+            self.user_btn.configure(
+                text="👤",
+                image=None,
+                width=40,
+                height=40,
+                corner_radius=8,
+                font=FONT_LABEL,
+            )
