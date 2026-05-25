@@ -32,7 +32,7 @@ class EventFrame(ctk.CTkScrollableFrame):
 
         for ev in self.events_list:
             card = ctk.CTkFrame(self, fg_color=COLOR_NAVY, corner_radius=15)
-            card.pack(fill="x", padx=50, pady=15)
+            card.pack(fill="x", padx=250, pady=15)
 
             f = ctk.CTkFrame(card, fg_color="transparent")
             f.pack(side="left", padx=40, pady=30)

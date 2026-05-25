@@ -329,7 +329,7 @@ class ServiceFrame(ctk.CTkScrollableFrame):
         self.apply_btn.pack(pady=(5, 0))
 
         self.grid_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.grid_frame.pack(fill="both", expand=True, padx=50)
+        self.grid_frame.pack(fill="both", expand=True, padx=250)
         for col in range(3):
             self.grid_frame.grid_columnconfigure(col, weight=1)
 
@@ -358,7 +358,7 @@ class ServiceFrame(ctk.CTkScrollableFrame):
         if scale == 0:
             scale = 1.0
 
-        card_width = (window_width - 150) // 3
+        card_width = (window_width - 550) // 3
         img_w = int(card_width * 0.9)
         img_h = int(img_w * 0.65)
 

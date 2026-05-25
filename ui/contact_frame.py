@@ -3,6 +3,7 @@ import tkintermapview
 from config import *
 from tkinter import messagebox
 
+
 class ContactFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=COLOR_CREAM, corner_radius=0)
@@ -14,7 +15,7 @@ class ContactFrame(ctk.CTkFrame):
         ).pack(pady=(36, 14))
 
         body = ctk.CTkFrame(self, fg_color="transparent")
-        body.pack(fill="both", expand=True, padx=40, pady=(0, 20))
+        body.pack(fill="both", expand=True, padx=250, pady=(0, 20))
 
         body.grid_rowconfigure(0, weight=1)
         body.grid_columnconfigure(0, weight=3)
@@ -71,7 +72,12 @@ class ContactFrame(ctk.CTkFrame):
         self.message_box.pack(pady=10, padx=20, fill="both", expand=True)
 
         self.feedback_label = ctk.CTkLabel(
-            self.col1, text="", font=FONT_BODY, text_color=COLOR_TEXT, wraplength=200, justify="center"
+            self.col1,
+            text="",
+            font=FONT_BODY,
+            text_color=COLOR_TEXT,
+            wraplength=200,
+            justify="center",
         )
         self.feedback_label.pack(pady=(5, 5), fill="x", padx=10)
 
@@ -88,7 +94,7 @@ class ContactFrame(ctk.CTkFrame):
 
         ctk.CTkLabel(
             self.col2, text="Thông Tin Liên Hệ", font=FONT_TITLE, text_color=COLOR_TEXT
-        ).pack(pady=(24, 16), padx=20, anchor="w")
+        ).pack(pady=(24, 16))
 
         info = [
             ("📍 Địa chỉ", "123 Đại lộ Thượng Lưu, TP. Biển"),
@@ -120,10 +126,7 @@ class ContactFrame(ctk.CTkFrame):
         ).pack(pady=(24, 12))
 
         self.map_widget = tkintermapview.TkinterMapView(
-            self.col3,
-            width=600,
-            height=450,
-            corner_radius=10
+            self.col3, width=600, height=450, corner_radius=10
         )
 
         google_maps_btn = ctk.CTkButton(
@@ -146,24 +149,62 @@ class ContactFrame(ctk.CTkFrame):
         self.map_widget.set_zoom(15)
         self.map_widget.set_marker(12.2388, 109.1678, text="DreamStay Resort")
 
-        self.nav_pad = ctk.CTkFrame(self.col3, fg_color="#252538", corner_radius=10, border_width=1, border_color=COLOR_BORDER)
+        self.nav_pad = ctk.CTkFrame(
+            self.col3,
+            fg_color="#252538",
+            corner_radius=10,
+            border_width=1,
+            border_color=COLOR_BORDER,
+        )
         self.nav_pad.place(relx=0.05, rely=0.85, anchor="sw")
         self.nav_pad.lift()
 
         ctk.CTkButton(
-            self.nav_pad, text="▲", width=26, height=26, fg_color="transparent", text_color=COLOR_GOLD, hover_color="#1a1a2e", corner_radius=6, command=lambda: self.pan_map("up")
+            self.nav_pad,
+            text="▲",
+            width=26,
+            height=26,
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            hover_color="#1a1a2e",
+            corner_radius=6,
+            command=lambda: self.pan_map("up"),
         ).grid(row=0, column=1, padx=2, pady=2)
 
         ctk.CTkButton(
-            self.nav_pad, text="◀", width=26, height=26, fg_color="transparent", text_color=COLOR_GOLD, hover_color="#1a1a2e", corner_radius=6, command=lambda: self.pan_map("left")
+            self.nav_pad,
+            text="◀",
+            width=26,
+            height=26,
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            hover_color="#1a1a2e",
+            corner_radius=6,
+            command=lambda: self.pan_map("left"),
         ).grid(row=1, column=0, padx=2, pady=2)
 
         ctk.CTkButton(
-            self.nav_pad, text="▶", width=26, height=26, fg_color="transparent", text_color=COLOR_GOLD, hover_color="#1a1a2e", corner_radius=6, command=lambda: self.pan_map("right")
+            self.nav_pad,
+            text="▶",
+            width=26,
+            height=26,
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            hover_color="#1a1a2e",
+            corner_radius=6,
+            command=lambda: self.pan_map("right"),
         ).grid(row=1, column=2, padx=2, pady=2)
 
         ctk.CTkButton(
-            self.nav_pad, text="▼", width=26, height=26, fg_color="transparent", text_color=COLOR_GOLD, hover_color="#1a1a2e", corner_radius=6, command=lambda: self.pan_map("down")
+            self.nav_pad,
+            text="▼",
+            width=26,
+            height=26,
+            fg_color="transparent",
+            text_color=COLOR_GOLD,
+            hover_color="#1a1a2e",
+            corner_radius=6,
+            command=lambda: self.pan_map("down"),
         ).grid(row=2, column=1, padx=2, pady=2)
 
     def pan_map(self, direction):
@@ -199,24 +240,42 @@ class ContactFrame(ctk.CTkFrame):
 
     def trigger_konami_easter_egg(self):
         self.btn_b = ctk.CTkButton(
-            self.nav_pad, text="B", width=26, height=26, fg_color="#e74c3c", text_color="white", hover_color="#c0392b", corner_radius=13, command=self.click_b, font=("Segoe UI", 12, "bold")
+            self.nav_pad,
+            text="B",
+            width=26,
+            height=26,
+            fg_color="#e74c3c",
+            text_color="white",
+            hover_color="#c0392b",
+            corner_radius=13,
+            command=self.click_b,
+            font=("Segoe UI", 12, "bold"),
         )
         self.btn_b.grid(row=1, column=3, padx=(10, 2), pady=2)
 
         self.btn_a = ctk.CTkButton(
-            self.nav_pad, text="A", width=26, height=26, fg_color="#27ae60", text_color="white", hover_color="#219150", corner_radius=13, command=self.click_a, font=("Segoe UI", 12, "bold")
+            self.nav_pad,
+            text="A",
+            width=26,
+            height=26,
+            fg_color="#27ae60",
+            text_color="white",
+            hover_color="#219150",
+            corner_radius=13,
+            command=self.click_a,
+            font=("Segoe UI", 12, "bold"),
         )
         self.btn_a.grid(row=1, column=4, padx=2, pady=2)
 
     def click_a(self):
         if getattr(self, "ba_state", 0) == 1:
             self.ba_state = 0
-            
+
             if hasattr(self, "btn_b") and self.btn_b:
                 self.btn_b.destroy()
             if hasattr(self, "btn_a") and self.btn_a:
                 self.btn_a.destroy()
-                
+
             app = self.winfo_toplevel()
             header = getattr(app, "header", None)
             if header and hasattr(header, "play_easter_egg"):

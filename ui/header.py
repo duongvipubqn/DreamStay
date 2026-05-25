@@ -165,7 +165,7 @@ class Header(ctk.CTkFrame):
         self.load_music_state()
 
         self.music_panel = ctk.CTkFrame(self, fg_color="transparent")
-        self.music_panel.pack(side="left", padx=15)
+        self.music_panel.pack(side="left", padx=(0, 15))
 
         self.controls_frame = ctk.CTkFrame(
             self.music_panel,

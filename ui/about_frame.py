@@ -81,7 +81,7 @@ class AboutFrame(ctk.CTkScrollableFrame):
         ).pack(anchor="w", padx=0, pady=(0, 0))
 
         gallery_container = ctk.CTkFrame(self, fg_color="transparent")
-        gallery_container.pack(fill="x", padx=50, pady=(80, 80))
+        gallery_container.pack(fill="x", padx=250, pady=(80, 80))
 
         ctk.CTkLabel(
             gallery_container,
@@ -114,7 +114,7 @@ class AboutFrame(ctk.CTkScrollableFrame):
             scale = 1.0
 
         logical_window_width = window_width / scale
-        card_width = (logical_window_width - 150) // 3
+        card_width = (logical_window_width - 550) // 3
         img_w = int(card_width * 0.9)
         img_h = int(img_w * 0.65)
 
