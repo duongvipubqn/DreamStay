@@ -449,11 +449,19 @@ class MainFrame(ctk.CTkFrame):
 
                 def success_ui():
                     self.api_label.configure(text=f"Tỷ giá: 1 USD = {vnd_f} VND")
-                    loading_win.destroy()
+                    try:
+                        loading_win.grab_release()
+                    except:
+                        pass
+                    try:
+                        loading_win.destroy()
+                    except:
+                        pass
                     self.api_btn.configure(state="normal")
                     messagebox.showinfo(
                         "Thành công",
                         f"Đã cập nhật tỷ giá thực tế hôm nay: 1 USD = {vnd_f} VNĐ",
+                        parent=self.winfo_toplevel(),
                     )
 
                 self.after(0, success_ui)
@@ -461,11 +469,19 @@ class MainFrame(ctk.CTkFrame):
             except requests.exceptions.Timeout:
 
                 def error_ui():
-                    loading_win.destroy()
+                    try:
+                        loading_win.grab_release()
+                    except:
+                        pass
+                    try:
+                        loading_win.destroy()
+                    except:
+                        pass
                     self.api_btn.configure(state="normal")
                     messagebox.showerror(
                         "Lỗi kết nối",
                         "Hết thời gian chờ phản hồi (Timeout)! Xin sếp vui lòng kiểm tra lại đường truyền mạng.",
+                        parent=self.winfo_toplevel(),
                     )
 
                 self.after(0, error_ui)
@@ -473,23 +489,40 @@ class MainFrame(ctk.CTkFrame):
             except PermissionError:
 
                 def error_ui():
-                    loading_win.destroy()
+                    try:
+                        loading_win.grab_release()
+                    except:
+                        pass
+                    try:
+                        loading_win.destroy()
+                    except:
+                        pass
                     self.api_btn.configure(state="normal")
                     messagebox.showerror(
                         "Lỗi xác thực",
                         "Yêu cầu API bị từ chối do lỗi xác thực người dùng (Mã 401 Unauthorized)!",
+                        parent=self.winfo_toplevel(),
                     )
 
                 self.after(0, error_ui)
 
             except Exception as e:
+                error_msg = str(e)
 
                 def error_ui():
-                    loading_win.destroy()
+                    try:
+                        loading_win.grab_release()
+                    except:
+                        pass
+                    try:
+                        loading_win.destroy()
+                    except:
+                        pass
                     self.api_btn.configure(state="normal")
                     messagebox.showerror(
                         "Lỗi hệ thống",
-                        f"Không thể lấy thông tin tỷ giá trực tuyến: {str(e)}",
+                        f"Không thể lấy thông tin tỷ giá trực tuyến: {error_msg}",
+                        parent=self.winfo_toplevel(),
                     )
 
                 self.after(0, error_ui)

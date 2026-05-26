@@ -28,6 +28,54 @@ class EventFrame(ctk.CTkScrollableFrame):
                 "desc": "Tham gia lễ hội hóa trang và nhận ngay voucher giảm giá 50% cho tất cả dịch vụ ăn uống.",
                 "icon": "🎭",
             },
+            {
+                "title": "TIỆC TRÀ CHIỀU HOÀNG GIA",
+                "subtitle": "🍰 THƯ THƯỞNG 🍰",
+                "desc": "Thưởng thức set trà chiều thượng hạng cùng các loại bánh ngọt Pháp tinh tế tại sảnh đón hoàng gia.",
+                "icon": "🍰",
+            },
+            {
+                "title": "KHOẢNH KHẮC MỘNG MƠ SPA",
+                "subtitle": "💆 TÁI TẠO 💆",
+                "desc": "Liệu pháp massage đá nóng và xông hơi thảo dược giúp giải tỏa căng thẳng, phục hồi năng lượng.",
+                "icon": "💆",
+            },
+            {
+                "title": "HỘI NGHỊ THƯỢNG ĐỈNH",
+                "subtitle": "💼 DOANH NHÂN 💼",
+                "desc": "Phòng đại tiệc sang trọng hỗ trợ tối đa cho các buổi hội thảo, ký kết và gala dinner đẳng cấp.",
+                "icon": "💼",
+            },
+            {
+                "title": "GIAI ĐIỆU CỦA BIỂN CẢ",
+                "subtitle": "🎵 KHÔNG GIAN 🎵",
+                "desc": "Đêm nhạc Acoustic sống động hòa cùng tiếng sóng biển rì rào tại bãi biển riêng tư hằng đêm.",
+                "icon": "🎸",
+            },
+            {
+                "title": "HOÀNG HÔN RỰC RỠ",
+                "subtitle": "🍹 CUỘC SỐNG 🍹",
+                "desc": "Thưởng thức menu cocktail sáng tạo và ngắm nhìn hoàng hôn lộng lẫy tại Sky Bar tầng thượng.",
+                "icon": "🍹",
+            },
+            {
+                "title": "MỸ VỊ Á - ÂU NĂM SAO",
+                "subtitle": "🍲 ẨM THỰC 🍲",
+                "desc": "Khám phá hành trình ẩm thực phong phú được chuẩn bị bởi đội ngũ đầu bếp tại Nhà Hàng The Golden.",
+                "icon": "🍲",
+            },
+            {
+                "title": "MỸ VỊ Á - ÂU NĂM SAO",
+                "subtitle": "🍲 ẨM THỰC 🍲",
+                "desc": "Khám phá hành trình ẩm thực phong phú được chuẩn bị bởi đội ngũ đầu bếp tại Nhà Hàng The Golden.",
+                "icon": "🍲",
+            },
+            {
+                "title": "KỶ NGUYÊN SỐ CYBERSPACE",
+                "subtitle": "👾 KỸ THUẬT SỐ 👾",
+                "desc": "Khai phá không gian ảo hiện đại tại resort và khám phá những bí mật kỹ thuật số ẩn giấu.",
+                "icon": "👾",
+            },
         ]
 
         for ev in self.events_list:
@@ -61,9 +109,13 @@ class EventFrame(ctk.CTkScrollableFrame):
                 command=make_cmd(ev),
             ).pack(anchor="w", pady=10)
 
-            ctk.CTkLabel(
+            icon_lbl = ctk.CTkLabel(
                 card, text=ev["icon"], font=FONT_ICON, text_color=COLOR_GOLD
-            ).pack(side="right", padx=60)
+            )
+            icon_lbl.pack(side="right", padx=60)
+
+            if ev["title"] == "KỶ NGUYÊN SỐ CYBERSPACE":
+                icon_lbl.bind("<Button-1>", lambda e: self.trigger_cyber_music())
 
     def show_details(self, data):
         app = self.winfo_toplevel()
@@ -78,6 +130,17 @@ class EventFrame(ctk.CTkScrollableFrame):
             switch_func = getattr(app, "switch_page", None)
             if callable(switch_func):
                 switch_func("Chi tiết sự kiện")
+
+    def trigger_cyber_music(self):
+        if not hasattr(self, "cyber_clicks"):
+            self.cyber_clicks = 0
+        self.cyber_clicks += 1
+        if self.cyber_clicks == 5:
+            self.cyber_clicks = 0
+            app = self.winfo_toplevel()
+            header = getattr(app, "header", None)
+            if header and hasattr(header, "play_easter_egg"):
+                header.play_easter_egg("musics/A Cybers World.mp3", "A Cyber's World")
 
     def load_data(self):
         pass

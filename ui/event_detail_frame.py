@@ -63,7 +63,21 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
             wraplength=800,
         ).pack(anchor="w")
 
-        if "ĐIỆN ẢNH" in title:
+        if "CYBERSPACE" in title:
+            rules = (
+                "1. Đối tượng: Tất cả các cư dân không gian số thuộc hệ thống resort DreamStay.\n"
+                "2. Hoạt động: Khám phá cổng kết nối mạng nội bộ và tìm kiếm các thông điệp mật mã ẩn.\n"
+                "3. Gợi ý: Hãy nhấp chuột liên tiếp đúng 5 lần vào biểu tượng quái vật pixel ngoại hành tinh tại trang sự kiện ngoài kia.\n"
+                "4. Phần thưởng: Giải mã thành công và kích hoạt trực tiếp bản nhạc nền huyền thoại A Cyber's World."
+            )
+        elif "VƯỢT THỜI GIAN" in title:
+            rules = (
+                "1. Đối tượng: Tất cả khách hàng đang lưu trú tại resort DreamStay.\n"
+                "2. Cách thức: Đăng tải video/ảnh trải nghiệm lên mạng xã hội kèm hashtag #DreamStay.\n"
+                "3. Thời gian diễn ra: Từ ngày 01/05/2026 đến hết ngày 31/08/2026.\n"
+                "4. Giải thưởng: 03 đêm nghỉ dưỡng hoàn toàn miễn phí tại phòng hạng Presidential Suite."
+            )
+        elif "ĐIỆN ẢNH" in title:
             rules = (
                 "1. Thời gian: Mỗi tối thứ 6 và thứ 7 hằng tuần.\n"
                 "2. Địa điểm: Sky Bar tầng thượng - DreamStay.\n"
@@ -77,12 +91,54 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
                 "3. Quà tặng: Voucher 50% buffet tối tại nhà hàng The Golden.\n"
                 "4. Thời gian: 19:00 Chủ nhật tuần thứ 2 mỗi tháng."
             )
+        elif "TRÀ CHIỀU" in title:
+            rules = (
+                "1. Thời gian: Từ 14:00 đến 17:00 hằng ngày.\n"
+                "2. Địa điểm: Khu vực Sảnh Đón Hoàng Gia (Lobby) - DreamStay.\n"
+                "3. Thực đơn: Trà hoa cúc thượng hạng kết hợp bánh sừng bò bơ tỏi và mousse Pháp ngọt mịn.\n"
+                "4. Ưu đãi: Giảm ngay 20% tổng hóa đơn cho khách hàng sở hữu thẻ thành viên hạng Bạc trở lên."
+            )
+        elif "SPA" in title:
+            rules = (
+                "1. Thời gian hoạt động: 08:00 - 22:00 hằng ngày.\n"
+                "2. Địa điểm: Khu vực Mộng Mơ Spa - Tầng 5 - DreamStay.\n"
+                "3. Liệu pháp: Liệu trình massage đá nóng núi lửa kết hợp xông hơi thảo dược phục hồi sức khỏe.\n"
+                "4. Đăng ký: Vui lòng liên hệ và đặt chỗ trước 1 tiếng tại quầy lễ tân để được phục vụ chu đáo nhất."
+            )
+        elif "HỘI NGHỊ" in title:
+            rules = (
+                "1. Quy mô: Không gian thiết kế chuyên biệt cho các buổi ký kết, gala và hội nghị chuẩn quốc tế.\n"
+                "2. Trang thiết bị: Hệ thống âm thanh, ánh sáng và màn hình LED 4K thế hệ mới nhất.\n"
+                "3. Địa điểm: Phòng Đại Tiệc (Ballroom) - DreamStay.\n"
+                "4. Liên hệ: Vui lòng đặt lịch đặt phòng sự kiện trước ít nhất 1 tuần qua phòng kinh doanh."
+            )
+        elif "BIỂN CẢ" in title:
+            rules = (
+                "1. Thời gian: 20:00 - 22:00 hằng đêm.\n"
+                "2. Địa điểm: Khu vực Bãi Biển Riêng Tư - DreamStay.\n"
+                "3. Hoạt động: Đêm nhạc Acoustic mộc mạc dưới ánh nến và tiếng sóng vỗ.\n"
+                "4. Chi phí: Hoàn toàn miễn phí vé vào cửa cho tất cả khách hàng đang lưu trú tại resort."
+            )
+        elif "HOÀNG HÔN" in title:
+            rules = (
+                "1. Thời gian: 17:00 - 19:00 hằng ngày.\n"
+                "2. Địa điểm: Sky Bar Tầng Thượng - DreamStay.\n"
+                "3. Khuyến mãi: Happy Hour - Mua 1 tặng 1 cho tất cả các loại cocktail sáng tạo.\n"
+                "4. Đặc quyền: Trải nghiệm không gian ngắm hoàng hôn biển lãng mạn không giới hạn."
+            )
+        elif "MỸ VỊ" in title:
+            rules = (
+                "1. Thời gian: Sáng 06:00 - 10:00 | Trưa 11:30 - 14:30 | Tối 18:00 - 22:00.\n"
+                "2. Địa điểm: Nhà Hàng The Golden - DreamStay.\n"
+                "3. Ẩm thực: Thực đơn Á-Âu chuẩn 5 sao được chế biến tỉ mỉ bởi bếp trưởng.\n"
+                "4. Đặt bàn: Khách hàng nên liên hệ đặt trước bàn qua hệ thống lễ tân đối với các tối cuối tuần."
+            )
         else:
             rules = (
                 "1. Đối tượng: Khách hàng đã sử dụng dịch vụ tại DreamStay.\n"
-                "2. Cách thức: Đăng tải video/ảnh lên mạng xã hội kèm hashtag #DreamStay.\n"
-                "3. Thời gian: Từ 01/05/2024 đến hết 31/08/2024.\n"
-                "4. Giải thưởng: 03 đêm nghỉ dưỡng tại phòng Presidential Suite."
+                "2. Cách thức: Đăng ký tại quầy lễ tân hoặc trực tiếp tại địa điểm tổ chức.\n"
+                "3. Thời gian: Theo khung giờ hoạt động được niêm yết của sự kiện.\n"
+                "4. Ưu đãi: Nhận ngay quà lưu niệm độc bản từ DreamStay khi tham gia."
             )
 
         rule_f = ctk.CTkFrame(content_f, fg_color=COLOR_NAVY, corner_radius=10)
