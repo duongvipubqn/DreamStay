@@ -20,6 +20,8 @@ class HomeFrame(ctk.CTkFrame):
         self.anim_started = False
         self.anim_id = None
         self.current_blend = None
+        self.idle_timer_id = None
+        self.root_click_bind = None
         self.load_all_images_raw()
 
         for raw in self.raw_images:
@@ -158,3 +160,38 @@ class HomeFrame(ctk.CTkFrame):
         switch_func = getattr(app, "switch_page", None)
         if callable(switch_func):
             switch_func("Phòng nghỉ")
+
+    def on_show(self):
+        self.reset_idle_timer()
+        self.root_click_bind = self.winfo_toplevel().bind(
+            "<Button-1>", lambda e: self.reset_idle_timer(), add="+"
+        )
+
+    def on_hide(self):
+        if hasattr(self, "idle_timer_id") and self.idle_timer_id:
+            self.after_cancel(self.idle_timer_id)
+            self.idle_timer_id = None
+        if hasattr(self, "root_click_bind") and self.root_click_bind:
+            try:
+                self.winfo_toplevel().unbind("<Button-1>", self.root_click_bind)
+            except:
+                pass
+            self.root_click_bind = None
+
+    def reset_idle_timer(self):
+        if hasattr(self, "idle_timer_id") and self.idle_timer_id:
+            self.after_cancel(self.idle_timer_id)
+            self.idle_timer_id = None
+        if self.winfo_ismapped():
+            self.idle_timer_id = self.after(15000, self.play_hope_music)
+
+    def play_hope_music(self):
+        if not self.winfo_ismapped():
+            return
+        app = self.winfo_toplevel()
+        header = getattr(app, "header", None)
+        if header and hasattr(header, "play_easter_egg"):
+            header.play_easter_egg(
+                "musics/Hope Is the Thing With Feathers.mp3",
+                "Hope Is the Thing With Feathers",
+            )

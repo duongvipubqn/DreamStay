@@ -186,6 +186,15 @@ class Database:
                 ("Nước Khoáng Tinh Khiết", "Aquafina 500ml", 15000, 300),
                 ("Nước Khoáng Tinh Khiết", "Evian Glass Bottle", 110000, 50),
                 ("Nước Khoáng Tinh Khiết", "Perrier Sparkling", 95000, 60),
+                ("Cà Phê Đặc Sản", "Cà Phê Phin Truyền Thống", 45000, 100),
+                ("Cà Phê Đặc Sản", "Espresso Macchiato", 55000, 80),
+                ("Cà Phê Đặc Sản", "Cappuccino Cốt Dừa", 65000, 60),
+                ("Trà Hoa Thượng Hạng", "Trà Sen Tây Hồ", 75000, 50),
+                ("Trà Hoa Thượng Hạng", "Trà Hoa Cúc Mật Ong", 60000, 70),
+                ("Trà Hoa Thượng Hạng", "Trà Đào Cam Sả", 65000, 80),
+                ("Bánh Ngọt Pháp", "Bánh Croissant Bơ Tỏi", 45000, 40),
+                ("Bánh Ngọt Pháp", "Bánh Mousse Sô-cô-la", 55000, 30),
+                ("Bánh Ngọt Pháp", "Bánh Macaron Sắc Màu", 65000, 50),
             ]
             self.cursor.executemany(
                 "INSERT INTO inventory (category, item_name, price, stock) VALUES (?,?,?,?)",

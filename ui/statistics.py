@@ -91,28 +91,46 @@ class StatisticsFrame(ctk.CTkFrame):
             local_cursor = local_conn.cursor()
 
             try:
-                local_cursor.execute("SELECT COUNT(*) FROM revenue_history")
-                if local_cursor.fetchone()[0] == 0:
-                    import random
-                    from datetime import datetime, timedelta
-
-                    mock_data = []
-                    for loc in LOCATIONS:
-                        for month_offset in range(6):
-                            amount = float(random.randint(150, 1200) * 1000000)
-                            date_str = (
-                                datetime.now() - timedelta(days=month_offset * 30)
-                            ).strftime("%Y-%m-%d")
-                            mock_data.append((date_str, amount, loc))
-                    local_cursor.executemany(
-                        "INSERT INTO revenue_history (date, amount, location) VALUES (?,?,?)",
-                        mock_data,
-                    )
-                    local_conn.commit()
-
                 df = pd.read_sql_query(
                     "SELECT price, status, capacity FROM rooms", local_conn
                 )
+                if df.empty:
+                    stats = {
+                        "total": 0,
+                        "avg_price": 0.0,
+                        "max_price": 0.0,
+                        "status_counts": {},
+                        "capacity_counts": {},
+                    }
+                else:
+                    prices = df["price"].to_numpy()
+                    avg_price = float(np.mean(prices))
+                    max_price = float(np.max(prices))
+                    status_counts = df["status"].value_counts().to_dict()
+                    capacity_counts = df["capacity"].value_counts().to_dict()
+                    stats = {
+                        "total": len(df),
+                        "avg_price": avg_price,
+                        "max_price": max_price,
+                        "status_counts": status_counts,
+                        "capacity_counts": capacity_counts,
+                    }
+
+                local_cursor.execute(
+                    "SELECT location, SUM(amount) FROM revenue_history GROUP BY location"
+                )
+                data = local_cursor.fetchall()
+                locs = [r[0] for r in data] if data else ["Chưa có dữ liệu"]
+                amounts = [r[1] for r in data] if data else [0]
+
+                local_cursor.execute(
+                    "SELECT status, COUNT(*) FROM rooms GROUP BY status"
+                )
+                status_data = local_cursor.fetchall()
+                labels = (
+                    [r[0] for r in status_data] if status_data else ["Không có dữ liệu"]
+                )
+                sizes = [r[1] for r in status_data] if status_data else [1]
                 if df.empty:
                     stats = {
                         "total": 0,

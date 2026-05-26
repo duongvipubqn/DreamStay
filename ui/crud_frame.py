@@ -425,20 +425,32 @@ class CRUDFrame(ctk.CTkFrame):
             self.tree.insert("", "end", values=formatted_row)
 
     def delete(self):
-        item = self.tree.selection()
-        if not item:
+        items = self.tree.selection()
+        if not items:
             return messagebox.showwarning("Chú ý", "Hãy chọn dòng cần xóa!")
-        row_id = self.tree.item(item[0], "values")[0]
+
+        row_ids = [self.tree.item(i, "values")[0] for i in items]
+
         db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
         id_col = db.cursor.description[0][0]
-        if messagebox.askyesno(
-            "Xác nhận", "Sếp có chắc muốn xóa vĩnh viễn dòng này không?"
-        ):
-            db.cursor.execute(
-                f"DELETE FROM {self.table_name} WHERE {id_col}=?", (row_id,)
-            )
-            db.conn.commit()
-            self.load_data()
+
+        msg = (
+            f"Sếp có chắc muốn xóa vĩnh viễn {len(row_ids)} dòng đã chọn không?"
+            if len(row_ids) > 1
+            else "Sếp có chắc muốn xóa vĩnh viễn dòng này không?"
+        )
+
+        if messagebox.askyesno("Xác nhận", msg):
+            try:
+                for rid in row_ids:
+                    db.cursor.execute(
+                        f"DELETE FROM {self.table_name} WHERE {id_col}=?", (rid,)
+                    )
+                db.conn.commit()
+                self.load_data()
+            except Exception as e:
+                db.conn.rollback()
+                messagebox.showerror("Lỗi", f"Không thể xóa dữ liệu: {str(e)}")
         return None
 
     def export_csv(self):
@@ -463,8 +475,46 @@ class CRUDFrame(ctk.CTkFrame):
         try:
             with open(path, mode="r", encoding="utf-8-sig") as f:
                 reader = csv.reader(f)
-                next(reader)
-                count = 0
+                try:
+                    header = next(reader)
+                except StopIteration:
+                    messagebox.showerror("Lỗi", "File CSV rỗng!")
+                    return
+
+                header_text = "".join(header).lower()
+                if self.table_name == "rooms" and not any(
+                    x in header_text for x in ["phòng", "room"]
+                ):
+                    messagebox.showerror(
+                        "Sai file dữ liệu",
+                        "File CSV này không chứa dữ liệu Phòng nghỉ!",
+                    )
+                    return
+                elif self.table_name == "customers" and not any(
+                    x in header_text for x in ["kh", "khách", "chi tiêu"]
+                ):
+                    messagebox.showerror(
+                        "Sai file dữ liệu",
+                        "File CSV này không chứa dữ liệu Khách hàng!",
+                    )
+                    return
+                elif self.table_name == "employees" and not any(
+                    x in header_text for x in ["nv", "nhân viên", "chức vụ", "lương"]
+                ):
+                    messagebox.showerror(
+                        "Sai file dữ liệu", "File CSV này không chứa dữ liệu Nhân viên!"
+                    )
+                    return
+                elif self.table_name == "inventory" and not any(
+                    x in header_text for x in ["món", "tồn", "danh mục", "inventory"]
+                ):
+                    messagebox.showerror(
+                        "Sai file dữ liệu", "File CSV này không chứa dữ liệu Kho hàng!"
+                    )
+                    return
+
+                inserted_count = 0
+                updated_count = 0
                 for row in reader:
                     if len(row) == len(self.columns):
                         row = [val.strip() for val in row]
@@ -504,21 +554,32 @@ class CRUDFrame(ctk.CTkFrame):
                                 continue
 
                         db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
-                        id_col = db.cursor.description[0][0]
+                        col_names = [d[0] for d in db.cursor.description]
+                        id_col = col_names[0]
                         db.cursor.execute(
                             f"SELECT 1 FROM {self.table_name} WHERE {id_col}=?",
                             (row[0],),
                         )
-                        if not db.cursor.fetchone():
+                        if db.cursor.fetchone():
+                            set_str = ", ".join([f"{n}=?" for n in col_names])
+                            db.cursor.execute(
+                                f"UPDATE {self.table_name} SET {set_str} WHERE {id_col}=?",
+                                (*row, row[0]),
+                            )
+                            updated_count += 1
+                        else:
                             db.cursor.execute(
                                 f"INSERT INTO {self.table_name} VALUES ({','.join(['?'] * len(row))})",
                                 row,
                             )
-                            count += 1
+                            inserted_count += 1
                 db.conn.commit()
                 self.load_data()
                 messagebox.showinfo(
-                    "Thành công", f"Đã nhập thành công {count} dòng dữ liệu sạch mới!"
+                    "Thành công",
+                    f"Đã xử lý xong dữ liệu CSV hợp lệ!\n"
+                    f"- Thêm mới: {inserted_count} dòng\n"
+                    f"- Cập nhật đè: {updated_count} dòng",
                 )
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể đọc file: {str(e)}")

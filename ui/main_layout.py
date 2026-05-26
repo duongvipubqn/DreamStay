@@ -30,14 +30,14 @@ class MainFrame(ctk.CTkFrame):
 
         self.frames = {
             "Lễ Tân": ReceptionFrame(self.content),
-            "Đơn hàng": OrderMgmtFrame(self.content),
-            "Phòng": CRUDFrame(
+            "Đơn Hàng": OrderMgmtFrame(self.content),
+            "Phòng Nghỉ": CRUDFrame(
                 self.content,
                 "Quản Lý Phòng Nghỉ (PMS)",
                 "rooms",
                 [
-                    "Mã Phòng",
-                    "Địa điểm",
+                    "ID",
+                    "Địa Điểm",
                     "Loại Phòng",
                     "Tình Trạng",
                     "Sức Chứa",
@@ -49,12 +49,12 @@ class MainFrame(ctk.CTkFrame):
                 "Quản Lý Khách Hàng (CRM)",
                 "customers",
                 [
-                    "Mã KH",
-                    "Họ và Tên",
+                    "ID",
+                    "Họ Tên",
                     "Email",
                     "Số Điện Thoại",
-                    "Thành phố",
-                    "Tổng chi tiêu",
+                    "Thành Phố",
+                    "Tổng Chi Tiêu",
                 ],
             ),
             "Nhân Viên": CRUDFrame(
@@ -62,10 +62,10 @@ class MainFrame(ctk.CTkFrame):
                 "Quản Lý Nhân Sự (HRM)",
                 "employees",
                 [
-                    "Mã NV",
-                    "Họ và Tên",
-                    "Chức vụ",
-                    "Địa điểm",
+                    "ID",
+                    "Họ Tên",
+                    "Chức Vụ",
+                    "Địa Điểm",
                     "Số Điện Thoại",
                     "Lương (VNĐ)",
                     "Trạng thái",

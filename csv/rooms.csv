@@ -1,0 +1,68 @@
+Mã Phòng,Địa điểm,Loại Phòng,Tình Trạng,Sức Chứa,Giá (VNĐ)
+R101,Đà Lạt,Suite Cao Cấp,Đã đặt,2 người,5000000
+R102,Hồ Chí Minh,Standard Hướng Vườn,Trống,1 người,1500000
+R103,Hà Nội,Presidential Suite,Bảo trì,+4 người,25000000
+R104,Hạ Long,Deluxe Hướng Biển,Đã đặt,2 người,3500000
+R105,Phú Quốc,Villa Gia Đình Cổ Điển,Trống,+4 người,12000000
+R106,Nha Trang,Deluxe Hướng Biển,Đang dọn,3 người,3800000
+R107,Đà Nẵng,Suite Cao Cấp,Đã đặt,2 người,5500000
+R108,Vũng Tàu,Standard Hướng Vườn,Trống,2 người,1600000
+R109,Hội An,Villa Gia Đình Cổ Điển,Đang dọn,3 người,9500000
+R110,Quy Nhơn,Deluxe Hướng Biển,Trống,2 người,3200000
+R111,Huế,Standard Hướng Vườn,Đã đặt,1 người,1200000
+R112,Cần Thơ,Suite Cao Cấp,Trống,2 người,4200000
+R113,Hải Phòng,Standard Hướng Vườn,Trống,2 người,1500000
+R114,Phan Thiết,Deluxe Hướng Biển,Đang dọn,3 người,3400000
+R115,Thanh Hóa,Standard Hướng Vườn,Trống,2 người,1300000
+R116,Đà Lạt,Villa Gia Đình Cổ Điển,Đã đặt,+4 người,11000000
+R117,Hồ Chí Minh,Suite Cao Cấp,Trống,2 người,6000000
+R118,Hà Nội,Suite Cao Cấp,Trống,2 người,6500000
+R119,Hạ Long,Presidential Suite,Bảo trì,+4 người,28000000
+R120,Phú Quốc,Presidential Suite,Đã đặt,+4 người,30000000
+R121,Nha Trang,Villa Gia Đình Cổ Điển,Trống,+4 người,14000000
+R122,Đà Nẵng,Presidential Suite,Trống,+4 người,27000000
+R123,Vũng Tàu,Deluxe Hướng Biển,Đã đặt,2 người,2800000
+R124,Hội An,Suite Cao Cấp,Trống,2 người,4800000
+R125,Quy Nhơn,Suite Cao Cấp,Đang dọn,2 người,4500000
+R126,Huế,Suite Cao Cấp,Trống,2 người,3800000
+R127,Cần Thơ,Standard Hướng Vườn,Trống,2 người,1400000
+R128,Hải Phòng,Suite Cao Cấp,Đã đặt,2 người,4600000
+R129,Phan Thiết,Standard Hướng Vườn,Trống,2 người,1600000
+R130,Thanh Hóa,Suite Cao Cấp,Trống,2 người,3500000
+R131,Đà Lạt,Standard Hướng Vườn,Đang dọn,2 người,1800000
+R132,Hồ Chí Minh,Presidential Suite,Đã đặt,+4 người,35000000
+R133,Hà Nội,Standard Hướng Vườn,Trống,2 người,2000000
+R134,Hạ Long,Villa Gia Đình Cổ Điển,Trống,+4 người,15000000
+R135,Phú Quốc,Deluxe Hướng Biển,Đã đặt,2 người,4500000
+R136,Nha Trang,Suite Cao Cấp,Trống,2 người,5000000
+R137,Đà Nẵng,Standard Hướng Vườn,Bảo trì,1 người,1900000
+R138,Vũng Tàu,Suite Cao Cấp,Trống,2 người,4000000
+R139,Hội An,Standard Hướng Vườn,Trống,2 người,1700000
+R140,Quy Nhơn,Standard Hướng Vườn,Trống,1 người,1400000
+R141,Huế,Deluxe Hướng Biển,Đã đặt,2 người,2900000
+R142,Cần Thơ,Deluxe Hướng Biển,Trống,2 người,3000000
+R143,Hải Phòng,Deluxe Hướng Biển,Đang dọn,2 người,3200000
+R144,Phan Thiết,Suite Cao Cấp,Trống,2 người,4500000
+R145,Thanh Hóa,Deluxe Hướng Biển,Trống,2 người,2500000
+R146,Đà Lạt,Deluxe Hướng Biển,Đã đặt,2 người,3200000
+R147,Hồ Chí Minh,Deluxe Hướng Biển,Trống,2 người,4000000
+R148,Hà Nội,Deluxe Hướng Biển,Trống,2 người,4200000
+R149,Hạ Long,Standard Hướng Vườn,Đã đặt,2 người,1600000
+R150,Phú Quốc,Standard Hướng Vườn,Trống,2 người,2200000
+R151,Nha Trang,Standard Hướng Vườn,Trống,1 người,1500000
+R152,Đà Nẵng,Deluxe Hướng Biển,Đã đặt,2 người,3800000
+R153,Vũng Tàu,Villa Gia Đình Cổ Điển,Trống,+4 người,10000000
+R154,Hội An,Deluxe Hướng Biển,Đang dọn,2 người,3300000
+R155,Quy Nhơn,Villa Gia Đình Cổ Điển,Trống,+4 người,9800000
+R156,Huế,Villa Gia Đình Cổ Điển,Trống,+4 người,8500000
+R157,Cần Thơ,Villa Gia Đình Cổ Điển,Đã đặt,+4 người,8000000
+R158,Hải Phòng,Villa Gia Đình Cổ Điển,Trống,+4 người,11000000
+R159,Phan Thiết,Villa Gia Đình Cổ Điển,Trống,+4 người,9500000
+R160,Thanh Hóa,Villa Gia Đình Cổ Điển,Bảo trì,+4 người,7500000
+R161,Đà Lạt,Presidential Suite,Trống,+4 người,24000000
+R162,Hồ Chí Minh,Villa Gia Đình Cổ Điển,Đã đặt,+4 người,16000000
+R163,Hà Nội,Villa Gia Đình Cổ Điển,Trống,+4 người,18000000
+R164,Hạ Long,Suite Cao Cấp,Trống,2 người,5500000
+R165,Phú Quốc,Suite Cao Cấp,Đã đặt,2 người,7000000
+R166,Nha Trang,Presidential Suite,Trống,+4 người,26000000
+R167,Đà Nẵng,Villa Gia Đình Cổ Điển,Trống,+4 người,13000000

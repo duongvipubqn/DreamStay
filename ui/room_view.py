@@ -276,6 +276,13 @@ class RoomView(ctk.CTkScrollableFrame):
         for widget in self.grid_frame.winfo_children():
             widget.destroy()
 
+        for col in range(3):
+            self.grid_frame.grid_columnconfigure(col, weight=1, uniform="column_group")
+            dummy = ctk.CTkFrame(
+                self.grid_frame, fg_color="transparent", width=1, height=1
+            )
+            dummy.grid(row=999, column=col, sticky="nsew")
+
         self.winfo_toplevel().update_idletasks()
         window_width = self.winfo_toplevel().winfo_width()
         if window_width < 100:

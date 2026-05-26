@@ -20,42 +20,15 @@ class OrderModal(ctk.CTkToplevel):
         self.configure(fg_color=COLOR_CREAM)
         self.grab_set()
 
+        if category_name == "Ký ức":
+            self.setup_ghost_order(parent)
+            return
+
         db.cursor.execute(
             "SELECT item_name, price, stock FROM inventory WHERE category=?",
             (category_name,),
         )
         self.items = db.cursor.fetchall()
-
-        if not self.items:
-            default_items = {
-                "Cà Phê Đặc Sản": [
-                    ("Cà Phê Phin Truyền Thống", 45000, 100),
-                    ("Espresso Macchiato", 55000, 80),
-                    ("Cappuccino Cốt Dừa", 65000, 60),
-                ],
-                "Trà Hoa Thượng Hạng": [
-                    ("Trà Sen Tây Hồ", 75000, 50),
-                    ("Trà Hoa Cúc Mật Ong", 60000, 70),
-                    ("Trà Đào Cam Sả", 65000, 80),
-                ],
-                "Bánh Ngọt Pháp": [
-                    ("Bánh Croissant Bơ Tỏi", 45000, 40),
-                    ("Bánh Mousse Sô-cô-la", 55000, 30),
-                    ("Bánh Macaron Sắc Màu", 65000, 50),
-                ],
-            }
-            if category_name in default_items:
-                for name, price, stock in default_items[category_name]:
-                    db.cursor.execute(
-                        "INSERT OR IGNORE INTO inventory (category, item_name, price, stock) VALUES (?,?,?,?)",
-                        (category_name, name, price, stock),
-                    )
-                db.conn.commit()
-                db.cursor.execute(
-                    "SELECT item_name, price, stock FROM inventory WHERE category=?",
-                    (category_name,),
-                )
-                self.items = db.cursor.fetchall()
 
         self.quantities = {}
         for item in self.items:
@@ -68,6 +41,10 @@ class OrderModal(ctk.CTkToplevel):
         ).pack(pady=20)
 
         self.scroll = ctk.CTkScrollableFrame(self, fg_color="transparent", height=350)
+
+        bottom_f = ctk.CTkFrame(self, fg_color=COLOR_NAVY, corner_radius=0)
+        bottom_f.pack(fill="x", side="bottom", pady=0)
+
         self.scroll.pack(fill="both", expand=True, padx=20)
 
         app = parent.winfo_toplevel()
@@ -120,16 +97,22 @@ class OrderModal(ctk.CTkToplevel):
                 command=lambda n=name: self.change_qty(n, 1),
             ).pack(side="left", padx=2)
 
+            try:
+                import re
+
+                clean_str = re.sub(r"[^\d]", "", str(price))
+                price_f = int(clean_str) if clean_str else 0
+                price_str = f"{price_f:,}".replace(",", ".") + "đ"
+            except:
+                price_str = str(price) + "đ"
+
             ctk.CTkLabel(
                 f,
-                text=f"{int(price):,}".replace(",", ".") + "đ",
+                text=price_str,
                 font=FONT_BODY,
                 text_color=COLOR_GOLD,
                 width=80,
             ).pack(side="right", padx=10)
-
-        bottom_f = ctk.CTkFrame(self, fg_color=COLOR_NAVY, corner_radius=0)
-        bottom_f.pack(fill="x", side="bottom", pady=0)
 
         room_f = ctk.CTkFrame(bottom_f, fg_color="transparent")
         room_f.pack(fill="x", padx=30, pady=15)
@@ -170,6 +153,100 @@ class OrderModal(ctk.CTkToplevel):
             command=self.confirm,
         ).pack(pady=(0, 20), padx=30, fill="x")
 
+    def setup_ghost_order(self, parent):
+        ctk.CTkLabel(
+            self, text="ĐƠN HÀNG KÝ ỨC", font=FONT_LABEL, text_color=COLOR_GOLD
+        ).pack(pady=20)
+
+        self.qty_var = ctk.IntVar(value=0)
+
+        scroll = ctk.CTkScrollableFrame(self, fg_color="transparent", height=350)
+        scroll.pack(fill="both", expand=True, padx=20)
+
+        f = ctk.CTkFrame(scroll, fg_color=COLOR_WHITE, corner_radius=10)
+        f.pack(fill="x", pady=5)
+
+        ctk.CTkLabel(
+            f,
+            text="Memory Reboot\n(Còn Vô hạn)",
+            font=FONT_BODY_BOLD,
+            text_color=COLOR_TEXT,
+            justify="left",
+        ).pack(side="left", padx=15, pady=5)
+
+        qty_f = ctk.CTkFrame(f, fg_color="transparent")
+        qty_f.pack(side="right", padx=10)
+
+        def change_qty(delta):
+            val = self.qty_var.get() + delta
+            if val < 0:
+                val = 0
+            self.qty_var.set(val)
+            self.total_lbl.configure(text=f"TỔNG CỘNG: {val * 0:,.0f} VNĐ")
+
+        ctk.CTkButton(
+            qty_f,
+            text="-",
+            width=30,
+            height=30,
+            fg_color="#e74c3c",
+            command=lambda: change_qty(-1),
+        ).pack(side="left", padx=2)
+
+        ctk.CTkEntry(
+            qty_f,
+            textvariable=self.qty_var,
+            width=40,
+            height=30,
+            justify="center",
+        ).pack(side="left", padx=2)
+
+        ctk.CTkButton(
+            qty_f,
+            text="+",
+            width=30,
+            height=30,
+            fg_color="#27ae60",
+            command=lambda: change_qty(1),
+        ).pack(side="left", padx=2)
+
+        ctk.CTkLabel(
+            f,
+            text="0đ",
+            font=FONT_BODY,
+            text_color=COLOR_GOLD,
+            width=80,
+        ).pack(side="right", padx=10)
+
+        bottom_f = ctk.CTkFrame(self, fg_color=COLOR_NAVY, corner_radius=0)
+        bottom_f.pack(fill="x", side="bottom", pady=0)
+
+        self.total_lbl = ctk.CTkLabel(
+            bottom_f, text="TỔNG CỘNG: 0 VNĐ", font=FONT_LABEL, text_color=COLOR_GOLD
+        )
+        self.total_lbl.pack(pady=20)
+
+        def confirm_ghost():
+            q = self.qty_var.get()
+            if q == 0:
+                messagebox.showwarning("Chú ý", "Vui lòng chọn ít nhất một món đồ!")
+                return
+            app = parent.winfo_toplevel()
+            header = getattr(app, "header", None)
+            if header and hasattr(header, "play_easter_egg"):
+                header.play_easter_egg("musics/Memory Reboot.mp3", "Memory Reboot")
+            self.destroy()
+
+        ctk.CTkButton(
+            bottom_f,
+            text="XÁC NHẬN ĐƠN HÀNG",
+            fg_color=COLOR_GOLD,
+            hover_color=COLOR_GOLD_HOVER,
+            height=45,
+            font=FONT_LABEL,
+            command=confirm_ghost,
+        ).pack(pady=(0, 20), padx=30, fill="x")
+
     def change_qty(self, name, delta):
         val = self.quantities[name].get() + delta
         if val < 0:
@@ -180,7 +257,14 @@ class OrderModal(ctk.CTkToplevel):
     def update_total(self):
         total = 0
         for name, price in self.items:
-            total += self.quantities[name].get() * price
+            try:
+                import re
+
+                clean_str = re.sub(r"[^\d]", "", str(price))
+                price_val = int(clean_str) if clean_str else 0
+            except:
+                price_val = 0
+            total += self.quantities[name].get() * price_val
         self.total_lbl.configure(text=f"TỔNG CỘNG: {total:,.0f} VNĐ")
 
     def confirm(self):
@@ -350,6 +434,13 @@ class ServiceFrame(ctk.CTkScrollableFrame):
         for widget in self.grid_frame.winfo_children():
             widget.destroy()
 
+        for col in range(3):
+            self.grid_frame.grid_columnconfigure(col, weight=1, uniform="column_group")
+            dummy = ctk.CTkFrame(
+                self.grid_frame, fg_color="transparent", width=1, height=1
+            )
+            dummy.grid(row=999, column=col, sticky="nsew")
+
         self.winfo_toplevel().update_idletasks()
         window_width = self.winfo_toplevel().winfo_width()
         if window_width < 100:
@@ -438,21 +529,32 @@ class ServiceFrame(ctk.CTkScrollableFrame):
         price_filter = filters["price_range"] if filters else "Mọi mức giá"
 
         filtered_services = []
-        for item in services:
-            name, desc, img, cat, prc_cat = item
+        if "memory" in search_text:
+            filtered_services = [
+                (
+                    "Ký ức",
+                    "Khơi gợi những ký ức tuyệt đẹp cùng giai điệu vượt thời gian.",
+                    "service-memory.png",
+                    "Đặc biệt",
+                    "0đ",
+                )
+            ]
+        else:
+            for item in services:
+                name, desc, img, cat, prc_cat = item
 
-            if (
-                search_text
-                and search_text not in name.lower()
-                and search_text not in desc.lower()
-            ):
-                continue
-            if cat_filter != "Mọi phân loại" and cat != cat_filter:
-                continue
-            if price_filter != "Mọi mức giá" and prc_cat != price_filter:
-                continue
+                if (
+                    search_text
+                    and search_text not in name.lower()
+                    and search_text not in desc.lower()
+                ):
+                    continue
+                if cat_filter != "Mọi phân loại" and cat != cat_filter:
+                    continue
+                if price_filter != "Mọi mức giá" and prc_cat != price_filter:
+                    continue
 
-            filtered_services.append(item)
+                filtered_services.append(item)
 
         for i, (name, desc, img_name, _, _) in enumerate(filtered_services):
             card = ctk.CTkFrame(
@@ -504,27 +606,40 @@ class ServiceFrame(ctk.CTkScrollableFrame):
             btn_f = ctk.CTkFrame(card, fg_color="transparent")
             btn_f.pack(pady=(0, 20), padx=20, fill="x")
 
-            ctk.CTkButton(
-                btn_f,
-                text="CHI TIẾT",
-                fg_color="#3a3a50",
-                text_color="white",
-                font=FONT_BODY_BOLD,
-                height=35,
-                width=80,
-                command=lambda n=name, d=desc, p=img_path: self.show_details(n, d, p),
-            ).pack(side="left", padx=(0, 5), expand=True, fill="x")
+            if name == "Ký ức":
+                ctk.CTkButton(
+                    btn_f,
+                    text="ĐẶT HÀNG",
+                    fg_color=COLOR_GOLD,
+                    text_color="white",
+                    font=FONT_BODY_BOLD,
+                    height=35,
+                    command=lambda n=name: self.open_order_modal(n),
+                ).pack(fill="x")
+            else:
+                ctk.CTkButton(
+                    btn_f,
+                    text="CHI TIẾT",
+                    fg_color="#3a3a50",
+                    text_color="white",
+                    font=FONT_BODY_BOLD,
+                    height=35,
+                    width=80,
+                    command=lambda n=name, d=desc, p=img_path: self.show_details(
+                        n, d, p
+                    ),
+                ).pack(side="left", padx=(0, 5), expand=True, fill="x")
 
-            ctk.CTkButton(
-                btn_f,
-                text="ĐẶT HÀNG",
-                fg_color=COLOR_GOLD,
-                text_color="white",
-                font=FONT_BODY_BOLD,
-                height=35,
-                width=80,
-                command=lambda n=name: self.open_order_modal(n),
-            ).pack(side="left", padx=(5, 0), expand=True, fill="x")
+                ctk.CTkButton(
+                    btn_f,
+                    text="ĐẶT HÀNG",
+                    fg_color=COLOR_GOLD,
+                    text_color="white",
+                    font=FONT_BODY_BOLD,
+                    height=35,
+                    width=80,
+                    command=lambda n=name: self.open_order_modal(n),
+                ).pack(side="left", padx=(5, 0), expand=True, fill="x")
 
     def show_details(self, name, desc, img_path):
         app = self.winfo_toplevel()

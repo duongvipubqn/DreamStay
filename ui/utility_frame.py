@@ -8,6 +8,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
         ctk.CTkScrollableFrame.__init__(
             self, master, fg_color=COLOR_CREAM, corner_radius=0
         )
+        self.click_history = []
 
         ctk.CTkLabel(
             self, text="Tiện Ích Cao Cấp", font=FONT_HEADER, text_color=COLOR_TEXT
@@ -49,6 +50,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
         filters = [
             ("Khu vực", ["Mọi khu vực", "Trong nhà", "Ngoài trời"]),
             ("Trạng thái", ["Mọi trạng thái", "Hoạt động", "Bảo trì"]),
+            ("Nhiệt độ", ["Mọi nhiệt độ", "Mát/Lạnh", "Ấm/Nóng"]),
         ]
 
         for label, vals in filters:
@@ -104,6 +106,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
         data = {
             "area": self.filter_vars["Khu vực"].get(),
             "status": self.filter_vars["Trạng thái"].get(),
+            "temp": self.filter_vars["Nhiệt độ"].get(),
         }
         self.load_data(data)
 
@@ -111,6 +114,13 @@ class UtilityFrame(ctk.CTkScrollableFrame):
         self.filters = filters
         for widget in self.grid_frame.winfo_children():
             widget.destroy()
+
+        for col in range(3):
+            self.grid_frame.grid_columnconfigure(col, weight=1, uniform="column_group")
+            dummy = ctk.CTkFrame(
+                self.grid_frame, fg_color="transparent", width=1, height=1
+            )
+            dummy.grid(row=999, column=col, sticky="nsew")
 
         self.winfo_toplevel().update_idletasks()
         window_width = self.winfo_toplevel().winfo_width()
@@ -135,6 +145,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 "util-pool.png",
                 "Ngoài trời",
                 "Hoạt động",
+                "Mát/Lạnh",
             ),
             (
                 "Nhà Hàng The Golden",
@@ -142,6 +153,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 "util-restaurant.png",
                 "Trong nhà",
                 "Hoạt động",
+                "Ấm/Nóng",
             ),
             (
                 "Mộng Mơ Spa",
@@ -149,6 +161,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 "util-spa.png",
                 "Trong nhà",
                 "Hoạt động",
+                "Ấm/Nóng",
             ),
             (
                 "Fitness Center",
@@ -156,6 +169,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 "util-gym.png",
                 "Trong nhà",
                 "Hoạt động",
+                "Mát/Lạnh",
             ),
             (
                 "Sky Bar Tầng Thượng",
@@ -163,6 +177,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 "util-skybar.png",
                 "Ngoài trời",
                 "Hoạt động",
+                "Mát/Lạnh",
             ),
             (
                 "Phòng Đại Tiệc",
@@ -170,6 +185,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 "util-ballroom.png",
                 "Trong nhà",
                 "Hoạt động",
+                "Ấm/Nóng",
             ),
             (
                 "Sảnh Đón Hoàng Gia",
@@ -177,6 +193,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 "util-lobby.png",
                 "Trong nhà",
                 "Hoạt động",
+                "Ấm/Nóng",
             ),
             (
                 "Vườn Thượng Uyển",
@@ -184,6 +201,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 "util-garden.png",
                 "Ngoài trời",
                 "Hoạt động",
+                "Mát/Lạnh",
             ),
             (
                 "Bãi Biển Riêng Tư",
@@ -191,6 +209,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 "util-beach.png",
                 "Ngoài trời",
                 "Hoạt động",
+                "Mát/Lạnh",
             ),
         ]
 
@@ -199,10 +218,13 @@ class UtilityFrame(ctk.CTkScrollableFrame):
         )
         area_filter = filters["area"] if filters else "Mọi khu vực"
         status_filter = filters["status"] if filters else "Mọi trạng thái"
+        temp_filter = (
+            filters["temp"] if (filters and "temp" in filters) else "Mọi nhiệt độ"
+        )
 
         filtered_utils = []
         for item in utils:
-            name, desc, img, area, status = item
+            name, desc, img, area, status, temp = item
 
             if (
                 search_text
@@ -214,10 +236,12 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                 continue
             if status_filter != "Mọi trạng thái" and status != status_filter:
                 continue
+            if temp_filter != "Mọi nhiệt độ" and temp != temp_filter:
+                continue
 
             filtered_utils.append(item)
 
-        for i, (name, desc, img_name, _, _) in enumerate(filtered_utils):
+        for i, (name, desc, img_name, area, status, temp) in enumerate(filtered_utils):
             card = ctk.CTkFrame(
                 self.grid_frame,
                 fg_color=COLOR_WHITE,
@@ -236,22 +260,33 @@ class UtilityFrame(ctk.CTkScrollableFrame):
                         dark_image=pil_img,
                         size=(logical_img_w, logical_img_h),
                     )
-                    util_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
-                    util_lbl.pack(pady=10, padx=10, fill="x")
+                    img_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
+                    img_lbl.pack(pady=10, padx=10, fill="x")
 
                     in_f, out_f = make_zoom_handler(
-                        util_lbl, pil_img, ctk_img, img_w, img_h
+                        img_lbl, pil_img, ctk_img, img_w, img_h
                     )
-                    util_lbl.bind("<Enter>", in_f)
-                    util_lbl.bind("<Leave>", out_f)
+                    img_lbl.bind("<Enter>", in_f)
+                    img_lbl.bind("<Leave>", out_f)
+                    img_lbl.bind(
+                        "<Button-1>", lambda e, t=temp: self.handle_card_click(t)
+                    )
                 except:
-                    ctk.CTkLabel(
+                    lbl_err = ctk.CTkLabel(
                         card, text="[ Lỗi tải ảnh ]", width=img_w, height=img_h
-                    ).pack()
+                    )
+                    lbl_err.pack()
+                    lbl_err.bind(
+                        "<Button-1>", lambda e, t=temp: self.handle_card_click(t)
+                    )
             else:
-                ctk.CTkLabel(
+                lbl_no_img = ctk.CTkLabel(
                     card, text="[ Ảnh chưa cập nhật ]", width=img_w, height=img_h
-                ).pack()
+                )
+                lbl_no_img.pack()
+                lbl_no_img.bind(
+                    "<Button-1>", lambda e, t=temp: self.handle_card_click(t)
+                )
 
             ctk.CTkLabel(card, text=name, font=FONT_LABEL, text_color=COLOR_GOLD).pack(
                 pady=(10, 0)
@@ -286,3 +321,21 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             switch_func = getattr(app, "switch_page", None)
             if callable(switch_func):
                 switch_func("Chi tiết tiện ích")
+
+    def handle_card_click(self, temp_val):
+        if not hasattr(self, "click_history"):
+            self.click_history = []
+        if not self.click_history:
+            self.click_history.append(temp_val)
+        else:
+            last_temp = self.click_history[-1]
+            if temp_val != last_temp:
+                self.click_history.append(temp_val)
+            else:
+                self.click_history = [temp_val]
+        if len(self.click_history) == 6:
+            self.click_history.clear()
+            app = self.winfo_toplevel()
+            header = getattr(app, "header", None)
+            if header and hasattr(header, "play_easter_egg"):
+                header.play_easter_egg("musics/Kamin.mp3", "Kamin")
