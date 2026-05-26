@@ -65,12 +65,6 @@ class EventFrame(ctk.CTkScrollableFrame):
                 "icon": "🍲",
             },
             {
-                "title": "MỸ VỊ Á - ÂU NĂM SAO",
-                "subtitle": "🍲 ẨM THỰC 🍲",
-                "desc": "Khám phá hành trình ẩm thực phong phú được chuẩn bị bởi đội ngũ đầu bếp tại Nhà Hàng The Golden.",
-                "icon": "🍲",
-            },
-            {
                 "title": "KỶ NGUYÊN SỐ CYBERSPACE",
                 "subtitle": "👾 KỸ THUẬT SỐ 👾",
                 "desc": "Khai phá không gian ảo hiện đại tại resort và khám phá những bí mật kỹ thuật số ẩn giấu.",
