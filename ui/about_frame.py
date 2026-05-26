@@ -119,15 +119,15 @@ class AboutFrame(ctk.CTkScrollableFrame):
         img_h = int(img_w * 0.65)
 
         about_images = [
-            ("about-k2c.png", "Kingdom Two Crowns"),
-            ("about-dbh.png", "Detroit: Become Human"),
-            ("about-stardewvalley.png", "Stardew Valley"),
-            ("about-ebf5.png", "Epic Battle Fantasy 5"),
-            ("about-hi3.png", "Honkai Impact 3rd"),
-            ("about-katanazero.png", "Katana Zero"),
+            ("about-kingdom-two-crowns.png", "Kingdom Two Crowns"),
+            ("about-detroit-become-human.png", "Detroit: Become Human"),
+            ("about-stardew-valley.png", "Stardew Valley"),
+            ("about-epic-battle-fantasy-5.png", "Epic Battle Fantasy 5"),
+            ("about-honkai-impact-3rd.png", "Honkai Impact 3rd"),
+            ("about-katana-zero.png", "Katana Zero"),
             ("about-minecraft.png", "Minecraft"),
-            ("about-bg3.png", "Baldur's Gate 3"),
-            ("about-musedash.png", "Muse Dash"),
+            ("about-baldurs-gate-3.png", "Baldur's Gate 3"),
+            ("about-muse-dash.png", "Muse Dash"),
         ]
 
         for i, (img_name, label_text) in enumerate(about_images):
@@ -260,7 +260,7 @@ class AboutFrame(ctk.CTkScrollableFrame):
         if self.hi3_text_label:
             self.hi3_text_label.configure(text="Honkai Impact 3rd")
 
-        hi3_path = os.path.join(IMAGE_DIR, "about-hi3.png")
+        hi3_path = os.path.join(IMAGE_DIR, "about-honkai-impact-3rd.png")
         if os.path.exists(hi3_path):
             try:
                 pil_img = Image.open(hi3_path).convert("RGB")

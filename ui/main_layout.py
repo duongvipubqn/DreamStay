@@ -399,10 +399,10 @@ class MainFrame(ctk.CTkFrame):
 
     def open_pdf(self):
         try:
-            webbrowser.open("User_Guide.pdf")
+            webbrowser.open("user_guide.pdf")
         except Exception:
             messagebox.showerror(
-                "Lỗi", "Không thể mở file tài liệu hướng dẫn sử dụng User_Guide.pdf!"
+                "Lỗi", "Không thể mở file tài liệu hướng dẫn sử dụng user_guide.pdf!"
             )
 
     def fetch_api_data(self):

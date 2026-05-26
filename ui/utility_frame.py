@@ -142,7 +142,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             (
                 "Hồ Bơi Vô Cực",
                 "Thư giãn và đắm mình trong làn nước mát với tầm nhìn bao trọn bờ biển.",
-                "util-pool.png",
+                "utility-pool.png",
                 "Ngoài trời",
                 "Hoạt động",
                 "Mát/Lạnh",
@@ -150,7 +150,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             (
                 "Nhà Hàng The Golden",
                 "Khám phá tinh hoa ẩm thực Á-Âu với các món ăn từ nguyên liệu tươi ngon nhất.",
-                "util-restaurant.png",
+                "utility-restaurant.png",
                 "Trong nhà",
                 "Hoạt động",
                 "Ấm/Nóng",
@@ -158,7 +158,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             (
                 "Mộng Mơ Spa",
                 "Tái tạo năng lượng với các liệu pháp spa và massage chuyên nghiệp.",
-                "util-spa.png",
+                "utility-spa.png",
                 "Trong nhà",
                 "Hoạt động",
                 "Ấm/Nóng",
@@ -166,7 +166,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             (
                 "Fitness Center",
                 "Duy trì thói quen luyện tập với trung tâm thể hình hiện đại.",
-                "util-gym.png",
+                "utility-gym.png",
                 "Trong nhà",
                 "Hoạt động",
                 "Mát/Lạnh",
@@ -174,7 +174,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             (
                 "Sky Bar Tầng Thượng",
                 "Ngắm hoàng hôn lãng mạn và thưởng thức cocktail sáng tạo.",
-                "util-skybar.png",
+                "utility-skybar.png",
                 "Ngoài trời",
                 "Hoạt động",
                 "Mát/Lạnh",
@@ -182,7 +182,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             (
                 "Phòng Đại Tiệc",
                 "Không gian tổ chức sự kiện lý tưởng với trang thiết bị hiện đại.",
-                "util-ballroom.png",
+                "utility-ballroom.png",
                 "Trong nhà",
                 "Hoạt động",
                 "Ấm/Nóng",
@@ -190,7 +190,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             (
                 "Sảnh Đón Hoàng Gia",
                 "Không gian sảnh lộng lẫy tráng lệ chào đón sếp bằng trà hoa cúc và dịch vụ concierge thượng lưu.",
-                "util-lobby.png",
+                "utility-lobby.png",
                 "Trong nhà",
                 "Hoạt động",
                 "Ấm/Nóng",
@@ -198,7 +198,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             (
                 "Vườn Thượng Uyển",
                 "Khu vườn hoàng gia xanh mướt ngập tràn kỳ hoa dị thảo, nơi dạo bước tĩnh tâm tuyệt vời.",
-                "util-garden.png",
+                "utility-garden.png",
                 "Ngoài trời",
                 "Hoạt động",
                 "Mát/Lạnh",
@@ -206,7 +206,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             (
                 "Bãi Biển Riêng Tư",
                 "Bờ cát trắng mịn màng trải dài ôm lấy làn nước trong vắt, biệt lập hoàn toàn cho sự riêng tư tuyệt đối.",
-                "util-beach.png",
+                "utility-beach.png",
                 "Ngoài trời",
                 "Hoạt động",
                 "Mát/Lạnh",
