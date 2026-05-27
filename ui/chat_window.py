@@ -3,6 +3,9 @@ import threading
 import requests
 import json
 import os
+import uuid
+import hashlib
+import base64
 from tkinter import messagebox
 from config import (
     COLOR_CREAM,
@@ -102,6 +105,7 @@ class ChatWindow(ctk.CTkToplevel):
         )
         self.send_btn.pack(side="right", padx=(0, 15), pady=15)
 
+        self.load_api_key()
         self.load_history()
 
         self.protocol("WM_DELETE_WINDOW", self.hide_window)
@@ -134,7 +138,9 @@ class ChatWindow(ctk.CTkToplevel):
         )
         key = dialog.get_input()
         if key is not None:
-            self.api_key = key.strip()
+            cleaned_key = key.strip()
+            self.api_key = cleaned_key
+            self.save_api_key(cleaned_key)
 
     def send_message(self):
         text = self.entry.get().strip()
@@ -154,7 +160,7 @@ class ChatWindow(ctk.CTkToplevel):
                 0,
                 lambda: self.display_message(
                     "bot",
-                    "Vui lòng cấu hình API Key ở nút góc trên để tôi có thể hoạt động hỗ trợ sếp nhé!",
+                    "Sếp ơi, vui lòng cấu hình API Key ở nút góc trên để em có thể hoạt động hỗ trợ sếp nhé!",
                 ),
             )
             self.after(0, lambda: self.send_btn.configure(state="normal"))
@@ -172,7 +178,9 @@ class ChatWindow(ctk.CTkToplevel):
         else:
             context = f"Người đang trò chuyện là Tổng Quản Lý tên '{curr_user}'. Sếp có đặc quyền quản trị cao nhất. Hãy hỗ trợ sếp tất cả các nghiệp vụ quản trị bao gồm PMS, HRM, quản lý kho hàng, hướng dẫn chi tiết cách sửa đổi dữ liệu CRUD, xuất nhập Excel và phân tích doanh thu. QUY TẮC XƯNG HÔ: Bạn phải tự xưng là 'Em' và gọi người dùng là 'Sếp' để thể hiện lòng kính trọng."
 
-        full_system_prompt = f"{DREAMER_SYSTEM_PROMPT}\n[BỐI CẢNH PHÂN QUYỀN AN TOÀN HIỆN TẠI]: {context}"
+        music_context = self.get_realtime_music_context()
+
+        full_system_prompt = f"{DREAMER_SYSTEM_PROMPT}\n[BỐI CẢNH PHÂN QUYỀN AN TOÀN HIỆN TẠI]: {context}\n[BỐI CẢNH NHẠC THỜI GIAN THỰC HIỆN TẠI]: {music_context}"
 
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={self.api_key}"
         headers = {"Content-Type": "application/json"}
@@ -279,3 +287,87 @@ class ChatWindow(ctk.CTkToplevel):
 
     def hide_window(self):
         self.withdraw()
+
+    def encrypt_key(self, raw_key):
+        mac = str(uuid.getnode())
+        salt = "DreamStayKeySalt2026"
+        key = hashlib.sha256((mac + salt).encode()).digest()
+        encrypted_bytes = bytearray(raw_key.encode("utf-8"))
+        for i in range(len(encrypted_bytes)):
+            encrypted_bytes[i] ^= key[i % len(key)]
+        return base64.b64encode(encrypted_bytes).decode("utf-8")
+
+    def decrypt_key(self, encrypted_b64):
+        mac = str(uuid.getnode())
+        salt = "DreamStayKeySalt2026"
+        key = hashlib.sha256((mac + salt).encode()).digest()
+        encrypted_bytes = bytearray(base64.b64decode(encrypted_b64.encode("utf-8")))
+        for i in range(len(encrypted_bytes)):
+            encrypted_bytes[i] ^= key[i % len(key)]
+        return encrypted_bytes.decode("utf-8")
+
+    def load_api_key(self):
+        if os.path.exists("api_key.enc"):
+            try:
+                with open("api_key.enc", "r", encoding="utf-8") as f:
+                    encrypted_data = f.read().strip()
+                self.api_key = self.decrypt_key(encrypted_data)
+            except:
+                self.api_key = GEMINI_API_KEY
+        else:
+            self.api_key = GEMINI_API_KEY
+
+    def save_api_key(self, raw_key):
+        try:
+            encrypted_data = self.encrypt_key(raw_key)
+            with open("api_key.enc", "w", encoding="utf-8") as f:
+                f.write(encrypted_data)
+        except:
+            pass
+
+    def get_realtime_music_context(self):
+        header = getattr(self.app, "header", None)
+        if not header:
+            return "Hệ thống máy nghe nhạc của resort đang tắt."
+
+        is_playing = getattr(header, "is_playing", False)
+        is_paused = getattr(header, "is_paused", False)
+        volume = int(getattr(header, "volume_level", 0.5) * 100)
+        play_mode_val = getattr(header, "play_mode", 2)
+        is_easter_egg = getattr(header, "is_easter_egg", False)
+
+        try:
+            if is_easter_egg:
+                raw_title = header.track_label.cget("text")
+                track_title = (
+                    raw_title.replace("🎵 ", "").replace(" (Paused)", "").strip()
+                )
+            else:
+                cur_album_idx = getattr(header, "cur_album", 0)
+                cur_track_idx = getattr(header, "cur_track", 0)
+                album = header.music_albums[cur_album_idx]
+                track = album["tracks"][cur_track_idx]
+                track_title = track["title"]
+        except:
+            track_title = "Không rõ bản nhạc"
+
+        state_text = (
+            "Đang phát nhạc thực tế"
+            if is_playing
+            else ("Đang tạm dừng phát nhạc" if is_paused else "Đang tắt nhạc")
+        )
+
+        if play_mode_val == 1:
+            mode_text = "Phát xong tự động dừng (Chế độ Đơn bài)"
+        elif play_mode_val == 2:
+            mode_text = "Phát liên tục danh sách (Chế độ Album)"
+        else:
+            mode_text = "Lặp lại bài hiện tại (Chế độ Lặp một bài)"
+
+        return (
+            f"BỐI CẢNH NHẠC ĐANG PHÁT THỜI GIAN THỰC:\n"
+            f"- Trạng thái: {state_text}\n"
+            f"- Bản nhạc đang chọn: {track_title}\n"
+            f"- Âm lượng loa hiện tại: {volume}%\n"
+            f"- Chế độ phát nhạc: {mode_text}"
+        )
