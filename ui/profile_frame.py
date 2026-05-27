@@ -403,7 +403,7 @@ class AvatarCropModal(ctk.CTkToplevel):
         self.transient(parent)
         self.grab_set()
 
-        w, h = 460, 600
+        w, h = 500, 680
         self.update_idletasks()
         main_win = parent.winfo_toplevel()
         x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
@@ -427,8 +427,8 @@ class AvatarCropModal(ctk.CTkToplevel):
         )
 
         self.zoom_factor = 1.0
-        self.img_x = (400 - new_w) // 2
-        self.img_y = (400 - new_h) // 2
+        self.img_x = (300 - new_w) // 2
+        self.img_y = (300 - new_h) // 2
         self.clamp_offsets()
 
         self.drag_start_x = 0
@@ -439,10 +439,10 @@ class AvatarCropModal(ctk.CTkToplevel):
             text="KÉO ĐỂ DI CHUYỂN / THAY ĐỔI KÍCH CỠ",
             font=FONT_LABEL,
             text_color=COLOR_GOLD,
-        ).pack(pady=10)
+        ).pack(pady=20)
 
         self.canvas = ctk.CTkCanvas(
-            self, width=400, height=400, bg=COLOR_WHITE, highlightthickness=0
+            self, width=300, height=300, bg=COLOR_WHITE, highlightthickness=0
         )
         self.canvas.pack(pady=10, padx=30)
 
@@ -450,7 +450,7 @@ class AvatarCropModal(ctk.CTkToplevel):
         self.canvas.bind("<B1-Motion>", self.drag_image)
 
         slider_f = ctk.CTkFrame(self, fg_color="transparent")
-        slider_f.pack(fill="x", padx=40, pady=5)
+        slider_f.pack(fill="x", padx=40, pady=15)
         ctk.CTkLabel(slider_f, text="Phóng to:", font=FONT_BODY).pack(side="left")
 
         self.zoom_slider = ctk.CTkSlider(
@@ -472,9 +472,9 @@ class AvatarCropModal(ctk.CTkToplevel):
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,
             font=FONT_BODY_BOLD,
-            height=40,
+            height=45,
             command=self.confirm_crop,
-        ).pack(pady=20, padx=40, fill="x")
+        ).pack(pady=25, padx=40, fill="x")
 
         self.update_canvas()
 
@@ -499,7 +499,7 @@ class AvatarCropModal(ctk.CTkToplevel):
         old_zoom = self.zoom_factor
         self.zoom_factor = float(val)
 
-        center_x, center_y = 200, 200
+        center_x, center_y = 150, 150
         self.img_x = int(
             center_x - (center_x - self.img_x) * (self.zoom_factor / old_zoom)
         )
@@ -515,14 +515,14 @@ class AvatarCropModal(ctk.CTkToplevel):
         h = int(self.base_image.height * self.zoom_factor)
 
         if w >= 200:
-            self.img_x = max(300 - w, min(100, self.img_x))
+            self.img_x = max(250 - w, min(50, self.img_x))
         else:
-            self.img_x = (400 - w) // 2
+            self.img_x = (300 - w) // 2
 
         if h >= 200:
-            self.img_y = max(300 - h, min(100, self.img_y))
+            self.img_y = max(250 - h, min(50, self.img_y))
         else:
-            self.img_y = (400 - h) // 2
+            self.img_y = (300 - h) // 2
 
     def update_canvas(self):
         self.canvas.delete("all")
@@ -539,18 +539,18 @@ class AvatarCropModal(ctk.CTkToplevel):
             self.img_x, self.img_y, anchor="nw", image=self.tk_image
         )
 
-        self.canvas.create_rectangle(99, 99, 301, 301, outline="#131324", width=3)
+        self.canvas.create_rectangle(49, 49, 251, 251, outline="#131324", width=3)
         self.canvas.create_rectangle(
-            100, 100, 300, 300, outline=COLOR_GOLD, width=2, dash=(5, 3)
+            50, 50, 250, 250, outline=COLOR_GOLD, width=2, dash=(5, 3)
         )
 
     def confirm_crop(self):
         zoom_w = int(self.base_image.width * self.zoom_factor)
 
-        crop_x1 = 100 - self.img_x
-        crop_y1 = 100 - self.img_y
-        crop_x2 = 300 - self.img_x
-        crop_y2 = 300 - self.img_y
+        crop_x1 = 50 - self.img_x
+        crop_y1 = 50 - self.img_y
+        crop_x2 = 250 - self.img_x
+        crop_y2 = 250 - self.img_y
 
         scale_factor = self.original_image.width / zoom_w
 

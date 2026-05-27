@@ -119,6 +119,10 @@ class ServiceDetailFrame(ctk.CTkScrollableFrame):
             right_p, text=more_info, font=FONT_BODY, text_color="#aaa", justify="left"
         ).pack(anchor="w", pady=30)
 
+        def order_now():
+            from ui.service_frame import OrderModal
+            OrderModal(self, name)
+
         ctk.CTkButton(
             right_p,
             text="GỌI DỊCH VỤ NGAY",
@@ -127,6 +131,7 @@ class ServiceDetailFrame(ctk.CTkScrollableFrame):
             height=50,
             width=250,
             font=FONT_LABEL,
+            command=order_now,
         ).pack(anchor="w")
 
     def load_data(self):

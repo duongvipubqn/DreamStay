@@ -151,6 +151,47 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
             rule_f, text=rules, font=FONT_BODY, text_color="#aaa", justify="left"
         ).pack(anchor="w", padx=20, pady=(0, 15))
 
+        def register_event():
+            from tkinter import messagebox
+            from database import db
+            import re
+            
+            app = self.winfo_toplevel()
+            curr_user = getattr(app, "current_user", None)
+            curr_username = getattr(app, "current_username", None)
+            
+            if not curr_user:
+                messagebox.showwarning("Thông báo", "Vui lòng đăng nhập để đăng ký tham gia sự kiện!")
+                return
+            
+            try:
+                clean_title = re.sub(r"[^\w]", "", title).upper()[:8]
+                code = f"EV_{clean_title}"
+                
+                db.cursor.execute(
+                    "SELECT 1 FROM user_coupons WHERE username=? AND code=?", 
+                    (curr_username, code)
+                )
+                if db.cursor.fetchone():
+                    messagebox.showinfo("Thông báo", f"Sếp đã đăng ký tham gia sự kiện '{title}' trước đó rồi!")
+                    return
+                
+                db.cursor.execute(
+                    "INSERT INTO user_coupons (username, code, description, discount_percent) VALUES (?,?,?,?)",
+                    (curr_username, code, f"Voucher qua tang tu su kien: {title}", 15)
+                )
+                db.conn.commit()
+                
+                messagebox.showinfo(
+                    "Thành công",
+                    f"Đăng ký tham gia sự kiện '{title}' thành công!\n"
+                    f"Món quà tri ân 1 mã giảm giá {code} (Giảm 15%) đã được gửi trực tiếp vào Kho Voucher của sếp!",
+                    parent=self.winfo_toplevel()
+                )
+            except Exception as err:
+                db.conn.rollback()
+                messagebox.showerror("Lỗi", f"Không thể xử lý đăng ký: {str(err)}")
+
         ctk.CTkButton(
             content_f,
             text="ĐĂNG KÝ THAM GIA NGAY",
@@ -159,6 +200,7 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
             height=55,
             width=350,
             font=FONT_BODY,
+            command=register_event,
         ).pack(pady=20)
 
     def load_data(self):

@@ -387,7 +387,7 @@ class CRUDFrame(ctk.CTkFrame):
             formatted_row = []
             for i, val in enumerate(row):
                 col_name = self.columns[i]
-                if any(x in col_name for x in ["Giá", "Tiền", "Lương", "chi tiêu"]):
+                if any(x in col_name.lower() for x in ["giá", "tiền", "lương", "chi tiêu"]):
                     try:
                         val_f = float(val)
                         if val_f.is_integer():

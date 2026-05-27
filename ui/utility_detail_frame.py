@@ -71,6 +71,20 @@ class UtilityDetailFrame(ctk.CTkScrollableFrame):
             right_p, text=more_info, font=FONT_BODY, text_color="#aaa", justify="left"
         ).pack(anchor="w", pady=30)
 
+        def book_utility():
+            from tkinter import messagebox
+            app = self.winfo_toplevel()
+            curr_user = getattr(app, "current_user", None)
+            if not curr_user:
+                messagebox.showwarning("Thông báo", "Vui lòng đăng nhập để đặt chỗ tiện ích!")
+                return
+            messagebox.showinfo(
+                "Thành công", 
+                f"Đã đặt chỗ dịch vụ trải nghiệm '{name}' thành công!\n"
+                f"DreamStay đã ghi nhận lịch hẹn của sếp và sẽ chuẩn bị đón tiếp sếp tại Tầng 5.",
+                parent=self.winfo_toplevel()
+            )
+
         ctk.CTkButton(
             right_p,
             text="ĐẶT DỊCH VỤ NGAY",
@@ -79,6 +93,7 @@ class UtilityDetailFrame(ctk.CTkScrollableFrame):
             height=50,
             width=250,
             font=FONT_LABEL,
+            command=book_utility,
         ).pack(anchor="w")
 
     def load_data(self):
