@@ -129,6 +129,21 @@ class HotelApp(ctk.CTk):
         self.switch_page("Trang chủ")
         self.check_persistent_login()
 
+        self.chat_win = None
+        self.chat_btn = ctk.CTkButton(
+            self,
+            text="💬 Dreamer",
+            width=110,
+            height=45,
+            corner_radius=22,
+            fg_color=COLOR_GOLD,
+            hover_color=COLOR_GOLD_HOVER,
+            text_color="white",
+            font=FONT_BODY_BOLD,
+            command=self.toggle_chat,
+        )
+        self.chat_btn.place(relx=0.97, rely=0.93, anchor="se")
+
     def check_persistent_login(self):
         if os.path.exists("session.txt"):
             try:
@@ -184,6 +199,15 @@ class HotelApp(ctk.CTk):
                 load_func()
 
         self.header.update_menu(self.current_user is not None, self.current_role, name)
+
+    def toggle_chat(self):
+        if self.chat_win is None or not self.chat_win.winfo_exists():
+            from ui.chat_window import ChatWindow
+
+            self.chat_win = ChatWindow(self)
+        else:
+            self.chat_win.deiconify()
+            self.chat_win.lift()
 
     def show_login(self):
         self.switch_page("Login")

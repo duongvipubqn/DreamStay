@@ -156,7 +156,7 @@ class ContactFrame(ctk.CTkFrame):
             border_width=1,
             border_color=COLOR_BORDER,
         )
-        self.nav_pad.place(relx=0.05, rely=0.85, anchor="sw")
+        self.nav_pad.place(relx=0.065, rely=0.85, anchor="sw")
         self.nav_pad.lift()
 
         ctk.CTkButton(

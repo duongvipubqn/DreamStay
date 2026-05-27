@@ -183,7 +183,7 @@ class HomeFrame(ctk.CTkFrame):
             self.after_cancel(self.idle_timer_id)
             self.idle_timer_id = None
         if self.winfo_ismapped():
-            self.idle_timer_id = self.after(15000, self.play_hope_music)
+            self.idle_timer_id = self.after(60000, self.play_hope_music)
 
     def play_hope_music(self):
         if not self.winfo_ismapped():
