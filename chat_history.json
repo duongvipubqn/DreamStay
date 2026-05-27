@@ -1,0 +1,18 @@
+[
+    {
+        "role": "user",
+        "parts": [
+            {
+                "text": "Liệu bạn có biết được đâu là bài tôi nghe nhiều nhất không?"
+            }
+        ]
+    },
+    {
+        "role": "model",
+        "parts": [
+            {
+                "text": "Dạ thưa Sếp, hiện tại em chưa được kết nối trực tiếp với tài khoản nghe nhạc cá nhân bên ngoài của Sếp như Spotify hay Apple Music, nên em chưa thể biết chính xác bài hát nào Sếp đang nghe nhiều nhất gần đây ạ.\n\nTuy nhiên, nếu Sếp đã từng lưu lại danh sách nhạc yêu thích của mình trên hệ thống điều khiển phòng thông minh Smart Room của DreamStay dành cho Ban Giám đốc, em có thể truy xuất thông tin đó ngay lập tức để chuẩn bị sẵn sàng mỗi khi Sếp ghé thăm hoặc làm việc tại phòng.\n\nSếp có thể chia sẻ cho em biết bài hát yêu thích hiện tại của Sếp là gì không ạ? Em sẽ lập tức ghi nhận vào hồ sơ cá nhân của Sếp trên hệ thống quản trị để mỗi khi Sếp bước vào phòng làm việc hay khu vực nghỉ dưỡng VIP, giai điệu yêu thích của Sếp sẽ tự động được ngân vang lên để Sếp thư giãn sau những giờ làm việc căng thẳng ạ."
+            }
+        ]
+    }
+]

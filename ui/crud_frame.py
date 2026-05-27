@@ -178,7 +178,7 @@ class FormModal(ctk.CTkToplevel):
                 )
                 return
 
-        self.callback(vals)
+        self.callback((vals, None))
         self.destroy()
 
 
@@ -346,25 +346,14 @@ class CRUDFrame(ctk.CTkFrame):
     def save_to_db(self, data_tuple):
         vals, original_id = data_tuple
         try:
-            db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
-            col_names = [d[0] for d in db.cursor.description]
-
+            vals = self.cast_row_types(vals)
+            col_names = db.get_column_names(self.table_name)
             lookup_id = original_id if original_id else vals[0]
-            db.cursor.execute(
-                f"SELECT * FROM {self.table_name} WHERE {col_names[0]}=?", (lookup_id,)
-            )
-            if db.cursor.fetchone():
-                set_str = ", ".join([f"{n}=?" for n in col_names])
-                db.cursor.execute(
-                    f"UPDATE {self.table_name} SET {set_str} WHERE {col_names[0]}=?",
-                    (*vals, lookup_id),
-                )
+
+            if db.record_exists(self.table_name, col_names[0], lookup_id):
+                db.update_record(self.table_name, col_names, vals, lookup_id)
             else:
-                db.cursor.execute(
-                    f"INSERT INTO {self.table_name} VALUES ({', '.join(['?'] * len(vals))})",
-                    vals,
-                )
-            db.conn.commit()
+                db.insert_record(self.table_name, vals)
             self.load_data()
         except Exception as e:
             messagebox.showerror("Lỗi", str(e))
@@ -380,14 +369,16 @@ class CRUDFrame(ctk.CTkFrame):
     def load_data(self):
         for row in self.tree.get_children():
             self.tree.delete(row)
-        db.cursor.execute(f"SELECT * FROM {self.table_name}")
-        self.all_data = db.cursor.fetchall()
+
+        self.all_data = db.fetch_all(self.table_name)
 
         for row in self.all_data:
             formatted_row = []
             for i, val in enumerate(row):
                 col_name = self.columns[i]
-                if any(x in col_name.lower() for x in ["giá", "tiền", "lương", "chi tiêu"]):
+                if any(
+                    x in col_name.lower() for x in ["giá", "tiền", "lương", "chi tiêu"]
+                ):
                     try:
                         val_f = float(val)
                         if val_f.is_integer():
@@ -401,7 +392,7 @@ class CRUDFrame(ctk.CTkFrame):
                     except:
                         formatted_row.append(val)
                 elif (
-                    any(x in col_name for x in ["Ngày", "Thời Gian"])
+                    any(x in col_name.lower() for x in ["ngày", "thời gian"])
                     and isinstance(val, str)
                     and "-" in val
                 ):
@@ -430,9 +421,8 @@ class CRUDFrame(ctk.CTkFrame):
             return messagebox.showwarning("Chú ý", "Hãy chọn dòng cần xóa!")
 
         row_ids = [self.tree.item(i, "values")[0] for i in items]
-
-        db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
-        id_col = db.cursor.description[0][0]
+        col_names = db.get_column_names(self.table_name)
+        id_col = col_names[0]
 
         msg = (
             f"Sếp có chắc muốn xóa vĩnh viễn {len(row_ids)} dòng đã chọn không?"
@@ -443,13 +433,9 @@ class CRUDFrame(ctk.CTkFrame):
         if messagebox.askyesno("Xác nhận", msg):
             try:
                 for rid in row_ids:
-                    db.cursor.execute(
-                        f"DELETE FROM {self.table_name} WHERE {id_col}=?", (rid,)
-                    )
-                db.conn.commit()
+                    db.delete_record(self.table_name, id_col, rid)
                 self.load_data()
             except Exception as e:
-                db.conn.rollback()
                 messagebox.showerror("Lỗi", f"Không thể xóa dữ liệu: {str(e)}")
         return None
 
@@ -553,27 +539,17 @@ class CRUDFrame(ctk.CTkFrame):
                             except ValueError:
                                 continue
 
-                        db.cursor.execute(f"SELECT * FROM {self.table_name} LIMIT 1")
-                        col_names = [d[0] for d in db.cursor.description]
+                        col_names = db.get_column_names(self.table_name)
                         id_col = col_names[0]
-                        db.cursor.execute(
-                            f"SELECT 1 FROM {self.table_name} WHERE {id_col}=?",
-                            (row[0],),
-                        )
-                        if db.cursor.fetchone():
-                            set_str = ", ".join([f"{n}=?" for n in col_names])
-                            db.cursor.execute(
-                                f"UPDATE {self.table_name} SET {set_str} WHERE {id_col}=?",
-                                (*row, row[0]),
-                            )
+
+                        row = self.cast_row_types(row)
+
+                        if db.record_exists(self.table_name, id_col, row[0]):
+                            db.update_record(self.table_name, col_names, row, row[0])
                             updated_count += 1
                         else:
-                            db.cursor.execute(
-                                f"INSERT INTO {self.table_name} VALUES ({','.join(['?'] * len(row))})",
-                                row,
-                            )
+                            db.insert_record(self.table_name, row)
                             inserted_count += 1
-                db.conn.commit()
                 self.load_data()
                 messagebox.showinfo(
                     "Thành công",
@@ -583,3 +559,31 @@ class CRUDFrame(ctk.CTkFrame):
                 )
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể đọc file: {str(e)}")
+
+    def cast_row_types(self, row):
+        vals_cast = list(row)
+        if self.table_name == "rooms" and len(vals_cast) > 5:
+            try:
+                vals_cast[5] = float(vals_cast[5])
+            except:
+                pass
+        elif self.table_name == "employees" and len(vals_cast) > 5:
+            try:
+                vals_cast[5] = float(vals_cast[5])
+            except:
+                pass
+        elif self.table_name == "customers" and len(vals_cast) > 5:
+            try:
+                vals_cast[5] = float(vals_cast[5])
+            except:
+                pass
+        elif self.table_name == "inventory" and len(vals_cast) > 4:
+            try:
+                vals_cast[3] = float(vals_cast[3])
+            except:
+                pass
+            try:
+                vals_cast[4] = int(vals_cast[4])
+            except:
+                pass
+        return vals_cast
