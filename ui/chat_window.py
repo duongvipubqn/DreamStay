@@ -179,8 +179,11 @@ class ChatWindow(ctk.CTkToplevel):
             context = f"Người đang trò chuyện là Tổng Quản Lý tên '{curr_user}'. Sếp có đặc quyền quản trị cao nhất. Hãy hỗ trợ sếp tất cả các nghiệp vụ quản trị bao gồm PMS, HRM, quản lý kho hàng, hướng dẫn chi tiết cách sửa đổi dữ liệu CRUD, xuất nhập Excel và phân tích doanh thu. QUY TẮC XƯNG HÔ: Bạn phải tự xưng là 'Em' và gọi người dùng là 'Sếp' để thể hiện lòng kính trọng."
 
         music_context = self.get_realtime_music_context()
+        rooms_context = self.get_realtime_rooms_context()
+        services_context = self.get_realtime_services_context()
+        utilities_context = self.get_utilities_context()
 
-        full_system_prompt = f"{DREAMER_SYSTEM_PROMPT}\n[BỐI CẢNH PHÂN QUYỀN AN TOÀN HIỆN TẠI]: {context}\n[BỐI CẢNH NHẠC THỜI GIAN THỰC HIỆN TẠI]: {music_context}"
+        full_system_prompt = f"{DREAMER_SYSTEM_PROMPT}\n[BỐI CẢNH PHÂN QUYỀN AN TOÀN HIỆN TẠI]: {context}\n[BỐI CẢNH NHẠC THỜI GIAN THỰC HIỆN TẠI]: {music_context}\n[BỐI CẢNH CÁC PHÒNG NGHỈ THỜI GIAN THỰC HIỆN TẠI]: {rooms_context}\n[BỐI CẢNH THỰC ĐƠN & KHO HÀNG F&B THỰC TẾ]: {services_context}\n[BỐI CẢNH 9 TIỆN ÍCH CAO CẤP]: {utilities_context}"
 
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={self.api_key}"
         headers = {"Content-Type": "application/json"}
@@ -195,6 +198,12 @@ class ChatWindow(ctk.CTkToplevel):
                 data = response.json()
                 bot_text = data["candidates"][0]["content"]["parts"][0]["text"]
                 import re
+
+                cmd_match = re.search(r"\{CMD:([^\}]+)\}", bot_text)
+                if cmd_match:
+                    cmd_str = cmd_match.group(1)
+                    bot_text = re.sub(r"\{CMD:[^\}]+\}", "", bot_text).strip()
+                    self.after(0, lambda c=cmd_str: self.execute_ai_command(c))
 
                 bot_text = re.sub(r"\*\*|###|---", "", bot_text)
                 bot_text = re.sub(r"^\s*[\-\*+]\s+", "• ", bot_text, flags=re.MULTILINE)
@@ -282,6 +291,75 @@ class ChatWindow(ctk.CTkToplevel):
             self.chat_area.update_idletasks()
             self.chat_area._parent_canvas.yview_moveto(0.0)
             self.after(50, lambda: self.chat_area._parent_canvas.yview_moveto(0.0))
+        except:
+            pass
+
+    def get_realtime_rooms_context(self):
+        try:
+            from database import db
+            rooms = db.fetch_all("rooms")
+            if not rooms:
+                return "Hiện tại resort chưa có phòng nào trong danh sách."
+            lines = []
+            for r_id, loc, r_type, status, cap, price in rooms:
+                price_f = f"{int(price):,}".replace(",", ".")
+                lines.append(f"- Phòng {r_id}: {loc} | {r_type} | Trạng thái: {status} | Sức chứa: {cap} | Giá: {price_f} VNĐ/đêm")
+            return "DANH SÁCH TOÀN BỘ PHÒNG THỰC TẾ TRONG HỆ THỐNG:\n" + "\n".join(lines)
+        except Exception as e:
+            return f"Không thể lấy dữ liệu phòng từ database: {str(e)}"
+        
+    def get_realtime_services_context(self):
+        try:
+            from database import db
+            items = db.fetch_all("inventory")
+            if not items:
+                return "Hiện tại hệ thống thực đơn ẩm thực F&B trống."
+            lines = []
+            for id_val, cat, name, price, stock in items:
+                price_f = f"{int(price):,}".replace(",", ".")
+                lines.append(f"- Món: {name} (Nhóm: {cat}) | Giá: {price_f} VNĐ | Tồn kho: {stock} phần")
+            return "DANH SÁCH THỰC ĐƠN & KHO HÀNG F&B THỰC TẾ:\n" + "\n".join(lines)
+        except Exception as e:
+            return f"Không thể lấy dữ liệu dịch vụ F&B từ database: {str(e)}"
+
+    def get_utilities_context(self):
+        return (
+            "DANH SÁCH 9 TIỆN ÍCH CAO CẤP TẠI RESORT DREAMSTAY:\n"
+            "- Hồ Bơi Vô Cực (Ngoài trời | Hoạt động): Tầm nhìn biển vô cực mát lạnh.\n"
+            "- Nhà Hàng The Golden (Trong nhà | Hoạt động): Khám phá tinh hoa ẩm thực Á - Âu chuẩn 5 sao.\n"
+            "- Mộng Mơ Spa (Trong nhà | Hoạt động): Liệu pháp massage đá nóng và xông hơi thảo dược thư giãn.\n"
+            "- Fitness Center (Trong nhà | Hoạt động): Trung tâm thể hình rèn luyện sức khỏe hiện đại.\n"
+            "- Sky Bar Tầng Thượng (Ngoài trời | Hoạt động): Cocktails sáng tạo và ngắm hoàng hôn lãng mạn.\n"
+            "- Phòng Đại Tiệc (Trong nhà | Hoạt động): Không gian lý tưởng tổ chức hội nghị và sự kiện.\n"
+            "- Sảnh Đón Hoàng Gia (Trong nhà | Hoạt động): Đón chào nồng hậu bằng trà hoa và dịch vụ concierge.\n"
+            "- Vườn Thượng Uyển (Ngoài trời | Hoạt động): Khu vườn ngập tràn kỳ hoa dị thảo dạo bước tĩnh tâm.\n"
+            "- Bãi Biển Riêng Tư (Ngoài trời | Hoạt động): Bờ cát trắng mịn biệt lập riêng tư tuyệt đối."
+        )
+
+    def execute_ai_command(self, cmd_str):
+        header = getattr(self.app, "header", None)
+        if not header:
+            return
+        try:
+            if cmd_str == "PLAY_MUSIC":
+                if not getattr(header, "is_playing", False):
+                    header.toggle_play()
+            elif cmd_str == "PAUSE_MUSIC":
+                if getattr(header, "is_playing", False):
+                    header.toggle_play()
+            elif cmd_str == "NEXT_TRACK":
+                header.next_track()
+            elif cmd_str == "PREV_TRACK":
+                header.prev_track()
+            elif cmd_str == "NEXT_ALBUM":
+                header.next_album()
+            elif cmd_str == "PREV_ALBUM":
+                header.prev_album()
+            elif cmd_str.startswith("SET_VOLUME:"):
+                vol_str = cmd_str.split(":")[1]
+                vol_val = int(vol_str)
+                header.change_volume(vol_val)
+                header.volume_slider.set(vol_val)
         except:
             pass
 
