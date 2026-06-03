@@ -98,10 +98,7 @@ class OrderModal(ctk.CTkToplevel):
             ).pack(side="left", padx=2)
 
             try:
-                import re
-
-                clean_str = re.sub(r"[^\d]", "", str(price))
-                price_f = int(clean_str) if clean_str else 0
+                price_f = int(float(price))
                 price_str = f"{price_f:,}".replace(",", ".") + "đ"
             except:
                 price_str = str(price) + "đ"
@@ -256,16 +253,14 @@ class OrderModal(ctk.CTkToplevel):
 
     def update_total(self):
         total = 0
-        for name, price in self.items:
+        for name, price, stock in self.items:
             try:
-                import re
-
-                clean_str = re.sub(r"[^\d]", "", str(price))
-                price_val = int(clean_str) if clean_str else 0
+                price_val = int(float(price))
             except:
                 price_val = 0
             total += self.quantities[name].get() * price_val
-        self.total_lbl.configure(text=f"TỔNG CỘNG: {total:,.0f} VNĐ")
+        total_f = f"{total:,.0f}".replace(",", ".")
+        self.total_lbl.configure(text=f"TỔNG CỘNG: {total_f} VNĐ")
 
     def confirm(self):
         room = self.room_cb.get()
