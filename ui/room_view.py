@@ -638,10 +638,21 @@ class RoomView(ctk.CTkScrollableFrame):
                 days = (d2 - d1).days
                 if days > 0:
                     total = days * room_data[5]
-                    lbl_money.configure(
-                        text=f"Tổng ({days} đêm): {int(total):,}".replace(",", ".")
-                        + " VNĐ"
-                    )
+                    active_coupon = getattr(app, "active_coupon", None)
+                    if active_coupon:
+                        code, disc = active_coupon
+                        total = total - (total * (disc / 100.0))
+                        lbl_money.configure(
+                            text=f"Tổng ({days} đêm, áp mã {code} -{disc}%): {int(total):,}".replace(
+                                ",", "."
+                            )
+                            + " VNĐ"
+                        )
+                    else:
+                        lbl_money.configure(
+                            text=f"Tổng ({days} đêm): {int(total):,}".replace(",", ".")
+                            + " VNĐ"
+                        )
                     btn_confirm.configure(state="normal")
                 else:
                     lbl_money.configure(text="Ngày không hợp lệ", text_color="red")

@@ -254,11 +254,26 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
                 raise ValueError
 
             total = days * self.room_data[5]
-            self.lbl_total.configure(
-                text=f"Tổng ({days} đêm): {int(total):,}".replace(",", ".") + " VNĐ",
-                font=FONT_LABEL,
-                text_color="white",
-            )
+            app = self.winfo_toplevel()
+            active_coupon = getattr(app, "active_coupon", None)
+            if active_coupon:
+                code, disc = active_coupon
+                total = total - (total * (disc / 100.0))
+                self.lbl_total.configure(
+                    text=f"Tổng ({days} đêm, áp mã {code} -{disc}%): {int(total):,}".replace(
+                        ",", "."
+                    )
+                    + " VNĐ",
+                    font=FONT_BODY_BOLD,
+                    text_color=COLOR_GOLD,
+                )
+            else:
+                self.lbl_total.configure(
+                    text=f"Tổng ({days} đêm): {int(total):,}".replace(",", ".")
+                    + " VNĐ",
+                    font=FONT_LABEL,
+                    text_color="white",
+                )
             if hasattr(self, "btn_book") and self.btn_book:
                 self.btn_book.configure(state="normal")
             return total

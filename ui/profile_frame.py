@@ -219,6 +219,31 @@ class ProfileFrame(ctk.CTkFrame):
                     ctk.CTkLabel(
                         txt_f, text=desc, font=FONT_BODY, text_color="#ccc"
                     ).pack(anchor="w")
+
+                    def use_coupon(c_code=code, c_disc=disc):
+                        self.app.active_coupon = (c_code, c_disc)
+                        messagebox.showinfo(
+                            "Kích hoạt thành công",
+                            f"Đã kích hoạt mã giảm giá {c_code} (-{c_disc}%)!\n"
+                            f"Hệ thống đang chuyển sếp sang trang Phòng Nghỉ để đặt phòng với giá ưu đãi.",
+                            parent=self.winfo_toplevel(),
+                        )
+                        func = getattr(self.app, "switch_page", None)
+                        if callable(func):
+                            func("Phòng nghỉ")
+
+                    def use_coupon(c_code=code, c_disc=disc):
+                        self.app.active_coupon = (c_code, c_disc)
+                        messagebox.showinfo(
+                            "Kích hoạt thành công",
+                            f"Đã kích hoạt mã giảm giá {c_code} (-{c_disc}%)!\n"
+                            f"Hệ thống đang chuyển sếp sang trang Phòng Nghỉ để đặt phòng với giá ưu đãi.",
+                            parent=self.winfo_toplevel(),
+                        )
+                        func = getattr(self.app, "switch_page", None)
+                        if callable(func):
+                            func("Phòng nghỉ")
+
                     ctk.CTkButton(
                         f,
                         text="DÙNG NGAY",
@@ -227,6 +252,7 @@ class ProfileFrame(ctk.CTkFrame):
                         border_width=1,
                         border_color=COLOR_GOLD,
                         text_color=COLOR_GOLD,
+                        command=use_coupon,
                     ).pack(side="right", padx=20)
 
     def open_edit_modal(self):
