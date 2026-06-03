@@ -22,6 +22,8 @@ FONT_TITLE = ("Segoe UI", 24, "bold")
 FONT_LABEL = ("Segoe UI", 16, "bold")
 FONT_BODY = ("Segoe UI", 14)
 FONT_BODY_BOLD = ("Segoe UI", 14, "bold")
+FONT_SMALL = ("Segoe UI", 11)
+FONT_SMALL_BOLD = ("Segoe UI", 11, "bold")
 
 LOCATIONS = [
     "Hạ Long",

@@ -332,6 +332,17 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
             )
             db.conn.commit()
 
+            active_coupon = getattr(app, "active_coupon", None)
+            if active_coupon:
+                c_code = active_coupon[0]
+                curr_username = getattr(app, "current_username", None)
+                db.execute_query(
+                    "DELETE FROM user_coupons WHERE username=? AND code=?",
+                    (curr_username, c_code),
+                    commit=True,
+                )
+                app.active_coupon = None
+
             messagebox.showinfo(
                 "Thành công", f"Yêu cầu đặt phòng {self.room_data[0]} đã được gửi!"
             )

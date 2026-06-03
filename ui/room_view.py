@@ -593,7 +593,11 @@ class RoomView(ctk.CTkScrollableFrame):
         en_out.bind("<Button-1>", lambda e: pick_date(en_out))
 
         lbl_money = ctk.CTkLabel(
-            modal, text="Tổng: 0 VNĐ", font=FONT_LABEL, text_color=COLOR_GOLD
+            modal,
+            text="Tổng: 0 VNĐ",
+            font=FONT_LABEL,
+            text_color=COLOR_GOLD,
+            wraplength=340,
         )
         lbl_money.pack(pady=10)
 
@@ -610,6 +614,11 @@ class RoomView(ctk.CTkScrollableFrame):
             ).days
             total = days * room_data[5]
 
+            active_coupon = getattr(app, "active_coupon", None)
+            if active_coupon:
+                code, disc = active_coupon
+                total = total - (total * (disc / 100.0))
+
             db.cursor.execute(
                 "INSERT INTO bookings (customer_name, room_id, checkin_date, checkout_date, total_price, status) VALUES (?,?,?,?,?,?)",
                 (
@@ -622,6 +631,17 @@ class RoomView(ctk.CTkScrollableFrame):
                 ),
             )
             db.conn.commit()
+
+            if active_coupon:
+                c_code = active_coupon[0]
+                curr_username = getattr(app, "current_username", None)
+                db.execute_query(
+                    "DELETE FROM user_coupons WHERE username=? AND code=?",
+                    (curr_username, c_code),
+                    commit=True,
+                )
+                app.active_coupon = None
+
             messagebox.showinfo("Thành công", "Đã gửi yêu cầu đặt phòng!")
             modal.destroy()
             return None

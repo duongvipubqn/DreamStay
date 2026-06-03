@@ -155,38 +155,52 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
             from tkinter import messagebox
             from database import db
             import re
-            
+            import unicodedata
+
             app = self.winfo_toplevel()
             curr_user = getattr(app, "current_user", None)
             curr_username = getattr(app, "current_username", None)
-            
+
             if not curr_user:
-                messagebox.showwarning("Thông báo", "Vui lòng đăng nhập để đăng ký tham gia sự kiện!")
+                messagebox.showwarning(
+                    "Thông báo", "Vui lòng đăng nhập để đăng ký tham gia sự kiện!"
+                )
                 return
-            
+
             try:
-                clean_title = re.sub(r"[^\w]", "", title).upper()[:8]
-                code = f"EV_{clean_title}"
-                
+                text_no_d = title.replace("Đ", "D").replace("đ", "d")
+                text_normalized = "".join(
+                    c
+                    for c in unicodedata.normalize("NFKD", text_no_d)
+                    if not unicodedata.combining(c)
+                )
+                words = text_normalized.split()
+                initials = "".join([w[0] for w in words if w]).upper()
+                clean_initials = re.sub(r"[^\w]", "", initials)
+                code = f"EV_{clean_initials}"
+
                 db.cursor.execute(
-                    "SELECT 1 FROM user_coupons WHERE username=? AND code=?", 
-                    (curr_username, code)
+                    "SELECT 1 FROM user_coupons WHERE username=? AND code=?",
+                    (curr_username, code),
                 )
                 if db.cursor.fetchone():
-                    messagebox.showinfo("Thông báo", f"Sếp đã đăng ký tham gia sự kiện '{title}' trước đó rồi!")
+                    messagebox.showinfo(
+                        "Thông báo",
+                        f"Sếp đã đăng ký tham gia sự kiện '{title}' trước đó rồi!",
+                    )
                     return
-                
+
                 db.cursor.execute(
                     "INSERT INTO user_coupons (username, code, description, discount_percent) VALUES (?,?,?,?)",
-                    (curr_username, code, f"Voucher qua tang tu su kien: {title}", 15)
+                    (curr_username, code, f"Voucher qua tang tu su kien: {title}", 15),
                 )
                 db.conn.commit()
-                
+
                 messagebox.showinfo(
                     "Thành công",
                     f"Đăng ký tham gia sự kiện '{title}' thành công!\n"
                     f"Món quà tri ân 1 mã giảm giá {code} (Giảm 15%) đã được gửi trực tiếp vào Kho Voucher của sếp!",
-                    parent=self.winfo_toplevel()
+                    parent=self.winfo_toplevel(),
                 )
             except Exception as err:
                 db.conn.rollback()

@@ -17,6 +17,7 @@ from config import (
     FONT_LABEL,
     FONT_BODY,
     FONT_BODY_BOLD,
+    FONT_SMALL_BOLD,
     GEMINI_API_KEY,
     GEMINI_MODEL,
     DREAMER_SYSTEM_PROMPT,
@@ -56,7 +57,7 @@ class ChatWindow(ctk.CTkToplevel):
             height=28,
             fg_color=COLOR_WHITE,
             text_color=COLOR_TEXT,
-            font=("Segoe UI", 11, "bold"),
+            font=FONT_SMALL_BOLD,
             command=self.open_key_settings,
         )
         self.key_btn.pack(side="right", padx=15, pady=15)
@@ -69,7 +70,7 @@ class ChatWindow(ctk.CTkToplevel):
             fg_color="#e74c3c",
             hover_color="#c0392b",
             text_color="white",
-            font=("Segoe UI", 11, "bold"),
+            font=FONT_SMALL_BOLD,
             command=self.clear_history,
         )
         self.clear_btn.pack(side="right", padx=0, pady=15)
@@ -297,27 +298,35 @@ class ChatWindow(ctk.CTkToplevel):
     def get_realtime_rooms_context(self):
         try:
             from database import db
+
             rooms = db.fetch_all("rooms")
             if not rooms:
                 return "Hiện tại resort chưa có phòng nào trong danh sách."
             lines = []
             for r_id, loc, r_type, status, cap, price in rooms:
                 price_f = f"{int(price):,}".replace(",", ".")
-                lines.append(f"- Phòng {r_id}: {loc} | {r_type} | Trạng thái: {status} | Sức chứa: {cap} | Giá: {price_f} VNĐ/đêm")
-            return "DANH SÁCH TOÀN BỘ PHÒNG THỰC TẾ TRONG HỆ THỐNG:\n" + "\n".join(lines)
+                lines.append(
+                    f"- Phòng {r_id}: {loc} | {r_type} | Trạng thái: {status} | Sức chứa: {cap} | Giá: {price_f} VNĐ/đêm"
+                )
+            return "DANH SÁCH TOÀN BỘ PHÒNG THỰC TẾ TRONG HỆ THỐNG:\n" + "\n".join(
+                lines
+            )
         except Exception as e:
             return f"Không thể lấy dữ liệu phòng từ database: {str(e)}"
-        
+
     def get_realtime_services_context(self):
         try:
             from database import db
+
             items = db.fetch_all("inventory")
             if not items:
                 return "Hiện tại hệ thống thực đơn ẩm thực F&B trống."
             lines = []
             for id_val, cat, name, price, stock in items:
                 price_f = f"{int(price):,}".replace(",", ".")
-                lines.append(f"- Món: {name} (Nhóm: {cat}) | Giá: {price_f} VNĐ | Tồn kho: {stock} phần")
+                lines.append(
+                    f"- Món: {name} (Nhóm: {cat}) | Giá: {price_f} VNĐ | Tồn kho: {stock} phần"
+                )
             return "DANH SÁCH THỰC ĐƠN & KHO HÀNG F&B THỰC TẾ:\n" + "\n".join(lines)
         except Exception as e:
             return f"Không thể lấy dữ liệu dịch vụ F&B từ database: {str(e)}"

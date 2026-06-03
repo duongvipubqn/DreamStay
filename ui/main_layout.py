@@ -234,7 +234,7 @@ class MainFrame(ctk.CTkFrame):
     def open_staff_registration(self):
         modal = ctk.CTkToplevel(self)
         modal.title("Cấp tài khoản nhân viên")
-        w, h = 450, 600
+        w, h = 450, 680
         modal.update_idletasks()
         main_win = self.winfo_toplevel()
         x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
@@ -318,7 +318,7 @@ class MainFrame(ctk.CTkFrame):
     def open_voucher_modal(self):
         modal = ctk.CTkToplevel(self)
         modal.title("Tặng Voucher cho khách hàng")
-        w, h = 450, 550
+        w, h = 450, 620
         modal.update_idletasks()
         main_win = self.winfo_toplevel()
         x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
