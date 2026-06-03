@@ -163,6 +163,10 @@ class HotelApp(ctk.CTk):
         self.current_user = name
         self.current_role = role
 
+        from database import db
+
+        db.log_action(username, "LOGIN", "users", username)
+
         if save_session:
             raw_str = f"{username}|{name}|{role}"
             encoded_bytes = base64.b64encode(raw_str.encode("utf-8"))

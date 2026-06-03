@@ -345,15 +345,44 @@ class CRUDFrame(ctk.CTkFrame):
 
     def save_to_db(self, data_tuple):
         vals, original_id = data_tuple
+        import json
+
         try:
             vals = self.cast_row_types(vals)
             col_names = db.get_column_names(self.table_name)
+            id_col = col_names[0]
             lookup_id = original_id if original_id else vals[0]
+            app = self.winfo_toplevel()
+            username = getattr(app, "current_username", "system")
 
-            if db.record_exists(self.table_name, col_names[0], lookup_id):
+            if db.record_exists(self.table_name, id_col, lookup_id):
+                old_record = db.execute_query(
+                    f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
+                    (lookup_id,),
+                    fetchone=True,
+                )
+                old_json = (
+                    json.dumps(old_record, ensure_ascii=False) if old_record else None
+                )
                 db.update_record(self.table_name, col_names, vals, lookup_id)
+                db.log_action(
+                    username,
+                    "UPDATE",
+                    self.table_name,
+                    lookup_id,
+                    old_json,
+                    json.dumps(vals, ensure_ascii=False),
+                )
             else:
                 db.insert_record(self.table_name, vals)
+                db.log_action(
+                    username,
+                    "INSERT",
+                    self.table_name,
+                    vals[0],
+                    None,
+                    json.dumps(vals, ensure_ascii=False),
+                )
             self.load_data()
         except Exception as e:
             messagebox.showerror("Lỗi", str(e))
@@ -431,9 +460,26 @@ class CRUDFrame(ctk.CTkFrame):
         )
 
         if messagebox.askyesno("Xác nhận", msg):
+            import json
+
             try:
+                app = self.winfo_toplevel()
+                username = getattr(app, "current_username", "system")
                 for rid in row_ids:
+                    old_record = db.execute_query(
+                        f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
+                        (rid,),
+                        fetchone=True,
+                    )
+                    old_json = (
+                        json.dumps(old_record, ensure_ascii=False)
+                        if old_record
+                        else None
+                    )
                     db.delete_record(self.table_name, id_col, rid)
+                    db.log_action(
+                        username, "DELETE", self.table_name, rid, old_json, None
+                    )
                 self.load_data()
             except Exception as e:
                 messagebox.showerror("Lỗi", f"Không thể xóa dữ liệu: {str(e)}")
@@ -544,11 +590,41 @@ class CRUDFrame(ctk.CTkFrame):
 
                         row = self.cast_row_types(row)
 
+                        row = self.cast_row_types(row)
+                        app = self.winfo_toplevel()
+                        username = getattr(app, "current_username", "system")
+
                         if db.record_exists(self.table_name, id_col, row[0]):
+                            old_record = db.execute_query(
+                                f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
+                                (row[0],),
+                                fetchone=True,
+                            )
+                            old_json = (
+                                json.dumps(old_record, ensure_ascii=False)
+                                if old_record
+                                else None
+                            )
                             db.update_record(self.table_name, col_names, row, row[0])
+                            db.log_action(
+                                username,
+                                "UPDATE_CSV",
+                                self.table_name,
+                                row[0],
+                                old_json,
+                                json.dumps(row, ensure_ascii=False),
+                            )
                             updated_count += 1
                         else:
                             db.insert_record(self.table_name, row)
+                            db.log_action(
+                                username,
+                                "INSERT_CSV",
+                                self.table_name,
+                                row[0],
+                                None,
+                                json.dumps(row, ensure_ascii=False),
+                            )
                             inserted_count += 1
                 self.load_data()
                 messagebox.showinfo(

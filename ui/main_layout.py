@@ -8,6 +8,7 @@ from ui.reception import ReceptionFrame
 from ui.order_mgmt_frame import OrderMgmtFrame
 from ui.crud_frame import CRUDFrame
 from ui.statistics import StatisticsFrame
+from ui.log_frame import LogFrame
 from tkinter import messagebox
 from database import db
 
@@ -84,11 +85,14 @@ class MainFrame(ctk.CTkFrame):
                 ],
             ),
             "Thống Kê": StatisticsFrame(self.content),
+            "Nhật Ký": LogFrame(self.content),
         }
 
         ctk.CTkLabel(self.sidebar, text="", height=20).pack()
 
         for name in self.frames.keys():
+            if name == "Nhật Ký":
+                continue
             btn = ctk.CTkButton(
                 self.sidebar,
                 text=f"  {name}",
@@ -101,6 +105,18 @@ class MainFrame(ctk.CTkFrame):
                 command=lambda n=name: self.switch(n),
             )
             btn.pack(pady=2, padx=15, fill="x")
+
+        self.log_btn = ctk.CTkButton(
+            self.sidebar,
+            text="  Nhật Ký Hệ Thống",
+            fg_color="#8e44ad",
+            text_color="white",
+            hover_color="#732d91",
+            anchor="w",
+            height=45,
+            font=FONT_BODY_BOLD,
+            command=lambda: self.switch("Nhật Ký"),
+        )
 
         self.staff_reg_btn = ctk.CTkButton(
             self.sidebar,
@@ -204,8 +220,12 @@ class MainFrame(ctk.CTkFrame):
             self.staff_reg_btn.pack_forget()
         if self.voucher_grant_btn is not None:
             self.voucher_grant_btn.pack_forget()
+        if hasattr(self, "log_btn") and self.log_btn is not None:
+            self.log_btn.pack_forget()
 
         if role == "manager":
+            if hasattr(self, "log_btn") and self.log_btn is not None:
+                self.log_btn.pack(pady=2, padx=15, fill="x")
             if self.staff_reg_btn is not None:
                 self.staff_reg_btn.pack(pady=2, padx=15, fill="x")
             if self.voucher_grant_btn is not None:

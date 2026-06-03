@@ -174,6 +174,18 @@ class Database:
                 stock INTEGER DEFAULT 50
             )""")
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS system_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT,
+                username TEXT,
+                action_type TEXT,
+                table_name TEXT,
+                record_id TEXT,
+                old_data TEXT,
+                new_data TEXT
+            )""")
+
         conn.commit()
         conn.close()
 
@@ -314,6 +326,26 @@ class Database:
             fetchone=True,
         )
         return res[0]
+
+    def log_action(
+        self, username, action_type, table_name, record_id, old_data=None, new_data=None
+    ):
+        from datetime import datetime
+
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.execute_query(
+            "INSERT INTO system_logs (timestamp, username, action_type, table_name, record_id, old_data, new_data) VALUES (?,?,?,?,?,?,?)",
+            (
+                now,
+                username,
+                action_type,
+                table_name,
+                str(record_id),
+                old_data,
+                new_data,
+            ),
+            commit=True,
+        )
 
 
 db = Database()
