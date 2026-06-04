@@ -9,6 +9,7 @@ from ui.order_mgmt_frame import OrderMgmtFrame
 from ui.crud_frame import CRUDFrame
 from ui.statistics import StatisticsFrame
 from ui.log_frame import LogFrame
+from ui.mgmt_log_frame import MgmtLogFrame
 from tkinter import messagebox
 from database import db
 
@@ -84,14 +85,15 @@ class MainFrame(ctk.CTkFrame):
                     "Số Lượng Tồn",
                 ],
             ),
+            "Nhật Ký Hệ Thống": LogFrame(self.content),
+            "Nhật Ký Quản Lý": MgmtLogFrame(self.content),
             "Thống Kê": StatisticsFrame(self.content),
-            "Nhật Ký": LogFrame(self.content),
         }
 
         ctk.CTkLabel(self.sidebar, text="", height=20).pack()
 
         for name in self.frames.keys():
-            if name == "Nhật Ký":
+            if name in ["Nhật Ký Hệ Thống", "Nhật Ký Quản Lý"]:
                 continue
             btn = ctk.CTkButton(
                 self.sidebar,
@@ -115,7 +117,19 @@ class MainFrame(ctk.CTkFrame):
             anchor="w",
             height=45,
             font=FONT_BODY_BOLD,
-            command=lambda: self.switch("Nhật Ký"),
+            command=lambda: self.switch("Nhật Ký Hệ Thống"),
+        )
+
+        self.mgmt_log_btn = ctk.CTkButton(
+            self.sidebar,
+            text="  Nhật Ký Quản Lý",
+            fg_color="#e67e22",
+            text_color="white",
+            hover_color="#d35400",
+            anchor="w",
+            height=45,
+            font=FONT_BODY_BOLD,
+            command=lambda: self.switch("Nhật Ký Quản Lý"),
         )
 
         self.staff_reg_btn = ctk.CTkButton(
@@ -222,10 +236,14 @@ class MainFrame(ctk.CTkFrame):
             self.voucher_grant_btn.pack_forget()
         if hasattr(self, "log_btn") and self.log_btn is not None:
             self.log_btn.pack_forget()
+        if hasattr(self, "mgmt_log_btn") and self.mgmt_log_btn is not None:
+            self.mgmt_log_btn.pack_forget()
 
         if role == "manager":
             if hasattr(self, "log_btn") and self.log_btn is not None:
                 self.log_btn.pack(pady=2, padx=15, fill="x")
+            if hasattr(self, "mgmt_log_btn") and self.mgmt_log_btn is not None:
+                self.mgmt_log_btn.pack(pady=2, padx=15, fill="x")
             if self.staff_reg_btn is not None:
                 self.staff_reg_btn.pack(pady=2, padx=15, fill="x")
             if self.voucher_grant_btn is not None:
