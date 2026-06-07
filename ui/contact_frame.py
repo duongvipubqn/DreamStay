@@ -18,9 +18,9 @@ class ContactFrame(ctk.CTkFrame):
         body.pack(fill="both", expand=True, padx=250, pady=(0, 20))
 
         body.grid_rowconfigure(0, weight=1)
-        body.grid_columnconfigure(0, weight=3)
-        body.grid_columnconfigure(1, weight=2)
-        body.grid_columnconfigure(2, weight=5)
+        body.grid_columnconfigure(0, weight=1, uniform="contact_layout")
+        body.grid_columnconfigure(1, weight=1, uniform="contact_layout")
+        body.grid_columnconfigure(2, weight=2, uniform="contact_layout")
 
         self.col1 = ctk.CTkFrame(
             body,
@@ -145,9 +145,9 @@ class ContactFrame(ctk.CTkFrame):
 
         self.winfo_toplevel().update_idletasks()
 
-        self.map_widget.set_position(12.2388, 109.1678)
-        self.map_widget.set_zoom(15)
-        self.map_widget.set_marker(12.2388, 109.1678, text="DreamStay Resort")
+        self.map_widget.set_position(21.0336, 106.7725)
+        self.map_widget.set_zoom(16)
+        self.map_widget.set_marker(21.0336, 106.7725, text="DreamStay Resort")
 
         self.nav_pad = ctk.CTkFrame(
             self.col3,
@@ -299,17 +299,32 @@ class ContactFrame(ctk.CTkFrame):
             )
             return
 
-        self.feedback_label.configure(
-            text="Tin nhắn đã được gửi thành công! Chúng tôi sẽ liên hệ lại sớm nhất.",
-            text_color=COLOR_GOLD,
-        )
-        self.name_entry.delete(0, "end")
-        self.email_entry.delete(0, "end")
-        self.subject_entry.delete(0, "end")
-        self.message_box.delete("1.0", "end")
+        try:
+            from database import db
+            from datetime import datetime
+
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            db.execute_query(
+                "INSERT INTO contact_messages (name, email, subject, message, timestamp) VALUES (?,?,?,?,?)",
+                (name, email, subject, message, now),
+                commit=True,
+            )
+            self.feedback_label.configure(
+                text="Tin nhắn đã được gửi và lưu trữ thành công vào hệ thống!",
+                text_color=COLOR_GOLD,
+            )
+            self.name_entry.delete(0, "end")
+            self.email_entry.delete(0, "end")
+            self.subject_entry.delete(0, "end")
+            self.message_box.delete("1.0", "end")
+        except Exception as e:
+            self.feedback_label.configure(
+                text=f"Lỗi kết nối cơ sở dữ liệu: {str(e)}",
+                text_color="#d64545",
+            )
 
     def _open_google_maps(self):
-        url = "https://www.google.com/maps/place/12.2388,109.1678"
+        url = "https://www.google.com/maps/place/21.0336,106.7725"
         webbrowser.open(url)
 
     def load_data(self):

@@ -186,6 +186,16 @@ class Database:
                 new_data TEXT
             )""")
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS contact_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                email TEXT,
+                subject TEXT,
+                message TEXT,
+                timestamp TEXT
+            )""")
+
         conn.commit()
         conn.close()
 
