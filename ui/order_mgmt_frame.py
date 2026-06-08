@@ -8,6 +8,7 @@ class OrderMgmtFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
         self.tree = None
+        self.all_data = []
 
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", pady=(0, 15))
@@ -164,6 +165,8 @@ class OrderMgmtFrame(ctk.CTkFrame):
             )
 
     def filter_data(self, *args):
+        if not hasattr(self, "all_data") or not self.all_data:
+            return
         search_text = self.search_var.get().lower()
         filtered = []
         for row in self.all_data:

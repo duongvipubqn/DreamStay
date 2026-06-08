@@ -607,58 +607,30 @@ class RoomView(ctk.CTkScrollableFrame):
         lbl_money.pack(pady=10)
 
         def confirm():
-            d_in = datetime.strptime(en_in.get(), "%d/%m/%Y").strftime("%Y-%m-%d")
-            d_out = datetime.strptime(en_out.get(), "%d/%m/%Y").strftime("%Y-%m-%d")
+            try:
+                d1 = datetime.strptime(en_in.get(), "%d/%m/%Y")
+                d2 = datetime.strptime(en_out.get(), "%d/%m/%Y")
+                days = (d2 - d1).days
+                if days <= 0:
+                    raise ValueError
+            except:
+                messagebox.showerror("Lỗi", "Ngày đặt không hợp lệ!")
+                return None
 
-            if not db.is_room_available(room_data[0], d_in, d_out):
-                return messagebox.showerror("Hết chỗ", "Ngày này đã có người đặt!")
+            from controller import Controller
 
-            days = (
-                datetime.strptime(d_out, "%Y-%m-%d")
-                - datetime.strptime(d_in, "%Y-%m-%d")
-            ).days
             total = days * room_data[5]
-
             active_coupon = getattr(app, "active_coupon", None)
             if active_coupon:
-                code, disc = active_coupon
+                disc = active_coupon[1]
                 total = total - (total * (disc / 100.0))
 
-            curr_username = getattr(app, "current_username", "system")
-            curr_user = getattr(app, "current_user", "Unknown")
-            user_info = db.execute_query(
-                "SELECT email, phone FROM users WHERE username=?",
-                (curr_username,),
-                fetchone=True,
+            _, limits = db.get_user_level_info(getattr(app, "current_user", "Unknown"))
+            success = Controller.process_room_booking(
+                app, room_data[0], en_in.get(), en_out.get(), total, limits
             )
-            u_email, u_phone = user_info if user_info else ("", "")
-            db.ensure_customer_profile(curr_username, curr_user, u_email, u_phone)
-
-            db.cursor.execute(
-                "INSERT INTO bookings (customer_id, room_id, checkin_date, checkout_date, total_price, status) VALUES (?,?,?,?,?,?)",
-                (
-                    curr_username,
-                    room_data[0],
-                    d_in,
-                    d_out,
-                    total,
-                    "Pending",
-                ),
-            )
-            db.conn.commit()
-
-            if active_coupon:
-                c_code = active_coupon[0]
-                curr_username = getattr(app, "current_username", None)
-                db.execute_query(
-                    "DELETE FROM user_coupons WHERE username=? AND code=?",
-                    (curr_username, c_code),
-                    commit=True,
-                )
-                app.active_coupon = None
-
-            messagebox.showinfo("Thành công", "Đã gửi yêu cầu đặt phòng!")
-            modal.destroy()
+            if success:
+                modal.destroy()
             return None
 
         btn_confirm = ctk.CTkButton(

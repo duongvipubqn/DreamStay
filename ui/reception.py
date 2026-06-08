@@ -8,6 +8,7 @@ class ReceptionFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
         self.tree = None
+        self.all_data = []
 
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", pady=(0, 15))
@@ -164,6 +165,8 @@ class ReceptionFrame(ctk.CTkFrame):
             )
 
     def filter_data(self, *args):
+        if not hasattr(self, "all_data") or not self.all_data:
+            return
         search_text = self.search_var.get().lower()
         filtered = []
         for row in self.all_data:
@@ -182,11 +185,9 @@ class ReceptionFrame(ctk.CTkFrame):
             return messagebox.showerror("Lỗi", "Đơn này đã được xử lý rồi!")
 
         if messagebox.askyesno("Xác nhận", "Sếp đồng ý giữ chỗ cho khách này?"):
-            db.execute_query(
-                "UPDATE bookings SET status='Confirmed' WHERE id=?",
-                (b_id,),
-                commit=True,
-            )
+            from controller import Controller
+
+            Controller.pms_confirm_booking(b_id)
             self.load_data()
 
     def check_in(self):
@@ -203,14 +204,9 @@ class ReceptionFrame(ctk.CTkFrame):
             )
 
         if messagebox.askyesno("Xác nhận", f"Cho khách nhận phòng {rm_id}?"):
-            db.execute_query(
-                "UPDATE bookings SET status='Stay-in' WHERE id=?", (b_id,), commit=True
-            )
-            db.execute_query(
-                "UPDATE rooms SET status='Đã đặt' WHERE room_id=?",
-                (rm_id,),
-                commit=True,
-            )
+            from controller import Controller
+
+            Controller.pms_check_in(b_id, rm_id)
             self.load_data()
 
     def check_out(self):
@@ -225,90 +221,19 @@ class ReceptionFrame(ctk.CTkFrame):
             )
 
         try:
-            import re
-
             unpaid_orders = db.execute_query(
                 "SELECT items_detail, total_price, id FROM service_orders WHERE room_id=? AND status NOT IN ('Completed', 'Cancelled')",
                 (rm_id,),
                 fetch=True,
             )
+            order_ids = [o[2] for o in unpaid_orders]
 
-            room_charge = float(re.sub(r"[^\d]", "", price))
-            services_charge = 0
-            order_details = []
-            order_ids = []
+            from controller import Controller
 
-            for items, total_p, o_id in unpaid_orders:
-                services_charge += total_p
-                order_details.append(f"- {items} ({int(total_p):,} VNĐ)")
-                order_ids.append(o_id)
-
-            final_bill = room_charge + services_charge
-
-            if services_charge > 0:
-                details_msg = "\n".join(order_details)
-                msg = (
-                    f"HÓA ĐƠN THANH TOÁN CHI TIẾT PHÒNG {rm_id}\n\n"
-                    f"1. Tiền thuê phòng: {int(room_charge):,} VNĐ\n"
-                    f"2. Tiền dịch vụ ẩm thực (F&B):\n{details_msg}\n"
-                    f"--------------------------------------------------\n"
-                    f"TỔNG CỘNG HÓA ĐƠN: {int(final_bill):,} VNĐ\n\n"
-                    f"Xác nhận thanh toán gộp và làm thủ tục trả phòng cho khách {cus}?"
-                )
-            else:
-                msg = (
-                    f"Xác nhận thanh toán hóa đơn phòng {rm_id} cho khách {cus}?\n"
-                    f"Tổng cộng tiền phòng: {int(room_charge):,} VNĐ"
-                )
-
-            if messagebox.askyesno("Thanh toán", msg):
-                loc_res = db.execute_query(
-                    "SELECT location FROM rooms WHERE room_id=?",
-                    (rm_id,),
-                    fetchone=True,
-                )
-                loc = loc_res[0] if loc_res else "Đà Nẵng"
-
-                db.execute_query(
-                    "INSERT INTO revenue_history (date, amount, location) VALUES (?,?,?)",
-                    (datetime.now().strftime("%Y-%m-%d"), final_bill, loc),
-                    commit=True,
-                )
-
-                cust_id_res = db.execute_query(
-                    "SELECT customer_id FROM bookings WHERE id=?",
-                    (b_id,),
-                    fetchone=True,
-                )
-                cust_id = cust_id_res[0] if cust_id_res else None
-
-                db.execute_query(
-                    "UPDATE customers SET total_spending = total_spending + ? WHERE customer_id=?",
-                    (final_bill, cust_id),
-                    commit=True,
-                )
-                db.execute_query(
-                    "UPDATE bookings SET status='Completed' WHERE id=?",
-                    (b_id,),
-                    commit=True,
-                )
-                db.execute_query(
-                    "UPDATE rooms SET status='Đang dọn' WHERE room_id=?",
-                    (rm_id,),
-                    commit=True,
-                )
-
-                for o_id in order_ids:
-                    db.execute_query(
-                        "UPDATE service_orders SET status='Completed' WHERE id=?",
-                        (o_id,),
-                        commit=True,
-                    )
-
-                messagebox.showinfo(
-                    "Thành công",
-                    "Đã thanh toán hóa đơn và hoàn tất Check-out cho khách thành công!",
-                )
+            success = Controller.pms_check_out(
+                b_id, rm_id, cus, price, unpaid_orders, order_ids
+            )
+            if success:
                 self.load_data()
         except Exception as e:
             messagebox.showerror("Lỗi", str(e))
@@ -319,14 +244,9 @@ class ReceptionFrame(ctk.CTkFrame):
             return
         b_id, _, rm_id, _, _, _, _ = self.tree.item(item, "values")
         if messagebox.askyesno("Hủy đơn", "Sếp chắc chắn muốn hủy đơn này?"):
-            db.execute_query(
-                "UPDATE bookings SET status='Cancelled' WHERE id=?",
-                (b_id,),
-                commit=True,
-            )
-            db.execute_query(
-                "UPDATE rooms SET status='Trống' WHERE room_id=?", (rm_id,), commit=True
-            )
+            from controller import Controller
+
+            Controller.pms_cancel_booking(b_id, rm_id)
             self.load_data()
 
     def on_hide(self):

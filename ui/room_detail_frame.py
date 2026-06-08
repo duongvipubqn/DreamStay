@@ -295,74 +295,22 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
         if total is None:
             return None
 
-        try:
-            d_in_dt = datetime.strptime(self.entry_in.get(), "%d/%m/%Y")
-            d_out_dt = datetime.strptime(self.entry_out.get(), "%d/%m/%Y")
-            stay_days = (d_out_dt - d_in_dt).days
+        from controller import Controller
 
-            curr_username = getattr(app, "current_username", None)
-            level, limits = db.get_user_level_info(curr_user)
+        _, limits = db.get_user_level_info(curr_user)
 
-            user_info = db.execute_query(
-                "SELECT email, phone FROM users WHERE username=?",
-                (curr_username,),
-                fetchone=True,
-            )
-            u_email, u_phone = user_info if user_info else ("", "")
-            db.ensure_customer_profile(curr_username, curr_user, u_email, u_phone)
-
-            active_bookings = db.count_active_bookings(curr_username)
-
-            if stay_days > limits["max_days"]:
-                return messagebox.showerror(
-                    "Từ chối",
-                    f"Tối đa {limits['max_days']} ngày cho hạng {limits['label']}",
-                )
-
-            if active_bookings >= limits["max_rooms"]:
-                return messagebox.showerror(
-                    "Từ chối",
-                    f"Hạng {limits['label']} chỉ được đặt tối đa {limits['max_rooms']} phòng!",
-                )
-
-            d_in = d_in_dt.strftime("%Y-%m-%d")
-            d_out = d_out_dt.strftime("%Y-%m-%d")
-
-            if not db.is_room_available(self.room_data[0], d_in, d_out):
-                return messagebox.showerror(
-                    "Hết chỗ", "Khoảng thời gian này đã có người đặt!"
-                )
-
-            db.cursor.execute(
-                """
-                INSERT INTO bookings (customer_id, room_id, checkin_date, checkout_date, total_price, status)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """,
-                (curr_username, self.room_data[0], d_in, d_out, total, "Pending"),
-            )
-            db.conn.commit()
-
-            active_coupon = getattr(app, "active_coupon", None)
-            if active_coupon:
-                c_code = active_coupon[0]
-                curr_username = getattr(app, "current_username", None)
-                db.execute_query(
-                    "DELETE FROM user_coupons WHERE username=? AND code=?",
-                    (curr_username, c_code),
-                    commit=True,
-                )
-                app.active_coupon = None
-
-            messagebox.showinfo(
-                "Thành công", f"Yêu cầu đặt phòng {self.room_data[0]} đã được gửi!"
-            )
-
+        success = Controller.process_room_booking(
+            app,
+            self.room_data[0],
+            self.entry_in.get(),
+            self.entry_out.get(),
+            total,
+            limits,
+        )
+        if success:
             switch_func = getattr(app, "switch_page", None)
             if callable(switch_func):
                 switch_func("Phòng")
-
-        except (ValueError, Exception) as e:
-            messagebox.showerror("Lỗi", f"Không thể đặt phòng: {str(e)}")
 
     def load_data(self):
         pass
