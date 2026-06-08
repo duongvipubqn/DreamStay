@@ -140,13 +140,15 @@ class ReceptionFrame(ctk.CTkFrame):
         self.tree.pack(fill="both", expand=True, padx=2, pady=2)
 
     def load_data(self):
-        db.cursor.execute("""
+        self.all_data = db.execute_query(
+            """
             SELECT b.id, c.full_name, b.room_id, b.checkin_date, b.checkout_date, b.total_price, b.status 
             FROM bookings b
             JOIN customers c ON b.customer_id = c.customer_id
             WHERE b.status NOT IN ('Completed', 'Cancelled')
-            """)
-        self.all_data = db.cursor.fetchall()
+            """,
+            fetch=True,
+        )
         self.display_data(self.all_data)
 
     def display_data(self, data_list):
@@ -180,10 +182,11 @@ class ReceptionFrame(ctk.CTkFrame):
             return messagebox.showerror("Lỗi", "Đơn này đã được xử lý rồi!")
 
         if messagebox.askyesno("Xác nhận", "Sếp đồng ý giữ chỗ cho khách này?"):
-            db.cursor.execute(
-                "UPDATE bookings SET status='Confirmed' WHERE id=?", (b_id,)
+            db.execute_query(
+                "UPDATE bookings SET status='Confirmed' WHERE id=?",
+                (b_id,),
+                commit=True,
             )
-            db.conn.commit()
             self.load_data()
 
     def check_in(self):
@@ -200,13 +203,14 @@ class ReceptionFrame(ctk.CTkFrame):
             )
 
         if messagebox.askyesno("Xác nhận", f"Cho khách nhận phòng {rm_id}?"):
-            db.cursor.execute(
-                "UPDATE bookings SET status='Stay-in' WHERE id=?", (b_id,)
+            db.execute_query(
+                "UPDATE bookings SET status='Stay-in' WHERE id=?", (b_id,), commit=True
             )
-            db.cursor.execute(
-                "UPDATE rooms SET status='Đã đặt' WHERE room_id=?", (rm_id,)
+            db.execute_query(
+                "UPDATE rooms SET status='Đã đặt' WHERE room_id=?",
+                (rm_id,),
+                commit=True,
             )
-            db.conn.commit()
             self.load_data()
 
     def check_out(self):
@@ -223,11 +227,11 @@ class ReceptionFrame(ctk.CTkFrame):
         try:
             import re
 
-            db.cursor.execute(
+            unpaid_orders = db.execute_query(
                 "SELECT items_detail, total_price, id FROM service_orders WHERE room_id=? AND status NOT IN ('Completed', 'Cancelled')",
                 (rm_id,),
+                fetch=True,
             )
-            unpaid_orders = db.cursor.fetchall()
 
             room_charge = float(re.sub(r"[^\d]", "", price))
             services_charge = 0
@@ -258,38 +262,49 @@ class ReceptionFrame(ctk.CTkFrame):
                 )
 
             if messagebox.askyesno("Thanh toán", msg):
-                db.cursor.execute(
-                    "SELECT location FROM rooms WHERE room_id=?", (rm_id,)
+                loc_res = db.execute_query(
+                    "SELECT location FROM rooms WHERE room_id=?",
+                    (rm_id,),
+                    fetchone=True,
                 )
-                loc = db.cursor.fetchone()[0]
+                loc = loc_res[0] if loc_res else "Đà Nẵng"
 
-                db.cursor.execute(
+                db.execute_query(
                     "INSERT INTO revenue_history (date, amount, location) VALUES (?,?,?)",
                     (datetime.now().strftime("%Y-%m-%d"), final_bill, loc),
+                    commit=True,
                 )
-                db.cursor.execute(
-                    "SELECT customer_id FROM bookings WHERE id=?", (b_id,)
-                )
-                cust_id = db.cursor.fetchone()[0]
 
-                db.cursor.execute(
+                cust_id_res = db.execute_query(
+                    "SELECT customer_id FROM bookings WHERE id=?",
+                    (b_id,),
+                    fetchone=True,
+                )
+                cust_id = cust_id_res[0] if cust_id_res else None
+
+                db.execute_query(
                     "UPDATE customers SET total_spending = total_spending + ? WHERE customer_id=?",
                     (final_bill, cust_id),
+                    commit=True,
                 )
-                db.cursor.execute(
-                    "UPDATE bookings SET status='Completed' WHERE id=?", (b_id,)
+                db.execute_query(
+                    "UPDATE bookings SET status='Completed' WHERE id=?",
+                    (b_id,),
+                    commit=True,
                 )
-                db.cursor.execute(
-                    "UPDATE rooms SET status='Đang dọn' WHERE room_id=?", (rm_id,)
+                db.execute_query(
+                    "UPDATE rooms SET status='Đang dọn' WHERE room_id=?",
+                    (rm_id,),
+                    commit=True,
                 )
 
                 for o_id in order_ids:
-                    db.cursor.execute(
+                    db.execute_query(
                         "UPDATE service_orders SET status='Completed' WHERE id=?",
                         (o_id,),
+                        commit=True,
                     )
 
-                db.conn.commit()
                 messagebox.showinfo(
                     "Thành công",
                     "Đã thanh toán hóa đơn và hoàn tất Check-out cho khách thành công!",
@@ -304,13 +319,14 @@ class ReceptionFrame(ctk.CTkFrame):
             return
         b_id, _, rm_id, _, _, _, _ = self.tree.item(item, "values")
         if messagebox.askyesno("Hủy đơn", "Sếp chắc chắn muốn hủy đơn này?"):
-            db.cursor.execute(
-                "UPDATE bookings SET status='Cancelled' WHERE id=?", (b_id,)
+            db.execute_query(
+                "UPDATE bookings SET status='Cancelled' WHERE id=?",
+                (b_id,),
+                commit=True,
             )
-            db.cursor.execute(
-                "UPDATE rooms SET status='Trống' WHERE room_id=?", (rm_id,)
+            db.execute_query(
+                "UPDATE rooms SET status='Trống' WHERE room_id=?", (rm_id,), commit=True
             )
-            db.conn.commit()
             self.load_data()
 
     def on_hide(self):

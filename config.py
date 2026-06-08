@@ -1,11 +1,13 @@
 import customtkinter as ctk
 import os
+import sys
 
-ctk.set_appearance_mode("dark")
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
 IMAGE_DIR = os.path.join(BASE_DIR, "images")
 MUSIC_DIR = os.path.join(BASE_DIR, "musics")
+DB_PATH = os.path.join(BASE_DIR, "dreamstay.db")
+
+ctk.set_appearance_mode("dark")
 
 COLOR_CREAM = "#1a1a2e"
 COLOR_WHITE = "#252538"

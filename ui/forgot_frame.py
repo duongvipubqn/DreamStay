@@ -92,15 +92,16 @@ class ForgotFrame(ctk.CTkFrame):
         if p != c:
             return messagebox.showerror("Lỗi", "Mật khẩu mới không trùng khớp!")
 
-        db.cursor.execute("SELECT * FROM users WHERE username=?", (u,))
-        if not db.cursor.fetchone():
+        res = db.execute_query(
+            "SELECT 1 FROM users WHERE username=?", (u,), fetchone=True
+        )
+        if not res:
             return messagebox.showerror("Lỗi", "Tên đăng nhập không tồn tại!")
 
         hashed_pw = db.hash_password(p, u)
-        db.cursor.execute(
-            "UPDATE users SET password=? WHERE username=?", (hashed_pw, u)
+        db.execute_query(
+            "UPDATE users SET password=? WHERE username=?", (hashed_pw, u), commit=True
         )
-        db.conn.commit()
         messagebox.showinfo("Thành công", "Mật khẩu đã được thay đổi thành công!")
 
         app = self.winfo_toplevel()

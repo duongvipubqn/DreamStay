@@ -3,13 +3,12 @@ import hashlib
 import os
 import pandas as pd
 import numpy as np
+from config import BASE_DIR, DB_PATH
 
 
 class Database:
     def __init__(self):
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(base_dir, "dreamstay.db")
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(DB_PATH)
         self.cursor = self.conn.cursor()
         self.create_tables()
         self.seed_manager()
@@ -24,9 +23,7 @@ class Database:
         return hashlib.sha256(salted_pass.encode()).hexdigest()
 
     def get_connection(self):
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(base_dir, "dreamstay.db")
-        return sqlite3.connect(db_path)
+        return sqlite3.connect(DB_PATH)
 
     def execute_query(
         self, query, params=(), fetch=False, fetchone=False, commit=False
@@ -278,12 +275,10 @@ class Database:
     def seed_from_csv(self):
         import csv
 
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-
         rooms_count = self.execute_query("SELECT COUNT(*) FROM rooms", fetchone=True)[0]
         if rooms_count == 0:
-            p1 = os.path.join(base_dir, "rooms.csv")
-            p2 = os.path.join(base_dir, "csv", "rooms.csv")
+            p1 = os.path.join(BASE_DIR, "rooms.csv")
+            p2 = os.path.join(BASE_DIR, "csv", "rooms.csv")
             csv_path = p1 if os.path.exists(p1) else p2
             if os.path.exists(csv_path):
                 try:
@@ -319,8 +314,8 @@ class Database:
             "SELECT COUNT(*) FROM customers", fetchone=True
         )[0]
         if cust_count == 0:
-            p1 = os.path.join(base_dir, "customers.csv")
-            p2 = os.path.join(base_dir, "csv", "customers.csv")
+            p1 = os.path.join(BASE_DIR, "customers.csv")
+            p2 = os.path.join(BASE_DIR, "csv", "customers.csv")
             csv_path = p1 if os.path.exists(p1) else p2
             if os.path.exists(csv_path):
                 try:
@@ -356,8 +351,8 @@ class Database:
             0
         ]
         if emp_count == 0:
-            p1 = os.path.join(base_dir, "employees.csv")
-            p2 = os.path.join(base_dir, "csv", "employees.csv")
+            p1 = os.path.join(BASE_DIR, "employees.csv")
+            p2 = os.path.join(BASE_DIR, "csv", "employees.csv")
             csv_path = p1 if os.path.exists(p1) else p2
             if os.path.exists(csv_path):
                 try:
@@ -395,8 +390,8 @@ class Database:
             0
         ]
         if inv_count == 0:
-            p1 = os.path.join(base_dir, "inventory.csv")
-            p2 = os.path.join(base_dir, "csv", "inventory.csv")
+            p1 = os.path.join(BASE_DIR, "inventory.csv")
+            p2 = os.path.join(BASE_DIR, "csv", "inventory.csv")
             csv_path = p1 if os.path.exists(p1) else p2
             if os.path.exists(csv_path):
                 try:

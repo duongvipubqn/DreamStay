@@ -108,11 +108,11 @@ class RegisterFrame(ctk.CTkFrame):
             return messagebox.showerror("Lỗi", "Mật khẩu không khớp!")
         try:
             hashed_pw = db.hash_password(d["pass"], d["username"])
-            db.cursor.execute(
+            db.execute_query(
                 "INSERT INTO users (full_name, username, email, phone, password, role) VALUES (?,?,?,?,?,?)",
                 (d["name"], d["username"], d["email"], d["phone"], hashed_pw, "user"),
+                commit=True,
             )
-            db.conn.commit()
             messagebox.showinfo(
                 "Xong", "Đăng ký thành công! Bạn có thể đăng nhập ngay."
             )

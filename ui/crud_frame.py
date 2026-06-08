@@ -509,129 +509,216 @@ class CRUDFrame(ctk.CTkFrame):
         path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
         if not path:
             return
-        try:
+
+        loading_win = ctk.CTkToplevel(self)
+        loading_win.title("Đang nhập dữ liệu")
+        w, h = 300, 150
+        loading_win.update_idletasks()
+        main_win = self.winfo_toplevel()
+        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
+        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
+        loading_win.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
+        loading_win.configure(fg_color=COLOR_CREAM)
+        loading_win.transient(self.winfo_toplevel())
+        loading_win.grab_set()
+        loading_win.resizable(False, False)
+
+        ctk.CTkLabel(
+            loading_win,
+            text="🔄 Đang phân tích & nhập dữ liệu...",
+            font=FONT_BODY_BOLD,
+            text_color=COLOR_TEXT,
+        ).pack(pady=30)
+
+        progress = ctk.CTkProgressBar(loading_win, width=200, progress_color=COLOR_GOLD)
+        progress.pack(pady=5)
+        progress.start()
+
+        def worker():
             import pandas as pd
+            import json
 
-            df = pd.read_csv(path, encoding="utf-8-sig")
-            if df.empty:
-                messagebox.showerror("Lỗi", "File CSV rỗng!")
-                return
+            try:
+                df = pd.read_csv(path, encoding="utf-8-sig")
+                if df.empty:
 
-            header_text = "".join(df.columns).lower()
-            if self.table_name == "rooms" and not any(
-                x in header_text for x in ["phòng", "room"]
-            ):
-                messagebox.showerror(
-                    "Sai file dữ liệu", "File CSV này không chứa dữ liệu Phòng nghỉ!"
-                )
-                return
-            elif self.table_name == "customers" and not any(
-                x in header_text for x in ["kh", "khách", "chi tiêu"]
-            ):
-                messagebox.showerror(
-                    "Sai file dữ liệu", "File CSV này không chứa dữ liệu Khách hàng!"
-                )
-                return
-            elif self.table_name == "employees" and not any(
-                x in header_text for x in ["nv", "nhân viên", "chức vụ", "lương"]
-            ):
-                messagebox.showerror(
-                    "Sai file dữ liệu", "File CSV này không chứa dữ liệu Nhân viên!"
-                )
-                return
-            elif self.table_name == "inventory" and not any(
-                x in header_text for x in ["món", "tồn", "danh mục", "inventory"]
-            ):
-                messagebox.showerror(
-                    "Sai file dữ liệu", "File CSV này không chứa dữ liệu Kho hàng!"
-                )
-                return
-
-            inserted_count = 0
-            updated_count = 0
-            col_names = db.get_column_names(self.table_name)
-            id_col = col_names[0]
-            app = self.winfo_toplevel()
-            username = getattr(app, "current_username", "system")
-
-            for _, row_series in df.iterrows():
-                row = [str(val).strip() for val in row_series.values]
-                if len(row) == len(self.columns):
-                    if self.table_name == "rooms":
+                    def error_empty():
                         try:
-                            if float(row[5]) <= 0:
-                                continue
-                        except ValueError:
-                            continue
-                    elif self.table_name == "employees":
-                        if not row[4].isdigit():
-                            continue
+                            loading_win.grab_release()
+                        except:
+                            pass
                         try:
-                            if float(row[5]) <= 0:
-                                continue
-                        except ValueError:
-                            continue
-                    elif self.table_name == "customers":
-                        if "@" not in row[2] or "." not in row[2]:
-                            continue
-                        if not row[3].isdigit():
-                            continue
+                            loading_win.destroy()
+                        except:
+                            pass
+                        messagebox.showerror(
+                            "Lỗi", "File CSV rỗng!", parent=self.winfo_toplevel()
+                        )
+
+                    self.after(0, error_empty)
+                    return
+
+                header_text = "".join(df.columns).lower()
+                is_valid = True
+                err_msg = ""
+                if self.table_name == "rooms" and not any(
+                    x in header_text for x in ["phòng", "room"]
+                ):
+                    is_valid = False
+                    err_msg = "File CSV này không chứa dữ liệu Phòng nghỉ!"
+                elif self.table_name == "customers" and not any(
+                    x in header_text for x in ["kh", "khách", "chi tiêu"]
+                ):
+                    is_valid = False
+                    err_msg = "File CSV này không chứa dữ liệu Khách hàng!"
+                elif self.table_name == "employees" and not any(
+                    x in header_text for x in ["nv", "nhân viên", "chức vụ", "lương"]
+                ):
+                    is_valid = False
+                    err_msg = "File CSV này không chứa dữ liệu Nhân viên!"
+                elif self.table_name == "inventory" and not any(
+                    x in header_text for x in ["món", "tồn", "danh mục", "inventory"]
+                ):
+                    is_valid = False
+                    err_msg = "File CSV này không chứa dữ liệu Kho hàng!"
+
+                if not is_valid:
+
+                    def error_header():
                         try:
-                            if float(row[5]) < 0:
-                                continue
-                        except ValueError:
-                            continue
-                    elif self.table_name == "inventory":
+                            loading_win.grab_release()
+                        except:
+                            pass
                         try:
-                            if float(row[3]) <= 0 or int(row[4]) < 0:
+                            loading_win.destroy()
+                        except:
+                            pass
+                        messagebox.showerror(
+                            "Sai file dữ liệu", err_msg, parent=self.winfo_toplevel()
+                        )
+
+                    self.after(0, error_header)
+                    return
+
+                inserted_count = 0
+                updated_count = 0
+                col_names = db.get_column_names(self.table_name)
+                id_col = col_names[0]
+                app = self.winfo_toplevel()
+                username = getattr(app, "current_username", "system")
+
+                for _, row_series in df.iterrows():
+                    row = [str(val).strip() for val in row_series.values]
+                    if len(row) == len(self.columns):
+                        if self.table_name == "rooms":
+                            try:
+                                if float(row[5]) <= 0:
+                                    continue
+                            except ValueError:
                                 continue
-                        except ValueError:
-                            continue
+                        elif self.table_name == "employees":
+                            if not row[4].isdigit():
+                                continue
+                            try:
+                                if float(row[5]) <= 0:
+                                    continue
+                            except ValueError:
+                                continue
+                        elif self.table_name == "customers":
+                            if "@" not in row[2] or "." not in row[2]:
+                                continue
+                            if not row[3].isdigit():
+                                continue
+                            try:
+                                if float(row[5]) < 0:
+                                    continue
+                            except ValueError:
+                                continue
+                        elif self.table_name == "inventory":
+                            try:
+                                if float(row[3]) <= 0 or int(row[4]) < 0:
+                                    continue
+                            except ValueError:
+                                continue
 
-                    row = self.cast_row_types(row)
+                        row = self.cast_row_types(row)
 
-                    if db.record_exists(self.table_name, id_col, row[0]):
-                        old_record = db.execute_query(
-                            f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
-                            (row[0],),
-                            fetchone=True,
-                        )
-                        old_json = (
-                            json.dumps(old_record, ensure_ascii=False)
-                            if old_record
-                            else None
-                        )
-                        db.update_record(self.table_name, col_names, row, row[0])
-                        db.log_action(
-                            username,
-                            "UPDATE_CSV",
-                            self.table_name,
-                            row[0],
-                            old_json,
-                            json.dumps(row, ensure_ascii=False),
-                        )
-                        updated_count += 1
-                    else:
-                        db.insert_record(self.table_name, row)
-                        db.log_action(
-                            username,
-                            "INSERT_CSV",
-                            self.table_name,
-                            row[0],
-                            None,
-                            json.dumps(row, ensure_ascii=False),
-                        )
-                        inserted_count += 1
+                        if db.record_exists(self.table_name, id_col, row[0]):
+                            old_record = db.execute_query(
+                                f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
+                                (row[0],),
+                                fetchone=True,
+                            )
+                            old_json = (
+                                json.dumps(old_record, ensure_ascii=False)
+                                if old_record
+                                else None
+                            )
+                            db.update_record(self.table_name, col_names, row, row[0])
+                            db.log_action(
+                                username,
+                                "UPDATE_CSV",
+                                self.table_name,
+                                row[0],
+                                old_json,
+                                json.dumps(row, ensure_ascii=False),
+                            )
+                            updated_count += 1
+                        else:
+                            db.insert_record(self.table_name, row)
+                            db.log_action(
+                                username,
+                                "INSERT_CSV",
+                                self.table_name,
+                                row[0],
+                                None,
+                                json.dumps(row, ensure_ascii=False),
+                            )
+                            inserted_count += 1
 
-            self.load_data()
-            messagebox.showinfo(
-                "Thành công",
-                f"Đã xử lý xong dữ liệu CSV bằng Pandas!\n"
-                f"- Thêm mới: {inserted_count} dòng\n"
-                f"- Cập nhật đè: {updated_count} dòng",
-            )
-        except Exception as e:
-            messagebox.showerror("Lỗi", f"Không thể đọc file: {str(e)}")
+                def success_ui():
+                    try:
+                        loading_win.grab_release()
+                    except:
+                        pass
+                    try:
+                        loading_win.destroy()
+                    except:
+                        pass
+                    self.load_data()
+                    messagebox.showinfo(
+                        "Thành công",
+                        f"Đã xử lý xong dữ liệu CSV bằng Pandas!\n"
+                        f"- Thêm mới: {inserted_count} dòng\n"
+                        f"- Cập nhật đè: {updated_count} dòng",
+                        parent=self.winfo_toplevel(),
+                    )
+
+                self.after(0, success_ui)
+
+            except Exception as e:
+                err_str = str(e)
+
+                def error_catch():
+                    try:
+                        loading_win.grab_release()
+                    except:
+                        pass
+                    try:
+                        loading_win.destroy()
+                    except:
+                        pass
+                    messagebox.showerror(
+                        "Lỗi",
+                        f"Không thể đọc file: {err_str}",
+                        parent=self.winfo_toplevel(),
+                    )
+
+                self.after(0, error_catch)
+
+        import threading
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def cast_row_types(self, row):
         vals_cast = list(row)

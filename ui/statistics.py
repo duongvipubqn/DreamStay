@@ -82,12 +82,9 @@ class StatisticsFrame(ctk.CTkFrame):
             import os
             import pandas as pd
             import numpy as np
+            from config import DB_PATH
 
-            db_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                "dreamstay.db",
-            )
-            local_conn = sqlite3.connect(db_path)
+            local_conn = sqlite3.connect(DB_PATH)
             local_cursor = local_conn.cursor()
 
             try:

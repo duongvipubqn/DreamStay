@@ -37,10 +37,10 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
             text_color=COLOR_GOLD,
             font=FONT_BODY_BOLD,
             command=go_back,
-        ).pack(anchor="w", padx=50, pady=20)
+        ).pack(anchor="w", padx=250, pady=20)
 
         main_container = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=20)
-        main_container.pack(fill="x", padx=50, pady=10)
+        main_container.pack(fill="x", padx=250, pady=10)
 
         left_p = ctk.CTkFrame(main_container, fg_color="transparent")
         left_p.pack(side="left", padx=30, pady=30, anchor="n")
@@ -300,30 +300,9 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
             d_out_dt = datetime.strptime(self.entry_out.get(), "%d/%m/%Y")
             stay_days = (d_out_dt - d_in_dt).days
 
-            level, limits = db.get_user_level_info(curr_user)
-            active_bookings = db.count_active_bookings(curr_user)
-
-            if stay_days > limits["max_days"]:
-                return messagebox.showerror(
-                    "Từ chối",
-                    f"Tối đa {limits['max_days']} ngày cho hạng {limits['label']}",
-                )
-
-            if active_bookings >= limits["max_rooms"]:
-                return messagebox.showerror(
-                    "Từ chối",
-                    f"Hạng {limits['label']} chỉ được đặt tối đa {limits['max_rooms']} phòng!",
-                )
-
-            d_in = d_in_dt.strftime("%Y-%m-%d")
-            d_out = d_out_dt.strftime("%Y-%m-%d")
-
-            if not db.is_room_available(self.room_data[0], d_in, d_out):
-                return messagebox.showerror(
-                    "Hết chỗ", "Khoảng thời gian này đã có người đặt!"
-                )
-
             curr_username = getattr(app, "current_username", None)
+            level, limits = db.get_user_level_info(curr_user)
+
             user_info = db.execute_query(
                 "SELECT email, phone FROM users WHERE username=?",
                 (curr_username,),

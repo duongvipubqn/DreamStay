@@ -111,11 +111,11 @@ class LoginFrame(ctk.CTkFrame):
     def login(self):
         u, p = self.user_entry.get(), self.pass_entry.get()
         hashed_pw = db.hash_password(p, u)
-        db.cursor.execute(
+        res = db.execute_query(
             "SELECT username, full_name, role FROM users WHERE username=? AND password=?",
             (u, hashed_pw),
+            fetchone=True,
         )
-        res = db.cursor.fetchone()
         if res:
             app = self.winfo_toplevel()
             func = getattr(app, "login_success", None)
