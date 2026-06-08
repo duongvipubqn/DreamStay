@@ -335,11 +335,8 @@ class MainFrame(ctk.CTkFrame):
 
             try:
                 hashed_pw = db.hash_password(vals["pw"], vals["user"])
-                db.cursor.execute(
-                    """
-                                  INSERT INTO users (full_name, username, email, phone, password, role)
-                                  VALUES (?, ?, ?, ?, ?, ?)
-                                  """,
+                db.execute_query(
+                    "INSERT INTO users (full_name, username, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?)",
                     (
                         vals["name"],
                         vals["user"],
@@ -348,8 +345,8 @@ class MainFrame(ctk.CTkFrame):
                         hashed_pw,
                         "staff",
                     ),
+                    commit=True,
                 )
-                db.conn.commit()
                 messagebox.showinfo(
                     "Thành công", f"Đã cấp tài khoản cho nhân viên: {vals['name']}"
                 )
@@ -386,8 +383,10 @@ class MainFrame(ctk.CTkFrame):
             modal, text="🎁 TẶNG VOUCHER MỚI", font=FONT_TITLE, text_color=COLOR_GOLD
         ).pack(pady=30)
 
-        db.cursor.execute("SELECT username FROM users WHERE role='user'")
-        user_list = [r[0] for r in db.cursor.fetchall()]
+        res_users = db.execute_query(
+            "SELECT username FROM users WHERE role='user'", fetch=True
+        )
+        user_list = [r[0] for r in res_users] if res_users else []
         if not user_list:
             user_list = ["Chưa có khách hàng"]
 
@@ -433,14 +432,11 @@ class MainFrame(ctk.CTkFrame):
                 return messagebox.showwarning("Lỗi", "Vui lòng nhập đủ thông tin!")
 
             try:
-                db.cursor.execute(
-                    """
-                                  INSERT INTO user_coupons (username, code, description, discount_percent)
-                                  VALUES (?, ?, ?, ?)
-                                  """,
+                db.execute_query(
+                    "INSERT INTO user_coupons (username, code, description, discount_percent) VALUES (?, ?, ?, ?)",
                     (target, code.upper(), desc, int(perc)),
+                    commit=True,
                 )
-                db.conn.commit()
                 messagebox.showinfo(
                     "Thành công", f"Đã tặng voucher {code} cho {target}!"
                 )
@@ -506,7 +502,7 @@ class MainFrame(ctk.CTkFrame):
         progress.start()
 
         def worker():
-            time.sleep(3)
+            time.sleep(1.0)
             try:
                 response = requests.get(
                     "https://open.er-api.com/v6/latest/USD", timeout=5

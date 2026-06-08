@@ -1,8 +1,12 @@
 import customtkinter as ctk
-import os
 import sys
+import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+if getattr(sys, "frozen", False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 IMAGE_DIR = os.path.join(BASE_DIR, "images")
 MUSIC_DIR = os.path.join(BASE_DIR, "musics")
 DB_PATH = os.path.join(BASE_DIR, "dreamstay.db")

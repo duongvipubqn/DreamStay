@@ -152,12 +152,20 @@ class HotelApp(ctk.CTk):
             try:
                 with open("session.txt", "rb") as f:
                     encoded_data = f.read()
-                    decoded_str = base64.b64decode(encoded_data).decode("utf-8")
-                    data = decoded_str.split("|")
-                    if len(data) == 3:
-                        self.login_success(
-                            data[0], data[1], data[2], save_session=False
-                        )
+                import uuid
+                import hashlib
+                import base64
+
+                mac = str(uuid.getnode())
+                salt = "DreamStaySessionSalt2026"
+                key = hashlib.sha256((mac + salt).encode()).digest()
+                encrypted_bytes = bytearray(base64.b64decode(encoded_data))
+                for i in range(len(encrypted_bytes)):
+                    encrypted_bytes[i] ^= key[i % len(key)]
+                decoded_str = encrypted_bytes.decode("utf-8")
+                data = decoded_str.split("|")
+                if len(data) == 3:
+                    self.login_success(data[0], data[1], data[2], save_session=False)
             except Exception:
                 pass
 
@@ -172,9 +180,19 @@ class HotelApp(ctk.CTk):
 
         if save_session:
             raw_str = f"{username}|{name}|{role}"
-            encoded_bytes = base64.b64encode(raw_str.encode("utf-8"))
+            import uuid
+            import hashlib
+            import base64
+
+            mac = str(uuid.getnode())
+            salt = "DreamStaySessionSalt2026"
+            key = hashlib.sha256((mac + salt).encode()).digest()
+            encrypted_bytes = bytearray(raw_str.encode("utf-8"))
+            for i in range(len(encrypted_bytes)):
+                encrypted_bytes[i] ^= key[i % len(key)]
+            encoded_b64 = base64.b64encode(encrypted_bytes)
             with open("session.txt", "wb") as f:
-                f.write(encoded_bytes)
+                f.write(encoded_b64)
 
         self.header.update_user_avatar(username)
         self.header.update_menu(True, role)

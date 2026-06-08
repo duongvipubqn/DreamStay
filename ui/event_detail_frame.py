@@ -179,22 +179,23 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
                 clean_initials = re.sub(r"[^\w]", "", initials)
                 code = f"EV_{clean_initials}"
 
-                db.cursor.execute(
+                res_exists = db.execute_query(
                     "SELECT 1 FROM user_coupons WHERE username=? AND code=?",
                     (curr_username, code),
+                    fetchone=True,
                 )
-                if db.cursor.fetchone():
+                if res_exists:
                     messagebox.showinfo(
                         "Thông báo",
                         f"Sếp đã đăng ký tham gia sự kiện '{title}' trước đó rồi!",
                     )
                     return
 
-                db.cursor.execute(
+                db.execute_query(
                     "INSERT INTO user_coupons (username, code, description, discount_percent) VALUES (?,?,?,?)",
                     (curr_username, code, f"Voucher qua tang tu su kien: {title}", 15),
+                    commit=True,
                 )
-                db.conn.commit()
 
                 messagebox.showinfo(
                     "Thành công",
