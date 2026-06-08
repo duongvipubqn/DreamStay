@@ -111,7 +111,13 @@ class MgmtLogFrame(ctk.CTkFrame):
         for r in self.pms_tree.get_children():
             self.pms_tree.delete(r)
         pms_data = db.execute_query(
-            "SELECT id, customer_name, room_id, checkin_date, checkout_date, total_price FROM bookings WHERE status='Completed' ORDER BY id DESC",
+            """
+            SELECT b.id, c.full_name, b.room_id, b.checkin_date, b.checkout_date, b.total_price 
+            FROM bookings b
+            JOIN customers c ON b.customer_id = c.customer_id
+            WHERE b.status='Completed' 
+            ORDER BY b.id DESC
+            """,
             fetch=True,
         )
         for row in pms_data:

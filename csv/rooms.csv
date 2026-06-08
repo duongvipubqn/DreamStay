@@ -1,4 +1,4 @@
-Mã Phòng,Địa điểm,Loại Phòng,Tình Trạng,Sức Chứa,Giá (VNĐ)
+ID,Địa Điểm,Loại Phòng,Tình Trạng,Sức Chứa,Giá (VNĐ)
 R101,Đà Lạt,Suite Cao Cấp,Đã đặt,2 người,5000000
 R102,Hồ Chí Minh,Standard Hướng Vườn,Trống,1 người,1500000
 R103,Hà Nội,Presidential Suite,Bảo trì,+4 người,25000000

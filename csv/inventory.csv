@@ -1,0 +1,33 @@
+ID,Danh Mục,Tên Món,Giá (VNĐ),Số Lượng Tồn
+I001,Rượu Vang Đỏ Cao Cấp,Chateau Margaux 2015,5500000,10
+I002,Rượu Vang Đỏ Cao Cấp,Penfolds Bin 389,2800000,15
+I003,Rượu Vang Đỏ Cao Cấp,Casillero del Diablo,850000,30
+I004,Bia Nhập Khẩu,Heineken Silver,45000,100
+I005,Bia Nhập Khẩu,Tiger Crystal,40000,120
+I006,Bia Nhập Khẩu,Bia Thủ Công IPA,95000,50
+I007,Bia Nhập Khẩu,Corona Extra,55000,80
+I008,Nước Ngọt & Soda,Coca Cola Classic,25000,200
+I009,Nước Ngọt & Soda,Pepsi Black,25000,200
+I010,Nước Ngọt & Soda,7Up Lemon,25000,150
+I011,Nước Ngọt & Soda,Sprite,25000,150
+I012,Nước Ngọt & Soda,Schweppes Soda,30000,100
+I013,Champagne Sang Trọng,Moët & Chandon,3500000,8
+I014,Champagne Sang Trọng,Dom Pérignon,8200000,5
+I015,Champagne Sang Trọng,Veuve Clicquot,4100000,12
+I016,Nước Ép Trái Cây,Nước Ép Cam Tươi,65000,50
+I017,Nước Ép Trái Cây,Nước Ép Dưa Hấu,60000,50
+I018,Nước Ép Trái Cây,Nước Ép Thơm,60000,50
+I019,Nước Ép Trái Cây,Sinh Tố Bơ,85000,30
+I020,Nước Khoáng Tinh Khiết,Lavie 500ml,15000,300
+I021,Nước Khoáng Tinh Khiết,Aquafina 500ml,15000,300
+I022,Nước Khoáng Tinh Khiết,Evian Glass Bottle,110000,50
+I023,Nước Khoáng Tinh Khiết,Perrier Sparkling,95000,60
+I024,Cà Phê Đặc Sản,Cà Phê Phin Truyền Thống,45000,100
+I025,Cà Phê Đặc Sản,Espresso Macchiato,55000,80
+I026,Cà Phê Đặc Sản,Cappuccino Cốt Dừa,65000,60
+I027,Trà Hoa Thượng Hạng,Trà Sen Tây Hồ,75000,50
+I028,Trà Hoa Thượng Hạng,Trà Hoa Cúc Mật Ong,60000,70
+I029,Trà Hoa Thượng Hạng,Trà Đào Cam Sả,65000,80
+I030,Bánh Ngọt Pháp,Bánh Croissant Bơ Tỏi,45000,40
+I031,Bánh Ngọt Pháp,Bánh Mousse Sô-cô-la,55000,30
+I032,Bánh Ngọt Pháp,Bánh Macaron Sắc Màu,65000,50

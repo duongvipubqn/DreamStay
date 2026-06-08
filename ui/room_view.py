@@ -624,10 +624,20 @@ class RoomView(ctk.CTkScrollableFrame):
                 code, disc = active_coupon
                 total = total - (total * (disc / 100.0))
 
+            curr_username = getattr(app, "current_username", "system")
+            curr_user = getattr(app, "current_user", "Unknown")
+            user_info = db.execute_query(
+                "SELECT email, phone FROM users WHERE username=?",
+                (curr_username,),
+                fetchone=True,
+            )
+            u_email, u_phone = user_info if user_info else ("", "")
+            db.ensure_customer_profile(curr_username, curr_user, u_email, u_phone)
+
             db.cursor.execute(
-                "INSERT INTO bookings (customer_name, room_id, checkin_date, checkout_date, total_price, status) VALUES (?,?,?,?,?,?)",
+                "INSERT INTO bookings (customer_id, room_id, checkin_date, checkout_date, total_price, status) VALUES (?,?,?,?,?,?)",
                 (
-                    getattr(app, "current_user", "Unknown"),
+                    curr_username,
                     room_data[0],
                     d_in,
                     d_out,

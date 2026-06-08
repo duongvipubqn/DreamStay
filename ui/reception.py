@@ -140,9 +140,12 @@ class ReceptionFrame(ctk.CTkFrame):
         self.tree.pack(fill="both", expand=True, padx=2, pady=2)
 
     def load_data(self):
-        db.cursor.execute(
-            "SELECT id, customer_name, room_id, checkin_date, checkout_date, total_price, status FROM bookings WHERE status NOT IN ('Completed', 'Cancelled')"
-        )
+        db.cursor.execute("""
+            SELECT b.id, c.full_name, b.room_id, b.checkin_date, b.checkout_date, b.total_price, b.status 
+            FROM bookings b
+            JOIN customers c ON b.customer_id = c.customer_id
+            WHERE b.status NOT IN ('Completed', 'Cancelled')
+            """)
         self.all_data = db.cursor.fetchall()
         self.display_data(self.all_data)
 
@@ -265,8 +268,13 @@ class ReceptionFrame(ctk.CTkFrame):
                     (datetime.now().strftime("%Y-%m-%d"), final_bill, loc),
                 )
                 db.cursor.execute(
-                    "UPDATE customers SET total_spending = total_spending + ? WHERE full_name=?",
-                    (final_bill, cus),
+                    "SELECT customer_id FROM bookings WHERE id=?", (b_id,)
+                )
+                cust_id = db.cursor.fetchone()[0]
+
+                db.cursor.execute(
+                    "UPDATE customers SET total_spending = total_spending + ? WHERE customer_id=?",
+                    (final_bill, cust_id),
                 )
                 db.cursor.execute(
                     "UPDATE bookings SET status='Completed' WHERE id=?", (b_id,)

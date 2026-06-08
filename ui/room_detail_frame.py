@@ -323,12 +323,43 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
                     "Hết chỗ", "Khoảng thời gian này đã có người đặt!"
                 )
 
+            curr_username = getattr(app, "current_username", None)
+            user_info = db.execute_query(
+                "SELECT email, phone FROM users WHERE username=?",
+                (curr_username,),
+                fetchone=True,
+            )
+            u_email, u_phone = user_info if user_info else ("", "")
+            db.ensure_customer_profile(curr_username, curr_user, u_email, u_phone)
+
+            active_bookings = db.count_active_bookings(curr_username)
+
+            if stay_days > limits["max_days"]:
+                return messagebox.showerror(
+                    "Từ chối",
+                    f"Tối đa {limits['max_days']} ngày cho hạng {limits['label']}",
+                )
+
+            if active_bookings >= limits["max_rooms"]:
+                return messagebox.showerror(
+                    "Từ chối",
+                    f"Hạng {limits['label']} chỉ được đặt tối đa {limits['max_rooms']} phòng!",
+                )
+
+            d_in = d_in_dt.strftime("%Y-%m-%d")
+            d_out = d_out_dt.strftime("%Y-%m-%d")
+
+            if not db.is_room_available(self.room_data[0], d_in, d_out):
+                return messagebox.showerror(
+                    "Hết chỗ", "Khoảng thời gian này đã có người đặt!"
+                )
+
             db.cursor.execute(
                 """
-                INSERT INTO bookings (customer_name, room_id, checkin_date, checkout_date, total_price, status)
+                INSERT INTO bookings (customer_id, room_id, checkin_date, checkout_date, total_price, status)
                 VALUES (?, ?, ?, ?, ?, ?)
             """,
-                (curr_user, self.room_data[0], d_in, d_out, total, "Pending"),
+                (curr_username, self.room_data[0], d_in, d_out, total, "Pending"),
             )
             db.conn.commit()
 

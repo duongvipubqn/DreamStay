@@ -420,13 +420,21 @@ class Header(ctk.CTkFrame):
 
     def save_music_state(self):
         try:
-            state_str = f"{1 if self.is_playing else 0}|{self.cur_album}|{self.cur_track}|{self.volume_level}|{self.play_mode}"
+            if hasattr(self, "album_tracks"):
+                self.album_tracks[self.cur_album] = self.cur_track
+            else:
+                self.album_tracks = [0, 0, 0, 0, 0]
+                self.album_tracks[self.cur_album] = self.cur_track
+
+            tracks_str = ",".join(map(str, self.album_tracks))
+            state_str = f"{1 if self.is_playing else 0}|{self.cur_album}|{self.cur_track}|{self.volume_level}|{self.play_mode}|{tracks_str}"
             with open("music_state.txt", "w") as f:
                 f.write(state_str)
         except Exception:
             pass
 
     def load_music_state(self):
+        self.album_tracks = [0, 0, 0, 0, 0]
         if os.path.exists("music_state.txt"):
             try:
                 with open("music_state.txt", "r") as f:
@@ -436,10 +444,12 @@ class Header(ctk.CTkFrame):
                     self.cur_album = int(data[1])
                     self.cur_track = int(data[2])
                     self.volume_level = float(data[3])
-                    if len(data) == 5:
+                    if len(data) >= 5:
                         self.play_mode = int(data[4])
+                    if len(data) == 6:
+                        self.album_tracks = list(map(int, data[5].split(",")))
                     else:
-                        self.play_mode = 2
+                        self.album_tracks[self.cur_album] = self.cur_track
                     return True
             except Exception:
                 pass
@@ -529,8 +539,9 @@ class Header(ctk.CTkFrame):
 
     def next_album(self):
         self.prev_track_clicks = 0
+        self.album_tracks[self.cur_album] = self.cur_track
         self.cur_album = (self.cur_album + 1) % len(self.music_albums)
-        self.cur_track = 0
+        self.cur_track = self.album_tracks[self.cur_album]
         self.save_music_state()
         if self.is_playing:
             self.play_current()
@@ -539,8 +550,9 @@ class Header(ctk.CTkFrame):
 
     def prev_album(self):
         self.prev_track_clicks = 0
+        self.album_tracks[self.cur_album] = self.cur_track
         self.cur_album = (self.cur_album - 1) % len(self.music_albums)
-        self.cur_track = 0
+        self.cur_track = self.album_tracks[self.cur_album]
         self.save_music_state()
         if self.is_playing:
             self.play_current()

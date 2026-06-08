@@ -173,8 +173,8 @@ class ProfileFrame(ctk.CTkFrame):
             for i in self.tree.get_children():
                 self.tree.delete(i)
             db.cursor.execute(
-                "SELECT id, room_id, checkin_date, checkout_date, total_price, status FROM bookings WHERE customer_name=?",
-                (self.app.current_user,),
+                "SELECT id, room_id, checkin_date, checkout_date, total_price, status FROM bookings WHERE customer_id=?",
+                (self.app.current_username,),
             )
             for row in db.cursor.fetchall():
                 rid, r_id, cin, cout, prc, stt = row
