@@ -22,7 +22,7 @@ from ui.profile_frame import ProfileFrame
 
 class HotelApp(ctk.CTk):
     def __init__(self):
-        if not os.path.exists("User_Guide.pdf"):
+        if not os.path.exists("user_guide.pdf"):
             try:
                 pdf_data = (
                     b"%PDF-1.4\n"
@@ -144,6 +144,8 @@ class HotelApp(ctk.CTk):
         )
         self.chat_btn.place(relx=0.97, rely=0.93, anchor="se")
 
+        self.bind_all("<Control-BackSpace>", self.global_ctrl_backspace)
+
     def check_persistent_login(self):
         if os.path.exists("session.txt"):
             try:
@@ -212,6 +214,41 @@ class HotelApp(ctk.CTk):
         else:
             self.chat_win.deiconify()
             self.chat_win.lift()
+
+    def global_ctrl_backspace(self, event):
+        widget = event.widget
+        try:
+            if (
+                hasattr(widget, "selection_present")
+                and hasattr(widget, "index")
+                and hasattr(widget, "delete")
+            ):
+                if widget.selection_present():
+                    widget.delete("sel.first", "sel.last")
+                    return "break"
+                insert_idx = widget.index("insert")
+                if insert_idx == 0:
+                    return "break"
+                text = widget.get()[:insert_idx]
+                import re
+
+                match = re.search(r"(\s*\w+|\s+)\s*$", text)
+                if match:
+                    start_idx = insert_idx - len(match.group(0))
+                else:
+                    start_idx = 0
+                widget.delete(start_idx, insert_idx)
+                return "break"
+            elif hasattr(widget, "compare") and hasattr(widget, "delete"):
+                if widget.compare("insert", "==", "1.0"):
+                    return "break"
+                start_idx = widget.index("insert -1c wordstart")
+                if widget.index(start_idx) == widget.index("insert"):
+                    start_idx = widget.index("insert -1c")
+                widget.delete(start_idx, "insert")
+                return "break"
+        except:
+            pass
 
     def show_login(self):
         self.switch_page("Login")

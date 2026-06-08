@@ -32,15 +32,19 @@ class OrderMgmtFrame(ctk.CTkFrame):
         self.search_var = ctk.StringVar()
         self.search_var.trace_add("write", self.filter_data)
 
+        ctk.CTkLabel(
+            toolbar, text="🔍 Tìm kiếm:", font=FONT_BODY_BOLD, text_color=COLOR_GOLD
+        ).pack(side="left", padx=(20, 5), pady=15)
+
         ctk.CTkEntry(
             toolbar,
-            placeholder_text="Tìm kiếm nhanh...",
-            width=250,
+            placeholder_text="Nhập từ khóa cần tìm...",
+            width=220,
             textvariable=self.search_var,
             fg_color=COLOR_NAVY,
             border_color=COLOR_BORDER,
             text_color=COLOR_TEXT,
-        ).pack(side="left", padx=20, pady=15)
+        ).pack(side="left", padx=(0, 20), pady=15)
 
         btn_f = ctk.CTkFrame(toolbar, fg_color="transparent")
         btn_f.pack(side="right", padx=15)

@@ -23,9 +23,10 @@ class MainFrame(ctk.CTkFrame):
         self.voucher_grant_btn = None
 
         self.sidebar = ctk.CTkFrame(
-            self, width=260, fg_color=COLOR_NAVY, corner_radius=0
+            self, width=200, fg_color=COLOR_NAVY, corner_radius=0
         )
         self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
 
         self.content = ctk.CTkFrame(self, fg_color="transparent")
         self.content.pack(side="right", fill="both", expand=True, padx=20, pady=20)
@@ -105,6 +106,8 @@ class MainFrame(ctk.CTkFrame):
 
         ctk.CTkLabel(self.sidebar, text="", height=20).pack()
 
+        self.sidebar_buttons = {}
+
         for name in self.frames.keys():
             if name in ["Nhật Ký Hệ Thống", "Nhật Ký Quản Lý"]:
                 continue
@@ -120,54 +123,61 @@ class MainFrame(ctk.CTkFrame):
                 command=lambda n=name: self.switch(n),
             )
             btn.pack(pady=2, padx=15, fill="x")
+            self.sidebar_buttons[name] = btn
+
+        self.separator = ctk.CTkFrame(self.sidebar, height=2, fg_color=COLOR_BORDER)
 
         self.log_btn = ctk.CTkButton(
             self.sidebar,
             text="  Nhật Ký Hệ Thống",
-            fg_color="#8e44ad",
-            text_color="white",
-            hover_color="#732d91",
+            fg_color="transparent",
+            text_color="#ccc",
+            hover_color="#3a3a50",
             anchor="w",
             height=45,
             font=FONT_BODY_BOLD,
             command=lambda: self.switch("Nhật Ký Hệ Thống"),
         )
+        self.sidebar_buttons["Nhật Ký Hệ Thống"] = self.log_btn
 
         self.mgmt_log_btn = ctk.CTkButton(
             self.sidebar,
             text="  Nhật Ký Quản Lý",
-            fg_color="#e67e22",
-            text_color="white",
-            hover_color="#d35400",
+            fg_color="transparent",
+            text_color="#ccc",
+            hover_color="#3a3a50",
             anchor="w",
             height=45,
             font=FONT_BODY_BOLD,
             command=lambda: self.switch("Nhật Ký Quản Lý"),
         )
+        self.sidebar_buttons["Nhật Ký Quản Lý"] = self.mgmt_log_btn
 
         self.staff_reg_btn = ctk.CTkButton(
             self.sidebar,
             text="  Cấp TK Nhân Viên",
-            fg_color=COLOR_GOLD,
-            text_color="white",
-            hover_color=COLOR_GOLD_HOVER,
+            fg_color="transparent",
+            text_color="#ccc",
+            hover_color="#3a3a50",
             anchor="w",
             height=45,
             font=FONT_BODY_BOLD,
             command=self.open_staff_registration,
         )
+        self.sidebar_buttons["Cấp TK Nhân Viên"] = self.staff_reg_btn
 
         self.voucher_grant_btn = ctk.CTkButton(
             self.sidebar,
             text="  Tặng Voucher",
-            fg_color="#27ae60",
-            text_color="white",
-            hover_color="#219150",
+            fg_color="transparent",
+            text_color="#ccc",
+            hover_color="#3a3a50",
             anchor="w",
             height=45,
             font=FONT_BODY_BOLD,
             command=self.open_voucher_modal,
         )
+        self.sidebar_buttons["Tặng Voucher"] = self.voucher_grant_btn
 
         self.api_label = ctk.CTkLabel(
             self.sidebar,
@@ -238,11 +248,20 @@ class MainFrame(ctk.CTkFrame):
         for f in self.frames.values():
             f.pack_forget()
         self.frames[name].pack(fill="both", expand=True)
+
+        for b_name, btn in self.sidebar_buttons.items():
+            if b_name == name:
+                btn.configure(text_color=COLOR_GOLD)
+            else:
+                btn.configure(text_color="#ccc")
+
         if hasattr(self.frames[name], "load_data"):
             self.frames[name].load_data()
 
     def update_user(self, _name, role):
         self.current_role = role
+        if hasattr(self, "separator") and self.separator is not None:
+            self.separator.pack_forget()
         if self.staff_reg_btn is not None:
             self.staff_reg_btn.pack_forget()
         if self.voucher_grant_btn is not None:
@@ -253,6 +272,8 @@ class MainFrame(ctk.CTkFrame):
             self.mgmt_log_btn.pack_forget()
 
         if role == "manager":
+            if hasattr(self, "separator") and self.separator is not None:
+                self.separator.pack(fill="x", padx=20, pady=10)
             if hasattr(self, "log_btn") and self.log_btn is not None:
                 self.log_btn.pack(pady=2, padx=15, fill="x")
             if hasattr(self, "mgmt_log_btn") and self.mgmt_log_btn is not None:

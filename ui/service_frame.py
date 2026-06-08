@@ -346,11 +346,16 @@ class ServiceFrame(ctk.CTkScrollableFrame):
         search_container = ctk.CTkFrame(self.filter_frame, fg_color="transparent")
         search_container.pack(side="left", padx=(20, 10), pady=15)
 
-        ctk.CTkLabel(search_container, text=" ", font=FONT_BODY_BOLD).pack(anchor="w")
+        ctk.CTkLabel(
+            search_container,
+            text="🔍 Tìm kiếm:",
+            font=FONT_BODY_BOLD,
+            text_color=COLOR_GOLD,
+        ).pack(anchor="w")
 
         search_entry = ctk.CTkEntry(
             search_container,
-            placeholder_text="Tìm kiếm nhanh...",
+            placeholder_text="Nhập từ khóa cần tìm...",
             width=200,
             textvariable=self.search_var,
             fg_color=COLOR_NAVY,

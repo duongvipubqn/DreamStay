@@ -54,22 +54,61 @@ class ContactFrame(ctk.CTkFrame):
         ).pack(pady=(24, 12))
 
         self.name_entry = ctk.CTkEntry(
-            self.col1, placeholder_text="Họ và tên", height=44
+            self.col1,
+            placeholder_text="Họ và tên",
+            height=44,
+            fg_color="#181824",
+            border_width=0,
+            text_color=COLOR_TEXT,
+            placeholder_text_color="#888888",
         )
         self.name_entry.pack(pady=10, padx=20, fill="x")
 
-        self.email_entry = ctk.CTkEntry(self.col1, placeholder_text="Email", height=44)
+        self.email_entry = ctk.CTkEntry(
+            self.col1,
+            placeholder_text="Email",
+            height=44,
+            fg_color="#181824",
+            border_width=0,
+            text_color=COLOR_TEXT,
+            placeholder_text_color="#888888",
+        )
         self.email_entry.pack(pady=10, padx=20, fill="x")
 
         self.subject_entry = ctk.CTkEntry(
-            self.col1, placeholder_text="Chủ đề", height=44
+            self.col1,
+            placeholder_text="Chủ đề",
+            height=44,
+            fg_color="#181824",
+            border_width=0,
+            text_color=COLOR_TEXT,
+            placeholder_text_color="#888888",
         )
         self.subject_entry.pack(pady=10, padx=20, fill="x")
 
         self.message_box = ctk.CTkTextbox(
-            self.col1, height=180, border_width=1, border_color=COLOR_BORDER
+            self.col1,
+            height=180,
+            fg_color="#181824",
+            border_width=0,
+            text_color="#888888",
+            corner_radius=8,
         )
         self.message_box.pack(pady=10, padx=20, fill="both", expand=True)
+
+        def on_focus_in(event):
+            if self.message_box.get("1.0", "end-1c").strip() == "Nội dung tin nhắn":
+                self.message_box.delete("1.0", "end")
+                self.message_box.configure(text_color=COLOR_TEXT)
+
+        def on_focus_out(event):
+            if not self.message_box.get("1.0", "end-1c").strip():
+                self.message_box.insert("1.0", "Nội dung tin nhắn")
+                self.message_box.configure(text_color="#888888")
+
+        self.message_box.bind("<FocusIn>", on_focus_in)
+        self.message_box.bind("<FocusOut>", on_focus_out)
+        self.message_box.insert("1.0", "Nội dung tin nhắn")
 
         self.feedback_label = ctk.CTkLabel(
             self.col1,
@@ -290,7 +329,10 @@ class ContactFrame(ctk.CTkFrame):
         name = self.name_entry.get().strip()
         email = self.email_entry.get().strip()
         subject = self.subject_entry.get().strip()
-        message = self.message_box.get("1.0", "end").strip()
+        message = self.message_box.get("1.0", "end-1c").strip()
+
+        if message == "Nội dung tin nhắn":
+            message = ""
 
         if not name or not email or not message:
             self.feedback_label.configure(
@@ -317,6 +359,8 @@ class ContactFrame(ctk.CTkFrame):
             self.email_entry.delete(0, "end")
             self.subject_entry.delete(0, "end")
             self.message_box.delete("1.0", "end")
+            self.message_box.insert("1.0", "Nội dung tin nhắn")
+            self.message_box.configure(text_color="#888888")
         except Exception as e:
             self.feedback_label.configure(
                 text=f"Lỗi kết nối cơ sở dữ liệu: {str(e)}",
