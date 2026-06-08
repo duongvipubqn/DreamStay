@@ -54,7 +54,7 @@ class HotelApp(ctk.CTk):
                     b"0 -25 Td\n"
                     b"(6. EASTER EGGS: Phim tat am nhac an gia tri va hoan doi trang thai.) Tj\n"
                     b"0 -40 Td\n"
-                    b"(Luu y: Vui long dat file User_Guide.pdf ban scan goc vao thu muc de xem ban day du.) Tj\n"
+                    b"(Luu y: Vui long dat file user_guide.pdf ban scan goc vao thu muc de xem ban day du.) Tj\n"
                     b"ET\n"
                     b"endstream\n"
                     b"endobj\n"
@@ -71,7 +71,7 @@ class HotelApp(ctk.CTk):
                     b"1296\n"
                     b"%%EOF"
                 )
-                with open("User_Guide.pdf", "wb") as f:
+                with open("user_guide.pdf", "wb") as f:
                     f.write(pdf_data)
             except Exception:
                 pass
