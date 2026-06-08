@@ -304,3 +304,7 @@ class ReceptionFrame(ctk.CTkFrame):
             )
             db.conn.commit()
             self.load_data()
+
+    def on_hide(self):
+        if hasattr(self, "search_var"):
+            self.search_var.set("")

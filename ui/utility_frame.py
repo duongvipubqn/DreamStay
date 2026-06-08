@@ -344,3 +344,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             header = getattr(app, "header", None)
             if header and hasattr(header, "play_easter_egg"):
                 header.play_easter_egg("musics/Kamin.mp3", "Kamin")
+
+    def on_hide(self):
+        if hasattr(self, "search_var"):
+            self.search_var.set("")

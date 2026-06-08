@@ -687,3 +687,7 @@ class RoomView(ctk.CTkScrollableFrame):
 
         update_price()
         return None
+
+    def on_hide(self):
+        if hasattr(self, "search_var"):
+            self.search_var.set("")

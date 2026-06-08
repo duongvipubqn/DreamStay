@@ -145,6 +145,7 @@ class HotelApp(ctk.CTk):
         self.chat_btn.place(relx=0.97, rely=0.93, anchor="se")
 
         self.bind_all("<Control-BackSpace>", self.global_ctrl_backspace)
+        self.bind_all("<Button-1>", self.global_click_unfocus, add="+")
 
     def check_persistent_login(self):
         if os.path.exists("session.txt"):
@@ -214,6 +215,15 @@ class HotelApp(ctk.CTk):
         else:
             self.chat_win.deiconify()
             self.chat_win.lift()
+
+    def global_click_unfocus(self, event):
+        widget = event.widget
+        try:
+            class_name = widget.winfo_class()
+            if class_name in ["Frame", "Label", "Tk", "Toplevel", "Canvas"]:
+                widget.focus_set()
+        except:
+            pass
 
     def global_ctrl_backspace(self, event):
         widget = event.widget

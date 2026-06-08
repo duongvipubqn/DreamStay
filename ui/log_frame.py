@@ -223,3 +223,7 @@ class LogFrame(ctk.CTkFrame):
                 )
             except Exception as e:
                 messagebox.showerror("Lỗi", f"Không thể xóa nhật ký: {str(e)}")
+
+    def on_hide(self):
+        if hasattr(self, "search_var"):
+            self.search_var.set("")

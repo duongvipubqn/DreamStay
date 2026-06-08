@@ -654,3 +654,7 @@ class ServiceFrame(ctk.CTkScrollableFrame):
 
     def open_order_modal(self, category_name):
         OrderModal(self, category_name)
+
+    def on_hide(self):
+        if hasattr(self, "search_var"):
+            self.search_var.set("")

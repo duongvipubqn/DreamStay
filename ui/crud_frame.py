@@ -668,3 +668,7 @@ class CRUDFrame(ctk.CTkFrame):
             except:
                 pass
         return vals_cast
+
+    def on_hide(self):
+        if hasattr(self, "search_var"):
+            self.search_var.set("")

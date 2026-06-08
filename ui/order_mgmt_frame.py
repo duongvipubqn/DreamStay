@@ -291,3 +291,7 @@ class OrderMgmtFrame(ctk.CTkFrame):
             except Exception as e:
                 db.conn.rollback()
                 messagebox.showerror("Lỗi", f"Không thể hủy đơn: {str(e)}")
+
+    def on_hide(self):
+        if hasattr(self, "search_var"):
+            self.search_var.set("")

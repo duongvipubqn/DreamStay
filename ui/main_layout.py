@@ -247,6 +247,8 @@ class MainFrame(ctk.CTkFrame):
     def switch(self, name):
         for f in self.frames.values():
             f.pack_forget()
+            if hasattr(f, "on_hide"):
+                f.on_hide()
         self.frames[name].pack(fill="both", expand=True)
 
         for b_name, btn in self.sidebar_buttons.items():
