@@ -22,10 +22,10 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
             text_color=COLOR_GOLD,
             font=FONT_BODY_BOLD,
             command=go_back,
-        ).pack(anchor="w", padx=50, pady=20)
+        ).pack(anchor="w", padx=250, pady=20)
 
         main_container = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=20)
-        main_container.pack(fill="x", padx=50, pady=10)
+        main_container.pack(fill="x", padx=250, pady=10)
 
         top_section = ctk.CTkFrame(
             main_container, fg_color=COLOR_NAVY, height=300, corner_radius=20

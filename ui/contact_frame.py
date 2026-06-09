@@ -372,4 +372,5 @@ class ContactFrame(ctk.CTkFrame):
         webbrowser.open(url)
 
     def load_data(self):
-        pass
+        self.map_widget.set_position(21.0336, 106.7725)
+        self.map_widget.set_zoom(16)

@@ -24,10 +24,10 @@ class UtilityDetailFrame(ctk.CTkScrollableFrame):
             text_color=COLOR_GOLD,
             font=FONT_BODY_BOLD,
             command=go_back,
-        ).pack(anchor="w", padx=50, pady=20)
+        ).pack(anchor="w", padx=250, pady=20)
 
         main_container = ctk.CTkFrame(self, fg_color=COLOR_WHITE, corner_radius=20)
-        main_container.pack(fill="x", padx=50, pady=10)
+        main_container.pack(fill="x", padx=250, pady=10)
 
         left_p = ctk.CTkFrame(main_container, fg_color="transparent")
         left_p.pack(side="left", padx=30, pady=30, anchor="n")
