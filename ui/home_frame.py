@@ -166,6 +166,9 @@ class HomeFrame(ctk.CTkFrame):
         self.root_click_bind = self.winfo_toplevel().bind(
             "<Button-1>", lambda e: self.reset_idle_timer(), add="+"
         )
+        if not self.anim_started and self.raw_images:
+            self.anim_started = True
+            self.anim_id = self.after(5000, self.rotate_image, "start")
 
     def on_hide(self):
         if hasattr(self, "idle_timer_id") and self.idle_timer_id:
@@ -177,6 +180,10 @@ class HomeFrame(ctk.CTkFrame):
             except:
                 pass
             self.root_click_bind = None
+        if hasattr(self, "anim_id") and self.anim_id:
+            self.after_cancel(self.anim_id)
+            self.anim_id = None
+        self.anim_started = False
 
     def reset_idle_timer(self):
         if hasattr(self, "idle_timer_id") and self.idle_timer_id:
