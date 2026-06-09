@@ -157,11 +157,11 @@ class ProfileFrame(ctk.CTkFrame):
         if not hasattr(self.app, "current_username") or not self.app.current_username:
             return
 
-        db.cursor.execute(
+        user_res = db.execute_query(
             "SELECT full_name, email, phone, username FROM users WHERE username=?",
             (self.app.current_username,),
+            fetchone=True,
         )
-        user_res = db.cursor.fetchone()
         if user_res:
             self.info_label.configure(text=f"Tài khoản: {user_res[0].upper()}")
             self.email_label.configure(text=f"Email: {user_res[1]}")
@@ -172,26 +172,28 @@ class ProfileFrame(ctk.CTkFrame):
 
             for i in self.tree.get_children():
                 self.tree.delete(i)
-            db.cursor.execute(
+            bookings_res = db.execute_query(
                 "SELECT id, room_id, checkin_date, checkout_date, total_price, status FROM bookings WHERE customer_id=?",
                 (self.app.current_username,),
+                fetch=True,
             )
-            for row in db.cursor.fetchall():
-                rid, r_id, cin, cout, prc, stt = row
-                cin_f = datetime.strptime(cin, "%Y-%m-%d").strftime("%d/%m/%Y")
-                cout_f = datetime.strptime(cout, "%Y-%m-%d").strftime("%d/%m/%Y")
-                prc_f = f"{int(prc):,}".replace(",", ".")
-                self.tree.insert(
-                    "", "end", values=(rid, r_id, cin_f, cout_f, prc_f, stt)
-                )
+            if bookings_res:
+                for row in bookings_res:
+                    rid, r_id, cin, cout, prc, stt = row
+                    cin_f = datetime.strptime(cin, "%Y-%m-%d").strftime("%d/%m/%Y")
+                    cout_f = datetime.strptime(cout, "%Y-%m-%d").strftime("%d/%m/%Y")
+                    prc_f = f"{int(prc):,}".replace(",", ".")
+                    self.tree.insert(
+                        "", "end", values=(rid, r_id, cin_f, cout_f, prc_f, stt)
+                    )
 
             for w in self.coupon_scroll.winfo_children():
                 w.destroy()
-            db.cursor.execute(
+            coupons = db.execute_query(
                 "SELECT code, description, discount_percent FROM user_coupons WHERE username=?",
                 (username,),
+                fetch=True,
             )
-            coupons = db.cursor.fetchall()
             if not coupons:
                 ctk.CTkLabel(
                     self.coupon_scroll,
@@ -244,11 +246,11 @@ class ProfileFrame(ctk.CTkFrame):
                     ).pack(side="right", padx=20)
 
     def open_edit_modal(self):
-        db.cursor.execute(
-            "SELECT full_name, email, phone, username FROM users WHERE full_name=?",
-            (self.app.current_user,),
+        data = db.execute_query(
+            "SELECT full_name, email, phone, username FROM users WHERE username=?",
+            (self.app.current_username,),
+            fetchone=True,
         )
-        data = db.cursor.fetchone()
         if not data:
             return
 
@@ -312,24 +314,14 @@ class ProfileFrame(ctk.CTkFrame):
                     return messagebox.showerror("Lỗi", "Mật khẩu mới không trùng khớp!")
 
             try:
-                db.cursor.execute(
-                    "UPDATE users SET full_name=?, email=?, phone=? WHERE full_name=?",
-                    (
-                        new_name,
-                        new_email,
-                        new_phone,
-                        getattr(self.app, "current_user", ""),
-                    ),
+                db.update_user_profile(
+                    data[3],
+                    getattr(self.app, "current_user", ""),
+                    new_name,
+                    new_email,
+                    new_phone,
+                    new_pass if new_pass else None
                 )
-
-                if new_pass:
-                    hashed_pw = db.hash_password(new_pass, data[3])
-                    db.cursor.execute(
-                        "UPDATE users SET password=? WHERE username=?",
-                        (hashed_pw, data[3]),
-                    )
-
-                db.conn.commit()
 
                 setattr(self.app, "current_user", new_name)
                 self.load_data()

@@ -32,11 +32,9 @@ class UtilityDetailFrame(ctk.CTkScrollableFrame):
         left_p = ctk.CTkFrame(main_container, fg_color="transparent")
         left_p.pack(side="left", padx=30, pady=30, anchor="n")
 
-        if os.path.exists(img_path):
-            pil_img = Image.open(img_path)
-            ctk_img = ctk.CTkImage(
-                light_image=pil_img, dark_image=pil_img, size=(550, 380)
-            )
+        img_name = os.path.basename(img_path)
+        ctk_img, _ = get_cached_image(img_name, (550, 380))
+        if ctk_img:
             ctk.CTkLabel(left_p, image=ctk_img, text="").pack()
 
         right_p = ctk.CTkFrame(main_container, fg_color="transparent")
@@ -73,17 +71,38 @@ class UtilityDetailFrame(ctk.CTkScrollableFrame):
 
         def book_utility():
             from tkinter import messagebox
+            from database import db
+            from datetime import datetime
+
             app = self.winfo_toplevel()
             curr_user = getattr(app, "current_user", None)
+            curr_username = getattr(app, "current_username", None)
             if not curr_user:
                 messagebox.showwarning("Thông báo", "Vui lòng đăng nhập để đặt chỗ tiện ích!")
                 return
-            messagebox.showinfo(
-                "Thành công", 
-                f"Đã đặt chỗ dịch vụ trải nghiệm '{name}' thành công!\n"
-                f"DreamStay đã ghi nhận lịch hẹn của sếp và sẽ chuẩn bị đón tiếp sếp tại Tầng 5.",
-                parent=self.winfo_toplevel()
-            )
+            try:
+                now = datetime.now().strftime("%Y-%m-%d %H:%M")
+                db.execute_query(
+                    "INSERT INTO utility_bookings (customer_id, utility_name, booking_date, status) VALUES (?,?,?,?)",
+                    (curr_username, name, now, "Pending"),
+                    commit=True,
+                )
+                db.log_action(
+                    curr_username,
+                    "INSERT",
+                    "utility_bookings",
+                    name,
+                    None,
+                    f"Đặt dịch vụ: {name}",
+                )
+                messagebox.showinfo(
+                    "Thành công",
+                    f"Đã đặt chỗ dịch vụ trải nghiệm '{name}' thành công!\n"
+                    f"Yêu cầu của sếp đã được gửi đến lễ tân và lưu vào hệ thống.",
+                    parent=self.winfo_toplevel(),
+                )
+            except Exception as e:
+                messagebox.showerror("Lỗi", f"Không thể lưu yêu cầu đặt chỗ: {str(e)}")
 
         ctk.CTkButton(
             right_p,

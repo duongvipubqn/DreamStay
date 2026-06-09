@@ -247,6 +247,7 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             filtered_utils.append(item)
 
         for i, (name, desc, img_name, area, status, temp) in enumerate(filtered_utils):
+            img_path = os.path.join(IMAGE_DIR, img_name)
             card = ctk.CTkFrame(
                 self.grid_frame,
                 fg_color=COLOR_WHITE,
@@ -256,15 +257,9 @@ class UtilityFrame(ctk.CTkScrollableFrame):
             )
             card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
 
-            img_path = os.path.join(IMAGE_DIR, img_name)
-            if os.path.exists(img_path):
+            ctk_img, pil_img = get_cached_image(img_name, (logical_img_w, logical_img_h))
+            if ctk_img:
                 try:
-                    pil_img = Image.open(img_path).convert("RGB")
-                    ctk_img = ctk.CTkImage(
-                        light_image=pil_img,
-                        dark_image=pil_img,
-                        size=(logical_img_w, logical_img_h),
-                    )
                     img_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                     img_lbl.pack(pady=10, padx=10, fill="x")
 

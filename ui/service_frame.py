@@ -24,11 +24,11 @@ class OrderModal(ctk.CTkToplevel):
             self.setup_ghost_order(parent)
             return
 
-        db.cursor.execute(
+        self.items = db.execute_query(
             "SELECT item_name, price, stock FROM inventory WHERE category=?",
             (category_name,),
+            fetch=True,
         )
-        self.items = db.cursor.fetchall()
 
         self.quantities = {}
         for item in self.items:
@@ -118,8 +118,8 @@ class OrderModal(ctk.CTkToplevel):
             room_f, text="Giao đến phòng:", font=FONT_BODY_BOLD, text_color=COLOR_TEXT
         ).pack(side="left")
 
-        db.cursor.execute("SELECT room_id FROM rooms WHERE status='Đã đặt'")
-        occupied_rooms = [r[0] for r in db.cursor.fetchall()]
+        res_rooms = db.execute_query("SELECT room_id FROM rooms WHERE status='Đã đặt'", fetch=True)
+        occupied_rooms = [r[0] for r in res_rooms] if res_rooms else []
         if not occupied_rooms:
             occupied_rooms = ["Không có phòng trống"]
 
@@ -292,24 +292,7 @@ class OrderModal(ctk.CTkToplevel):
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
 
         try:
-            for qty, name in updates:
-                db.cursor.execute(
-                    "UPDATE inventory SET stock = stock - ? WHERE item_name = ? AND stock >= ?",
-                    (qty, name, qty),
-                )
-                if db.cursor.rowcount == 0:
-                    raise ValueError(
-                        f"Sản phẩm '{name}' vừa mới hết hàng hoặc không đủ tồn kho để cung cấp!"
-                    )
-
-            db.cursor.execute(
-                """
-                INSERT INTO service_orders (room_id, items_detail, total_price, order_date, status)
-                VALUES (?, ?, ?, ?, ?)
-                """,
-                (room, items_str, total, now_str, "Chờ xử lý"),
-            )
-            db.conn.commit()
+            db.place_service_order(room, updates, items_str, total, now_str)
 
             total_f = f"{int(total):,}".replace(",", ".")
             messagebox.showinfo(
@@ -318,7 +301,6 @@ class OrderModal(ctk.CTkToplevel):
             )
             self.destroy()
         except Exception as e:
-            db.conn.rollback()
             messagebox.showerror("Lỗi", f"Không thể lưu đơn: {str(e)}")
 
 
@@ -557,6 +539,7 @@ class ServiceFrame(ctk.CTkScrollableFrame):
                 filtered_services.append(item)
 
         for i, (name, desc, img_name, _, _) in enumerate(filtered_services):
+            img_path = os.path.join(IMAGE_DIR, img_name)
             card = ctk.CTkFrame(
                 self.grid_frame,
                 fg_color=COLOR_WHITE,
@@ -566,15 +549,9 @@ class ServiceFrame(ctk.CTkScrollableFrame):
             )
             card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
 
-            img_path = os.path.join(IMAGE_DIR, img_name)
-            if os.path.exists(img_path):
+            ctk_img, pil_img = get_cached_image(img_name, (logical_img_w, logical_img_h))
+            if ctk_img:
                 try:
-                    pil_img = Image.open(img_path).convert("RGB")
-                    ctk_img = ctk.CTkImage(
-                        light_image=pil_img,
-                        dark_image=pil_img,
-                        size=(logical_img_w, logical_img_h),
-                    )
                     img_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                     img_lbl.pack(pady=10, padx=10, fill="x")
 

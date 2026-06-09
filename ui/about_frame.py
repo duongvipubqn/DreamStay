@@ -26,14 +26,9 @@ class AboutFrame(ctk.CTkScrollableFrame):
         )
         img_frame.pack(side="left", padx=(0, 50))
 
-        img_path = os.path.join(IMAGE_DIR, "about-main.png")
-
-        if os.path.exists(img_path):
+        ctk_img, pil_img = get_cached_image("about-main.png", (640, 360))
+        if ctk_img:
             try:
-                pil_img = Image.open(img_path).convert("RGB")
-                ctk_img = ctk.CTkImage(
-                    light_image=pil_img, dark_image=pil_img, size=(640, 360)
-                )
                 img_lbl = ctk.CTkLabel(img_frame, image=ctk_img, text="")
                 img_lbl.pack(padx=4, pady=4)
                 self.ctk_img_cache = ctk_img
@@ -168,16 +163,10 @@ class AboutFrame(ctk.CTkScrollableFrame):
             self.current_img_w = img_w
             self.current_img_h = img_h
 
-            img_path = os.path.join(IMAGE_DIR, img_name)
+            ctk_img, pil_img = get_cached_image(img_name, (img_w, img_h))
             gallery_lbl = None
-            if os.path.exists(img_path):
+            if ctk_img:
                 try:
-                    pil_img = Image.open(img_path).convert("RGB")
-                    ctk_img = ctk.CTkImage(
-                        light_image=pil_img,
-                        dark_image=pil_img,
-                        size=(img_w, img_h),
-                    )
                     gallery_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                     gallery_lbl.pack(pady=10, padx=10, fill="x")
 
@@ -250,15 +239,9 @@ class AboutFrame(ctk.CTkScrollableFrame):
         if self.hi3_text_label:
             self.hi3_text_label.configure(text="Final Lesson")
 
-        final_path = os.path.join(IMAGE_DIR, "final-lesson.png")
-        if os.path.exists(final_path):
+        ctk_img, pil_img = get_cached_image("final-lesson.png", (self.current_img_w, self.current_img_h))
+        if ctk_img:
             try:
-                pil_img = Image.open(final_path).convert("RGB")
-                ctk_img = ctk.CTkImage(
-                    light_image=pil_img,
-                    dark_image=pil_img,
-                    size=(self.current_img_w, self.current_img_h),
-                )
                 new_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                 new_lbl.pack(pady=10, padx=10, fill="x", before=self.hi3_text_label)
 
@@ -285,15 +268,9 @@ class AboutFrame(ctk.CTkScrollableFrame):
         if self.hi3_text_label:
             self.hi3_text_label.configure(text="Honkai Impact 3rd")
 
-        hi3_path = os.path.join(IMAGE_DIR, "about-honkai-impact-3rd.png")
-        if os.path.exists(hi3_path):
+        ctk_img, pil_img = get_cached_image("about-honkai-impact-3rd.png", (self.current_img_w, self.current_img_h))
+        if ctk_img:
             try:
-                pil_img = Image.open(hi3_path).convert("RGB")
-                ctk_img = ctk.CTkImage(
-                    light_image=pil_img,
-                    dark_image=pil_img,
-                    size=(self.current_img_w, self.current_img_h),
-                )
                 new_lbl = ctk.CTkLabel(card, image=ctk_img, text="")
                 new_lbl.pack(pady=10, padx=10, fill="x", before=self.hi3_text_label)
 

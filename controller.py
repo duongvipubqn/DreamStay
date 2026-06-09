@@ -91,15 +91,6 @@ class Controller:
         )
 
     @staticmethod
-    def pms_cancel_booking(b_id, rm_id):
-        db.execute_query(
-            "UPDATE bookings SET status='Cancelled' WHERE id=?", (b_id,), commit=True
-        )
-        db.execute_query(
-            "UPDATE rooms SET status='Trống' WHERE room_id=?", (rm_id,), commit=True
-        )
-
-    @staticmethod
     def pms_check_out(b_id, rm_id, cus, price, unpaid_orders, order_ids):
         room_charge = float(re.sub(r"[^\d]", "", price))
         services_charge = 0
@@ -172,3 +163,12 @@ class Controller:
             )
             return True
         return False
+
+    @staticmethod
+    def pms_cancel_booking(b_id, rm_id):
+        db.execute_query(
+            "UPDATE bookings SET status='Cancelled' WHERE id=?", (b_id,), commit=True
+        )
+        db.execute_query(
+            "UPDATE rooms SET status='Trống' WHERE room_id=?", (rm_id,), commit=True
+        )

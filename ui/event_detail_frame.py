@@ -204,7 +204,6 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
                     parent=self.winfo_toplevel(),
                 )
             except Exception as err:
-                db.conn.rollback()
                 messagebox.showerror("Lỗi", f"Không thể xử lý đăng ký: {str(err)}")
 
         ctk.CTkButton(

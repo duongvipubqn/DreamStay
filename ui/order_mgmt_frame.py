@@ -268,7 +268,6 @@ class OrderMgmtFrame(ctk.CTkFrame):
                 messagebox.showinfo("Thành công", "Đã thanh toán đơn hàng thành công!")
                 self.load_data()
             except Exception as e:
-                db.conn.rollback()
                 messagebox.showerror("Lỗi", str(e))
 
     def cancel_order(self):
@@ -301,7 +300,6 @@ class OrderMgmtFrame(ctk.CTkFrame):
                 )
                 self.load_data()
             except Exception as e:
-                db.conn.rollback()
                 messagebox.showerror("Lỗi", f"Không thể hủy đơn: {str(e)}")
 
     def on_hide(self):

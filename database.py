@@ -14,6 +14,7 @@ class Database:
         self.seed_manager()
         self.seed_inventory()
         self.seed_from_csv()
+        self.seed_utility_bookings()
 
     @staticmethod
     def hash_password(password, username):
@@ -196,6 +197,15 @@ class Database:
                 subject TEXT,
                 message TEXT,
                 timestamp TEXT
+            )""")
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS utility_bookings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_id TEXT,
+                utility_name TEXT,
+                booking_date TEXT,
+                status TEXT DEFAULT 'Pending'
             )""")
 
         conn.commit()
@@ -513,6 +523,69 @@ class Database:
             ),
             commit=True,
         )
+
+    def place_service_order(self, room_id, updates, items_str, total, now_str):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            for qty, name in updates:
+                cursor.execute(
+                    "UPDATE inventory SET stock = stock - ? WHERE item_name = ? AND stock >= ?",
+                    (qty, name, qty)
+                )
+                if cursor.rowcount == 0:
+                    raise ValueError(f"Sản phẩm '{name}' không đủ tồn kho!")
+            cursor.execute(
+                "INSERT INTO service_orders (room_id, items_detail, total_price, order_date, status) VALUES (?, ?, ?, ?, ?)",
+                (room_id, items_str, total, now_str, "Chờ xử lý")
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+    def update_user_profile(self, username, current_fullname, new_fullname, new_email, new_phone, new_password=None):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "UPDATE users SET full_name=?, email=?, phone=? WHERE username=?",
+                (new_fullname, new_email, new_phone, username)
+            )
+            if new_password:
+                hashed_pw = self.hash_password(new_password, username)
+                cursor.execute(
+                    "UPDATE users SET password=? WHERE username=?",
+                    (hashed_pw, username)
+                )
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+    def seed_utility_bookings(self):
+        count = self.execute_query("SELECT COUNT(*) FROM utility_bookings", fetchone=True)[0]
+        if count == 0:
+            from datetime import datetime
+            now = datetime.now().strftime("%Y-%m-%d %H:%M")
+            seed_data = [
+                ("admin", "Hồ Bơi Vô Cực", now, "Confirmed"),
+                ("admin", "Mộng Mơ Spa", now, "Pending"),
+            ]
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.executemany(
+                "INSERT INTO utility_bookings (customer_id, utility_name, booking_date, status) VALUES (?,?,?,?)",
+                seed_data
+            )
+            conn.commit()
+            conn.close()
 
 
 db = Database()

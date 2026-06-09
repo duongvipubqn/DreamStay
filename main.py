@@ -183,6 +183,25 @@ class HotelApp(ctk.CTk):
         if callable(update_func):
             update_func(name, role)
 
+    def show_login(self):
+        self.switch_page("Login")
+
+    def show_register(self):
+        self.switch_page("Register")
+
+    def logout(self):
+        from tkinter import messagebox
+
+        if os.path.exists("session.txt"):
+            os.remove("session.txt")
+
+        self.current_user = None
+        self.current_role = None
+        self.header.update_user_avatar(None)
+        self.header.update_menu(False, None)
+        self.switch_page("Trang chủ")
+        messagebox.showinfo("Thông báo", "Sếp đã đăng xuất an toàn!")
+
     def switch_page(self, name):
         for page_name, page in self.pages.items():
             if page.winfo_ismapped():
@@ -258,24 +277,7 @@ class HotelApp(ctk.CTk):
         except:
             pass
 
-    def show_login(self):
-        self.switch_page("Login")
 
-    def show_register(self):
-        self.switch_page("Register")
-
-    def logout(self):
-        from tkinter import messagebox
-
-        if os.path.exists("session.txt"):
-            os.remove("session.txt")
-
-        self.current_user = None
-        self.current_role = None
-        self.header.update_user_avatar(None)
-        self.header.update_menu(False, None)
-        self.switch_page("Trang chủ")
-        messagebox.showinfo("Thông báo", "Sếp đã đăng xuất an toàn!")
 
 
 if __name__ == "__main__":

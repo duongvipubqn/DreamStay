@@ -42,25 +42,37 @@ class FormModal(ctk.CTkToplevel):
                     "Sức Chứa",
                     "Chức vụ",
                     "Tình Trạng",
+                    "Tiện ích",
+                    "Tiện Ích",
                 ]
             ):
-                vals = (
-                    LOCATIONS
-                    if "Địa" in col or "Thành" in col
-                    else (
-                        ROOM_TYPES
-                        if "Loại" in col
-                        else (
-                            ROOM_STATUSES
-                            if self.table_name == "rooms"
-                            else EMPLOYEE_STATUSES
-                        )
-                    )
-                )
-                if "Sức Chứa" in col:
+                if "Địa" in col or "Thành" in col:
+                    vals = LOCATIONS
+                elif "Loại" in col:
+                    vals = ROOM_TYPES
+                elif "Sức Chứa" in col:
                     vals = CAPACITIES
-                if "Chức vụ" in col:
+                elif "Chức vụ" in col:
                     vals = POSITIONS
+                elif "Tiện ích" in col or "Tiện Ích" in col:
+                    vals = [
+                        "Hồ Bơi Vô Cực",
+                        "Nhà Hàng The Golden",
+                        "Mộng Mơ Spa",
+                        "Fitness Center",
+                        "Sky Bar Tầng Thượng",
+                        "Phòng Đại Tiệc",
+                        "Sảnh Đón Hoàng Gia",
+                        "Vườn Thượng Uyển",
+                        "Bãi Biển Riêng Tư"
+                    ]
+                else:
+                    if self.table_name == "rooms":
+                        vals = ROOM_STATUSES
+                    elif self.table_name == "utility_bookings":
+                        vals = ["Pending", "Confirmed", "Cancelled"]
+                    else:
+                        vals = EMPLOYEE_STATUSES
 
                 entry = ctk.CTkOptionMenu(
                     f,
@@ -389,13 +401,46 @@ class CRUDFrame(ctk.CTkFrame):
         except Exception as e:
             messagebox.showerror("Lỗi", str(e))
 
-    def filter_data(self, *_args):
-        search_text = self.search_var.get().lower()
-        for row in self.tree.get_children():
-            self.tree.delete(row)
-        for data in self.all_data:
-            if any(search_text in str(val).lower() for val in data):
-                self.tree.insert("", "end", values=data)
+    def delete(self):
+        items = self.tree.selection()
+        if not items:
+            return messagebox.showwarning("Chú ý", "Hãy chọn dòng cần xóa!")
+
+        row_ids = [self.tree.item(i, "values")[0] for i in items]
+        col_names = db.get_column_names(self.table_name)
+        id_col = col_names[0]
+
+        msg = (
+            f"Sếp có chắc muốn xóa vĩnh viễn {len(row_ids)} dòng đã chọn không?"
+            if len(row_ids) > 1
+            else "Sếp có chắc muốn xóa vĩnh viễn dòng này không?"
+        )
+
+        if messagebox.askyesno("Xác nhận", msg):
+            import json
+
+            try:
+                app = self.winfo_toplevel()
+                username = getattr(app, "current_username", "system")
+                for rid in row_ids:
+                    old_record = db.execute_query(
+                        f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
+                        (rid,),
+                        fetchone=True,
+                    )
+                    old_json = (
+                        json.dumps(old_record, ensure_ascii=False)
+                        if old_record
+                        else None
+                    )
+                    db.delete_record(self.table_name, id_col, rid)
+                    db.log_action(
+                        username, "DELETE", self.table_name, rid, old_json, None
+                    )
+                self.load_data()
+            except Exception as e:
+                messagebox.showerror("Lỗi", f"Không thể xóa dữ liệu: {str(e)}")
+        return None
 
     def load_data(self):
         for row in self.tree.get_children():
@@ -446,46 +491,13 @@ class CRUDFrame(ctk.CTkFrame):
                     formatted_row.append(val)
             self.tree.insert("", "end", values=formatted_row)
 
-    def delete(self):
-        items = self.tree.selection()
-        if not items:
-            return messagebox.showwarning("Chú ý", "Hãy chọn dòng cần xóa!")
-
-        row_ids = [self.tree.item(i, "values")[0] for i in items]
-        col_names = db.get_column_names(self.table_name)
-        id_col = col_names[0]
-
-        msg = (
-            f"Sếp có chắc muốn xóa vĩnh viễn {len(row_ids)} dòng đã chọn không?"
-            if len(row_ids) > 1
-            else "Sếp có chắc muốn xóa vĩnh viễn dòng này không?"
-        )
-
-        if messagebox.askyesno("Xác nhận", msg):
-            import json
-
-            try:
-                app = self.winfo_toplevel()
-                username = getattr(app, "current_username", "system")
-                for rid in row_ids:
-                    old_record = db.execute_query(
-                        f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
-                        (rid,),
-                        fetchone=True,
-                    )
-                    old_json = (
-                        json.dumps(old_record, ensure_ascii=False)
-                        if old_record
-                        else None
-                    )
-                    db.delete_record(self.table_name, id_col, rid)
-                    db.log_action(
-                        username, "DELETE", self.table_name, rid, old_json, None
-                    )
-                self.load_data()
-            except Exception as e:
-                messagebox.showerror("Lỗi", f"Không thể xóa dữ liệu: {str(e)}")
-        return None
+    def filter_data(self, *_args):
+        search_text = self.search_var.get().lower()
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+        for data in self.all_data:
+            if any(search_text in str(val).lower() for val in data):
+                self.tree.insert("", "end", values=data)
 
     def export_csv(self):
         path = filedialog.asksaveasfilename(

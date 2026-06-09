@@ -99,6 +99,18 @@ class MainFrame(ctk.CTkFrame):
                     "Thời Gian",
                 ],
             ),
+            "Đặt Tiện Ích": CRUDFrame(
+                self.content,
+                "Quản Lý Đặt Tiện Ích",
+                "utility_bookings",
+                [
+                    "ID",
+                    "Mã Khách",
+                    "Tên Tiện Ích",
+                    "Ngày Đặt",
+                    "Trạng Thái",
+                ],
+            ),
             "Nhật Ký Hệ Thống": LogFrame(self.content),
             "Nhật Ký Quản Lý": MgmtLogFrame(self.content),
             "Thống Kê": StatisticsFrame(self.content),

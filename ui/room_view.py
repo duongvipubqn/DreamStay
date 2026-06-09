@@ -237,8 +237,7 @@ class RoomView(ctk.CTkScrollableFrame):
                 query += " AND price > ?"
                 params.append(10000000)
 
-        db.cursor.execute(query, params)
-        rooms_db = db.cursor.fetchall()
+        rooms_db = db.execute_query(query, params, fetch=True)
 
         status_filter = None
         if filters and filters.get("status") and filters["status"] != "Mọi trạng thái":
@@ -321,25 +320,7 @@ class RoomView(ctk.CTkScrollableFrame):
                 card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
 
                 img_name = self.image_map.get(r_type, "default.png")
-                cache_key = f"{img_name}_{img_w}"
-                img_path = os.path.join(IMAGE_DIR, img_name)
-
-                if cache_key not in self.ctk_image_cache:
-                    if os.path.exists(img_path):
-                        try:
-                            pil_img = Image.open(img_path).convert("RGB")
-                            ctk_img = ctk.CTkImage(
-                                light_image=pil_img,
-                                dark_image=pil_img,
-                                size=(img_w, img_h),
-                            )
-                            self.ctk_image_cache[cache_key] = (ctk_img, pil_img)
-                        except:
-                            self.ctk_image_cache[cache_key] = (None, None)
-                    else:
-                        self.ctk_image_cache[cache_key] = (None, None)
-
-                ctk_img, pil_ref = self.ctk_image_cache[cache_key]
+                ctk_img, pil_ref = get_cached_image(img_name, (img_w, img_h))
 
                 if ctk_img:
                     img_label = ctk.CTkLabel(card, image=ctk_img, text="")
