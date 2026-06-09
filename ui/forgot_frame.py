@@ -11,7 +11,7 @@ class ForgotFrame(ctk.CTkFrame):
         self.panel = ctk.CTkFrame(
             self,
             width=320,
-            height=480,
+            height=580,
             fg_color=COLOR_WHITE,
             corner_radius=15,
             border_width=1,
@@ -22,17 +22,19 @@ class ForgotFrame(ctk.CTkFrame):
 
         ctk.CTkLabel(
             self.panel, text="Quên Mật Khẩu", font=FONT_HEADER, text_color="white"
-        ).pack(pady=(40, 5))
+        ).pack(pady=(30, 5))
         ctk.CTkLabel(
             self.panel,
             text="Nhập thông tin để thay đổi mật khẩu.",
             font=FONT_BODY,
             text_color=COLOR_TEXT,
-        ).pack(pady=(0, 20))
+        ).pack(pady=(0, 15))
 
         self.fields = {}
         data = [
             ("Tên đăng nhập", "username"),
+            ("Email đã đăng ký", "email"),
+            ("Số điện thoại đã đăng ký", "phone"),
             ("Mật khẩu mới", "new_pass"),
             ("Nhập lại mật khẩu mới", "confirm"),
         ]
@@ -49,7 +51,7 @@ class ForgotFrame(ctk.CTkFrame):
                 text_color=COLOR_TEXT,
                 show="*" if is_pass else "",
             )
-            entry.pack(pady=10)
+            entry.pack(pady=6)
             entry.bind("<Return>", lambda e: self.reset_password())
             self.fields[key] = entry
 
@@ -63,7 +65,7 @@ class ForgotFrame(ctk.CTkFrame):
             text_color="white",
             font=FONT_BODY_BOLD,
             command=self.reset_password,
-        ).pack(pady=(30, 10))
+        ).pack(pady=(20, 5))
 
         def go_to_login():
             app = self.winfo_toplevel()
@@ -79,24 +81,33 @@ class ForgotFrame(ctk.CTkFrame):
             font=FONT_BODY,
             hover=False,
             command=go_to_login,
-        ).pack(pady=10)
+        ).pack(pady=5)
 
     def reset_password(self):
-        u = self.fields["username"].get()
+        u = self.fields["username"].get().strip()
+        email = self.fields["email"].get().strip()
+        phone = self.fields["phone"].get().strip()
         p = self.fields["new_pass"].get()
         c = self.fields["confirm"].get()
 
-        if u == "" or p == "" or c == "":
+        if u == "" or email == "" or phone == "" or p == "" or c == "":
             return messagebox.showwarning("Lỗi", "Vui lòng nhập đầy đủ thông tin!")
+
+        if len(p) < 6:
+            return messagebox.showerror("Lỗi", "Mật khẩu mới phải chứa ít nhất 6 ký tự!")
 
         if p != c:
             return messagebox.showerror("Lỗi", "Mật khẩu mới không trùng khớp!")
 
         res = db.execute_query(
-            "SELECT 1 FROM users WHERE username=?", (u,), fetchone=True
+            "SELECT email, phone FROM users WHERE username=?", (u,), fetchone=True
         )
         if not res:
             return messagebox.showerror("Lỗi", "Tên đăng nhập không tồn tại!")
+
+        db_email, db_phone = res
+        if db_email != email or db_phone != phone:
+            return messagebox.showerror("Lỗi", "Thông tin xác thực (Email hoặc Số điện thoại) không khớp với tài khoản đã đăng ký!")
 
         hashed_pw = db.hash_password(p, u)
         db.execute_query(

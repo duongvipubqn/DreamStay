@@ -29,7 +29,7 @@ class HotelApp(ctk.CTk):
                     b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
                     b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"
                     b"3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /MediaBox [0 0 595 842] /Contents 4 0 R >>\nendobj\n"
-                    b"4 0 obj\n<< /Length 954 >>\nstream\n"
+                    b"4 0 obj\n<< /Length 936 >>\nstream\n"
                     b"BT\n"
                     b"/F1 14 Tf\n"
                     b"50 780 Td\n"
@@ -38,7 +38,7 @@ class HotelApp(ctk.CTk):
                     b"(DREAMSTAY RESORT SYSTEM - TAI LIEU HUONG DAN SU DUNG) Tj\n"
                     b"/F1 10 Tf\n"
                     b"0 -30 Td\n"
-                    b"(Mon hoc: Lap trinh Python | GVHD: ThS. Vu Duy Son & ThS. Pham Nguyen Hong) Tj\n"
+                    b"(Mon hoc: Lap trinh Python | GVHD: ThS. Pham Nguyen Hong) Tj\n"
                     b"0 -15 Td\n"
                     b"(Nhom sinh vien thuc hien: Tran Duc Duong (Nhom truong) & Bui Thi Thuy Hoa) Tj\n"
                     b"0 -35 Td\n"
@@ -68,7 +68,7 @@ class HotelApp(ctk.CTk):
                     b"trailer\n"
                     b"<< /Size 5 /Root 1 0 R >>\n"
                     b"startxref\n"
-                    b"1296\n"
+                    b"1278\n"
                     b"%%EOF"
                 )
                 with open("user_guide.pdf", "wb") as f:
@@ -150,19 +150,9 @@ class HotelApp(ctk.CTk):
     def check_persistent_login(self):
         if os.path.exists("session.txt"):
             try:
-                with open("session.txt", "rb") as f:
+                with open("session.txt", "r", encoding="utf-8") as f:
                     encoded_data = f.read()
-                import uuid
-                import hashlib
-                import base64
-
-                mac = str(uuid.getnode())
-                salt = "DreamStaySessionSalt2026"
-                key = hashlib.sha256((mac + salt).encode()).digest()
-                encrypted_bytes = bytearray(base64.b64decode(encoded_data))
-                for i in range(len(encrypted_bytes)):
-                    encrypted_bytes[i] ^= key[i % len(key)]
-                decoded_str = encrypted_bytes.decode("utf-8")
+                decoded_str = xor_decrypt(encoded_data, "DreamStaySessionSalt2026")
                 data = decoded_str.split("|")
                 if len(data) == 3:
                     self.login_success(data[0], data[1], data[2], save_session=False)
@@ -180,18 +170,8 @@ class HotelApp(ctk.CTk):
 
         if save_session:
             raw_str = f"{username}|{name}|{role}"
-            import uuid
-            import hashlib
-            import base64
-
-            mac = str(uuid.getnode())
-            salt = "DreamStaySessionSalt2026"
-            key = hashlib.sha256((mac + salt).encode()).digest()
-            encrypted_bytes = bytearray(raw_str.encode("utf-8"))
-            for i in range(len(encrypted_bytes)):
-                encrypted_bytes[i] ^= key[i % len(key)]
-            encoded_b64 = base64.b64encode(encrypted_bytes)
-            with open("session.txt", "wb") as f:
+            encoded_b64 = xor_crypt(raw_str, "DreamStaySessionSalt2026")
+            with open("session.txt", "w", encoding="utf-8") as f:
                 f.write(encoded_b64)
 
         self.header.update_user_avatar(username)

@@ -104,6 +104,22 @@ class RegisterFrame(ctk.CTkFrame):
         d = {k: v.get() for k, v in self.fields.items()}
         if "" in d.values():
             return messagebox.showwarning("Lỗi", "Vui lòng nhập đủ tin!")
+        
+        # Email validation
+        import re
+        email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        if not re.match(email_regex, d["email"]):
+            return messagebox.showerror("Lỗi", "Email không đúng định dạng!")
+        
+        # Phone validation (digits only, length 9 to 11)
+        phone_regex = r"^\d{9,11}$"
+        if not re.match(phone_regex, d["phone"]):
+            return messagebox.showerror("Lỗi", "Số điện thoại phải chỉ chứa số và từ 9 đến 11 ký tự!")
+        
+        # Password strength (minimum 6 characters)
+        if len(d["pass"]) < 6:
+            return messagebox.showerror("Lỗi", "Mật khẩu phải chứa ít nhất 6 ký tự!")
+            
         if d["pass"] != d["confirm"]:
             return messagebox.showerror("Lỗi", "Mật khẩu không khớp!")
         try:

@@ -376,22 +376,12 @@ class ChatWindow(ctk.CTkToplevel):
         self.withdraw()
 
     def encrypt_key(self, raw_key):
-        mac = str(uuid.getnode())
-        salt = "DreamStayKeySalt2026"
-        key = hashlib.sha256((mac + salt).encode()).digest()
-        encrypted_bytes = bytearray(raw_key.encode("utf-8"))
-        for i in range(len(encrypted_bytes)):
-            encrypted_bytes[i] ^= key[i % len(key)]
-        return base64.b64encode(encrypted_bytes).decode("utf-8")
+        from config import xor_crypt
+        return xor_crypt(raw_key, "DreamStayKeySalt2026")
 
     def decrypt_key(self, encrypted_b64):
-        mac = str(uuid.getnode())
-        salt = "DreamStayKeySalt2026"
-        key = hashlib.sha256((mac + salt).encode()).digest()
-        encrypted_bytes = bytearray(base64.b64decode(encrypted_b64.encode("utf-8")))
-        for i in range(len(encrypted_bytes)):
-            encrypted_bytes[i] ^= key[i % len(key)]
-        return encrypted_bytes.decode("utf-8")
+        from config import xor_decrypt
+        return xor_decrypt(encrypted_b64, "DreamStayKeySalt2026")
 
     def load_api_key(self):
         if os.path.exists("api_key.enc"):

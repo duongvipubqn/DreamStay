@@ -289,15 +289,10 @@ class MainFrame(ctk.CTkFrame):
         modal = ctk.CTkToplevel(self)
         modal.title("Cấp tài khoản nhân viên")
         w, h = 450, 680
-        modal.update_idletasks()
-        main_win = self.winfo_toplevel()
-        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
-        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
-        modal.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
+        center_window(modal, self, w, h)
         modal.configure(fg_color=COLOR_CREAM)
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
-        modal.resizable(False, False)
 
         ctk.CTkLabel(
             modal, text="ĐĂNG KÝ NHÂN VIÊN MỚI", font=FONT_TITLE, text_color=COLOR_GOLD
@@ -366,15 +361,13 @@ class MainFrame(ctk.CTkFrame):
             command=confirm_save,
         ).pack(pady=40, padx=40, fill="x")
 
+        modal.bind("<Return>", lambda event: confirm_save())
+
     def open_voucher_modal(self):
         modal = ctk.CTkToplevel(self)
         modal.title("Tặng Voucher cho khách hàng")
         w, h = 450, 620
-        modal.update_idletasks()
-        main_win = self.winfo_toplevel()
-        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
-        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
-        modal.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
+        center_window(modal, self, w, h)
         modal.configure(fg_color=COLOR_CREAM)
         modal.transient(self.winfo_toplevel())
         modal.grab_set()
@@ -447,12 +440,14 @@ class MainFrame(ctk.CTkFrame):
         ctk.CTkButton(
             modal,
             text="XÁC NHẬN TẶNG",
-            fg_color="#27ae60",
-            hover_color="#219150",
+            fg_color=COLOR_GOLD,
+            hover_color=COLOR_GOLD_HOVER,
             height=45,
             font=FONT_BODY_BOLD,
             command=confirm_grant,
         ).pack(pady=40, padx=40, fill="x")
+
+        modal.bind("<Return>", lambda event: confirm_grant())
 
     def show_about(self):
         from datetime import datetime
@@ -480,15 +475,10 @@ class MainFrame(ctk.CTkFrame):
         loading_win = ctk.CTkToplevel(self)
         loading_win.title("Đang xử lý")
         w, h = 300, 150
-        loading_win.update_idletasks()
-        main_win = self.winfo_toplevel()
-        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
-        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
-        loading_win.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
+        center_window(loading_win, self, w, h)
         loading_win.configure(fg_color=COLOR_CREAM)
         loading_win.transient(self.winfo_toplevel())
         loading_win.grab_set()
-        loading_win.resizable(False, False)
 
         ctk.CTkLabel(
             loading_win,

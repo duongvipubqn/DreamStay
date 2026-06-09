@@ -66,8 +66,7 @@ class AboutFrame(ctk.CTkScrollableFrame):
 
         desc = (
             "Tọa lạc tại vị trí đắc địa, DreamStay là sự giao thoa hoàn hảo giữa kiến trúc cổ điển và tiện nghi hiện đại. "
-            "Chúng tôi tự hào mang đến một không gian nghỉ dưỡng không chỉ sang trọng mà còn ấm cúng, nơi mỗi chi tiết đều được chăm chút tỉ mỉ.\n\n"
-            "Từ những bộ sảnh lộng lẫy đến khu vườn thượng uyển yên tĩnh, chúng tôi cam kết mang đến cho bạn một kỳ nghỉ khó quên, vượt trên cả sự mong đợi."
+            "Chúng tôi mang đến một không gian nghỉ dưỡng sang trọng, ấm cúng và tinh tế, cam kết đem lại cho sếp một kỳ nghỉ khó quên."
         )
 
         ctk.CTkLabel(
@@ -79,6 +78,32 @@ class AboutFrame(ctk.CTkScrollableFrame):
             wraplength=360,
             anchor="w",
         ).pack(anchor="w", padx=0, pady=(0, 0))
+
+        info_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+        info_frame.pack(anchor="w", pady=(10, 0), fill="x")
+
+        ctk.CTkLabel(
+            info_frame,
+            text="⚙ THÔNG TIN HỆ THỐNG",
+            font=FONT_BODY_BOLD,
+            text_color=COLOR_GOLD,
+        ).pack(anchor="w", pady=(0, 5))
+
+        info_text = (
+            "• Phiên bản: v2.5.0 Premium\n"
+            "• Tác giả: Trần Đức Dương & Bùi Thị Thúy Hoa\n"
+            "• Ngày phát hành: 11/06/2026\n"
+            "• Đơn vị: Trường Đại học Hạ Long\n"
+            "• GVHD: ThS. Phạm Nguyên Hồng"
+        )
+        ctk.CTkLabel(
+            info_frame,
+            text=info_text,
+            font=FONT_SMALL,
+            text_color="#ccc",
+            justify="left",
+            anchor="w",
+        ).pack(anchor="w")
 
         gallery_container = ctk.CTkFrame(self, fg_color="transparent")
         gallery_container.pack(fill="x", padx=250, pady=(80, 80))

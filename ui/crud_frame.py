@@ -11,15 +11,10 @@ class FormModal(ctk.CTkToplevel):
         super().__init__(parent)
         self.title(title)
         w, h = 500, 700
-        self.update_idletasks()
-        main_win = parent.winfo_toplevel()
-        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
-        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
-        self.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
+        center_window(self, parent, w, h)
         self.configure(fg_color=COLOR_CREAM)
         self.transient(parent)
         self.grab_set()
-        self.resizable(False, False)
 
         self.table_name = table_name
         self.callback = callback
@@ -109,6 +104,8 @@ class FormModal(ctk.CTkToplevel):
             height=50,
             command=self.submit,
         ).pack(fill="x", pady=30, padx=20)
+
+        self.bind("<Return>", lambda event: self.submit())
 
     def submit(self):
         vals = [self.entries[col].get().strip() for col in self.columns]
@@ -513,15 +510,10 @@ class CRUDFrame(ctk.CTkFrame):
         loading_win = ctk.CTkToplevel(self)
         loading_win.title("Đang nhập dữ liệu")
         w, h = 300, 150
-        loading_win.update_idletasks()
-        main_win = self.winfo_toplevel()
-        x = main_win.winfo_x() + (main_win.winfo_width() // 2) - (w // 2)
-        y = main_win.winfo_y() + (main_win.winfo_height() // 2) - (h // 2)
-        loading_win.geometry(f"{w}x{h}+{max(0, x)}+{max(0, y)}")
+        center_window(loading_win, self, w, h)
         loading_win.configure(fg_color=COLOR_CREAM)
         loading_win.transient(self.winfo_toplevel())
         loading_win.grab_set()
-        loading_win.resizable(False, False)
 
         ctk.CTkLabel(
             loading_win,
