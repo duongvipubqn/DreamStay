@@ -342,15 +342,8 @@ class ContactFrame(ctk.CTkFrame):
             return
 
         try:
-            from database import db
-            from datetime import datetime
-
-            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            db.execute_query(
-                "INSERT INTO contact_messages (name, email, subject, message, timestamp) VALUES (?,?,?,?,?)",
-                (name, email, subject, message, now),
-                commit=True,
-            )
+            from controller import Controller
+            Controller.contact_send(name, email, subject, message)
             self.feedback_label.configure(
                 text="Tin nhắn đã được gửi và lưu trữ thành công vào hệ thống!",
                 text_color=COLOR_GOLD,

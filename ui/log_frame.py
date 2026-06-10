@@ -124,10 +124,8 @@ class LogFrame(ctk.CTkFrame):
     def load_data(self):
         for row in self.tree.get_children():
             self.tree.delete(row)
-        self.all_data = db.execute_query(
-            "SELECT id, timestamp, username, action_type, table_name, record_id FROM system_logs ORDER BY id DESC",
-            fetch=True,
-        )
+        from controller import Controller
+        self.all_data = Controller.log_get_all()
         for row in self.all_data:
             self.tree.insert("", "end", values=row)
 
@@ -147,15 +145,9 @@ class LogFrame(ctk.CTkFrame):
             )
 
         log_id = self.tree.item(items[0], "values")[0]
-        log_detail = db.execute_query(
-            "SELECT action_type, table_name, record_id, old_data, new_data FROM system_logs WHERE id=?",
-            (log_id,),
-            fetchone=True,
-        )
-        if not log_detail:
-            return
-
-        action_type, table_name, record_id, old_data, new_data = log_detail
+        action_type = self.tree.item(items[0], "values")[3]
+        table_name = self.tree.item(items[0], "values")[4]
+        record_id = self.tree.item(items[0], "values")[5]
         if action_type == "LOGIN":
             return messagebox.showinfo(
                 "Thông báo",
@@ -167,41 +159,10 @@ class LogFrame(ctk.CTkFrame):
             return
 
         try:
-            col_names = db.get_column_names(table_name)
-            id_col = col_names[0]
             app = self.winfo_toplevel()
             username = getattr(app, "current_username", "system")
-
-            if action_type == "DELETE":
-                vals = json.loads(old_data)
-                db.insert_record(table_name, vals)
-                db.log_action(
-                    username, "RESTORE_INSERT", table_name, record_id, None, old_data
-                )
-
-            elif action_type in ["UPDATE", "UPDATE_CSV"]:
-                vals = json.loads(old_data)
-                db.update_record(table_name, col_names, vals, record_id)
-                db.log_action(
-                    username,
-                    "RESTORE_UPDATE",
-                    table_name,
-                    record_id,
-                    new_data,
-                    old_data,
-                )
-
-            elif action_type in ["INSERT", "INSERT_CSV"]:
-                db.delete_record(table_name, id_col, record_id)
-                db.log_action(
-                    username, "RESTORE_DELETE", table_name, record_id, new_data, None
-                )
-
-            else:
-                return messagebox.showwarning(
-                    "Chú ý", "Không thể khôi phục thao tác khôi phục hệ thống!"
-                )
-
+            from controller import Controller
+            Controller.log_restore(log_id, username)
             self.load_data()
             messagebox.showinfo(
                 "Thành công",
@@ -216,7 +177,8 @@ class LogFrame(ctk.CTkFrame):
             "Sếp có chắc chắn muốn xóa toàn bộ lịch sử nhật ký hệ thống không? (Thao tác này không thể khôi phục!)",
         ):
             try:
-                db.execute_query("DELETE FROM system_logs", commit=True)
+                from controller import Controller
+                Controller.log_clear_all()
                 self.load_data()
                 messagebox.showinfo(
                     "Thành công", "Đã dọn dẹp sạch toàn bộ lịch sử giám sát hệ thống!"

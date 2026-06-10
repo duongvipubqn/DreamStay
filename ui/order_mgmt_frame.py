@@ -145,10 +145,8 @@ class OrderMgmtFrame(ctk.CTkFrame):
     def load_data(self):
         for row in self.tree.get_children():
             self.tree.delete(row)
-        self.all_data = db.execute_query(
-            "SELECT id, room_id, items_detail, total_price, order_date, status FROM service_orders WHERE status NOT IN ('Completed', 'Cancelled') ORDER BY order_date DESC",
-            fetch=True,
-        )
+        from controller import Controller
+        self.all_data = Controller.order_get_pending()
         self.display_data(self.all_data)
 
     def display_data(self, data_list):
@@ -186,11 +184,8 @@ class OrderMgmtFrame(ctk.CTkFrame):
             )
 
         if messagebox.askyesno("Xác nhận", "Sếp duyệt chuẩn bị làm món cho đơn này?"):
-            db.execute_query(
-                "UPDATE service_orders SET status='Đã xác nhận' WHERE id=?",
-                (o_id,),
-                commit=True,
-            )
+            from controller import Controller
+            Controller.order_confirm(o_id)
             self.load_data()
 
     def deliver_order(self):
@@ -207,11 +202,8 @@ class OrderMgmtFrame(ctk.CTkFrame):
             )
 
         if messagebox.askyesno("Xác nhận", "Xác nhận nhân viên bắt đầu đi giao món?"):
-            db.execute_query(
-                "UPDATE service_orders SET status='Đang giao' WHERE id=?",
-                (o_id,),
-                commit=True,
-            )
+            from controller import Controller
+            Controller.order_deliver(o_id)
             self.load_data()
 
     def pay_order(self):
@@ -229,42 +221,8 @@ class OrderMgmtFrame(ctk.CTkFrame):
             "Thanh toán", f"Xác nhận đã thu {total} VNĐ từ phòng {rm_id}?"
         ):
             try:
-                import re
-
-                real_price = float(re.sub(r"[^\d]", "", total))
-
-                loc_res = db.execute_query(
-                    "SELECT location FROM rooms WHERE room_id=?",
-                    (rm_id,),
-                    fetchone=True,
-                )
-                loc = loc_res[0] if loc_res else "Đà Nẵng"
-
-                db.execute_query(
-                    "INSERT INTO revenue_history (date, amount, location) VALUES (?,?,?)",
-                    (datetime.now().strftime("%Y-%m-%d"), real_price, loc),
-                    commit=True,
-                )
-
-                res_cust = db.execute_query(
-                    "SELECT customer_id FROM bookings WHERE room_id=? AND status='Stay-in'",
-                    (rm_id,),
-                    fetchone=True,
-                )
-                guest_id = res_cust[0] if res_cust else None
-
-                if guest_id:
-                    db.execute_query(
-                        "UPDATE customers SET total_spending = total_spending + ? WHERE customer_id=?",
-                        (real_price, guest_id),
-                        commit=True,
-                    )
-
-                db.execute_query(
-                    "UPDATE service_orders SET status='Completed' WHERE id=?",
-                    (o_id,),
-                    commit=True,
-                )
+                from controller import Controller
+                Controller.order_pay(o_id, rm_id, total)
                 messagebox.showinfo("Thành công", "Đã thanh toán đơn hàng thành công!")
                 self.load_data()
             except Exception as e:
@@ -280,21 +238,8 @@ class OrderMgmtFrame(ctk.CTkFrame):
             "Hủy đơn", "Sếp chắc chắn muốn hủy đơn và hoàn trả kho?"
         ):
             try:
-                items = detail.split(", ")
-                for item_str in items:
-                    name = item_str.split(" (x")[0]
-                    qty = int(item_str.split(" (x")[1].replace(")", ""))
-                    db.execute_query(
-                        "UPDATE inventory SET stock = stock + ? WHERE item_name = ?",
-                        (qty, name),
-                        commit=True,
-                    )
-
-                db.execute_query(
-                    "UPDATE service_orders SET status='Cancelled' WHERE id=?",
-                    (o_id,),
-                    commit=True,
-                )
+                from controller import Controller
+                Controller.order_cancel(o_id, detail)
                 messagebox.showinfo(
                     "Thành công", "Đã hủy đơn hàng và hoàn lại tồn kho!"
                 )

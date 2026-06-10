@@ -71,8 +71,6 @@ class UtilityDetailFrame(ctk.CTkScrollableFrame):
 
         def book_utility():
             from tkinter import messagebox
-            from database import db
-            from datetime import datetime
 
             app = self.winfo_toplevel()
             curr_user = getattr(app, "current_user", None)
@@ -81,20 +79,8 @@ class UtilityDetailFrame(ctk.CTkScrollableFrame):
                 messagebox.showwarning("Thông báo", "Vui lòng đăng nhập để đặt chỗ tiện ích!")
                 return
             try:
-                now = datetime.now().strftime("%Y-%m-%d %H:%M")
-                db.execute_query(
-                    "INSERT INTO utility_bookings (customer_id, utility_name, booking_date, status) VALUES (?,?,?,?)",
-                    (curr_username, name, now, "Pending"),
-                    commit=True,
-                )
-                db.log_action(
-                    curr_username,
-                    "INSERT",
-                    "utility_bookings",
-                    name,
-                    None,
-                    f"Đặt dịch vụ: {name}",
-                )
+                from controller import Controller
+                Controller.book_utility(curr_username, name)
                 messagebox.showinfo(
                     "Thành công",
                     f"Đã đặt chỗ dịch vụ trải nghiệm '{name}' thành công!\n"

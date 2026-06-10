@@ -182,11 +182,12 @@ class ProfileFrame(ctk.CTkFrame):
         if not hasattr(self.app, "current_username") or not self.app.current_username:
             return
 
-        user_res = db.execute_query(
-            "SELECT full_name, email, phone, username, role FROM users WHERE username=?",
-            (self.app.current_username,),
-            fetchone=True,
-        )
+        from controller import Controller
+        data = Controller.profile_get_data(self.app.current_username)
+        user_res = data["user_info"]
+        bookings_res = data["bookings"]
+        coupons = data["coupons"]
+
         if user_res:
             self.info_label.configure(text=f"Tài khoản: {user_res[0].upper()}")
             self.email_label.configure(text=f"Email: {user_res[1]}")
@@ -206,11 +207,6 @@ class ProfileFrame(ctk.CTkFrame):
 
             for i in self.tree.get_children():
                 self.tree.delete(i)
-            bookings_res = db.execute_query(
-                "SELECT id, room_id, checkin_date, checkout_date, total_price, status FROM bookings WHERE customer_id=?",
-                (self.app.current_username,),
-                fetch=True,
-            )
             if bookings_res:
                 for row in bookings_res:
                     rid, r_id, cin, cout, prc, stt = row
@@ -223,11 +219,6 @@ class ProfileFrame(ctk.CTkFrame):
 
             for w in self.coupon_scroll.winfo_children():
                 w.destroy()
-            coupons = db.execute_query(
-                "SELECT code, description, discount_percent FROM user_coupons WHERE username=?",
-                (username,),
-                fetch=True,
-            )
             if not coupons:
                 ctk.CTkLabel(
                     self.coupon_scroll,
@@ -281,11 +272,8 @@ class ProfileFrame(ctk.CTkFrame):
                     ).pack(side="right", padx=20)
 
     def open_edit_modal(self):
-        data = db.execute_query(
-            "SELECT full_name, email, phone, username FROM users WHERE username=?",
-            (self.app.current_username,),
-            fetchone=True,
-        )
+        from controller import Controller
+        data = Controller.profile_get_data(self.app.current_username)["user_info"]
         if not data:
             return
 
@@ -349,7 +337,8 @@ class ProfileFrame(ctk.CTkFrame):
                     return messagebox.showerror("Lỗi", "Mật khẩu mới không trùng khớp!")
 
             try:
-                db.update_user_profile(
+                from controller import Controller
+                Controller.profile_update(
                     data[3],
                     getattr(self.app, "current_user", ""),
                     new_name,

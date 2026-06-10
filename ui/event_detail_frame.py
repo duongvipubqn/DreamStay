@@ -168,34 +168,14 @@ class EventDetailFrame(ctk.CTkScrollableFrame):
                 return
 
             try:
-                text_no_d = title.replace("Đ", "D").replace("đ", "d")
-                text_normalized = "".join(
-                    c
-                    for c in unicodedata.normalize("NFKD", text_no_d)
-                    if not unicodedata.combining(c)
-                )
-                words = text_normalized.split()
-                initials = "".join([w[0] for w in words if w]).upper()
-                clean_initials = re.sub(r"[^\w]", "", initials)
-                code = f"EV_{clean_initials}"
-
-                res_exists = db.execute_query(
-                    "SELECT 1 FROM user_coupons WHERE username=? AND code=?",
-                    (curr_username, code),
-                    fetchone=True,
-                )
-                if res_exists:
+                from controller import Controller
+                success, code = Controller.event_register(curr_username, title)
+                if not success:
                     messagebox.showinfo(
                         "Thông báo",
                         f"Sếp đã đăng ký tham gia sự kiện '{title}' trước đó rồi!",
                     )
                     return
-
-                db.execute_query(
-                    "INSERT INTO user_coupons (username, code, description, discount_percent) VALUES (?,?,?,?)",
-                    (curr_username, code, f"Voucher qua tang tu su kien: {title}", 15),
-                    commit=True,
-                )
 
                 messagebox.showinfo(
                     "Thành công",

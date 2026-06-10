@@ -110,16 +110,8 @@ class MgmtLogFrame(ctk.CTkFrame):
     def load_data(self):
         for r in self.pms_tree.get_children():
             self.pms_tree.delete(r)
-        pms_data = db.execute_query(
-            """
-            SELECT b.id, c.full_name, b.room_id, b.checkin_date, b.checkout_date, b.total_price 
-            FROM bookings b
-            JOIN customers c ON b.customer_id = c.customer_id
-            WHERE b.status='Completed' 
-            ORDER BY b.id DESC
-            """,
-            fetch=True,
-        )
+        from controller import Controller
+        pms_data = Controller.mgmt_get_pms_logs()
         for row in pms_data:
             b_id, cus, rm, cin, cout, price = row
             cin_f = datetime.strptime(cin, "%Y-%m-%d").strftime("%d/%m/%Y")
@@ -131,10 +123,7 @@ class MgmtLogFrame(ctk.CTkFrame):
 
         for r in self.fb_tree.get_children():
             self.fb_tree.delete(r)
-        fb_data = db.execute_query(
-            "SELECT id, room_id, items_detail, order_date, total_price FROM service_orders WHERE status='Completed' ORDER BY id DESC",
-            fetch=True,
-        )
+        fb_data = Controller.mgmt_get_fb_orders()
         for row in fb_data:
             o_id, rm, detail, date, price = row
             date_f = datetime.strptime(date, "%Y-%m-%d %H:%M").strftime(

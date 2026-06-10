@@ -10,7 +10,7 @@ from ui.crud_frame import CRUDFrame
 from ui.statistics import StatisticsFrame
 from ui.log_frame import LogFrame
 from ui.mgmt_log_frame import MgmtLogFrame
-from ui.utility_mgmt_frame import UtilityMgmtFrame
+from ui.booking_mgmt_frame import BookingMgmtFrame
 from tkinter import messagebox
 from database import db
 
@@ -35,7 +35,7 @@ class MainFrame(ctk.CTkFrame):
         self.frames = {
             "Lễ Tân": ReceptionFrame(self.content),
             "Đơn Hàng": OrderMgmtFrame(self.content),
-            "Tiện Ích": UtilityMgmtFrame(self.content),
+            "Đặt Lịch": BookingMgmtFrame(self.content),
             "Phòng Nghỉ": CRUDFrame(
                 self.content,
                 "Quản Lý Phòng Nghỉ (PMS)",
@@ -331,18 +331,13 @@ class MainFrame(ctk.CTkFrame):
                 return messagebox.showwarning("Chú ý", "Không được để trống thông tin!")
 
             try:
-                hashed_pw = db.hash_password(vals["pw"], vals["user"])
-                db.execute_query(
-                    "INSERT INTO users (full_name, username, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?)",
-                    (
-                        vals["name"],
-                        vals["user"],
-                        vals["email"],
-                        vals["phone"],
-                        hashed_pw,
-                        "staff",
-                    ),
-                    commit=True,
+                from controller import Controller
+                Controller.create_staff_account(
+                    vals["name"],
+                    vals["user"],
+                    vals["email"],
+                    vals["phone"],
+                    vals["pw"],
                 )
                 messagebox.showinfo(
                     "Thành công", f"Đã cấp tài khoản cho nhân viên: {vals['name']}"
@@ -378,10 +373,8 @@ class MainFrame(ctk.CTkFrame):
             modal, text="🎁 TẶNG VOUCHER MỚI", font=FONT_TITLE, text_color=COLOR_GOLD
         ).pack(pady=30)
 
-        res_users = db.execute_query(
-            "SELECT username FROM users WHERE role='user'", fetch=True
-        )
-        user_list = [r[0] for r in res_users] if res_users else []
+        from controller import Controller
+        user_list = Controller.get_customer_list()
         if not user_list:
             user_list = ["Chưa có khách hàng"]
 
@@ -427,11 +420,8 @@ class MainFrame(ctk.CTkFrame):
                 return messagebox.showwarning("Lỗi", "Vui lòng nhập đủ thông tin!")
 
             try:
-                db.execute_query(
-                    "INSERT INTO user_coupons (username, code, description, discount_percent) VALUES (?, ?, ?, ?)",
-                    (target, code.upper(), desc, int(perc)),
-                    commit=True,
-                )
+                from controller import Controller
+                Controller.grant_voucher(target, code, desc, perc)
                 messagebox.showinfo(
                     "Thành công", f"Đã tặng voucher {code} cho {target}!"
                 )

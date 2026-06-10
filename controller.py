@@ -451,3 +451,269 @@ class Controller:
             commit=True,
         )
 
+    @staticmethod
+    def order_get_pending():
+        return db.execute_query(
+            "SELECT id, room_id, items_detail, total_price, order_date, status FROM service_orders WHERE status NOT IN ('Completed', 'Cancelled') ORDER BY order_date DESC",
+            fetch=True,
+        )
+
+    @staticmethod
+    def order_confirm(o_id):
+        db.execute_query(
+            "UPDATE service_orders SET status='Đã xác nhận' WHERE id=?",
+            (o_id,),
+            commit=True,
+        )
+
+    @staticmethod
+    def order_deliver(o_id):
+        db.execute_query(
+            "UPDATE service_orders SET status='Đang giao' WHERE id=?",
+            (o_id,),
+            commit=True,
+        )
+
+    @staticmethod
+    def order_pay(o_id, rm_id, total):
+        import re
+        real_price = float(re.sub(r"[^\d]", "", total))
+        loc_res = db.execute_query(
+            "SELECT location FROM rooms WHERE room_id=?",
+            (rm_id,),
+            fetchone=True,
+        )
+        loc = loc_res[0] if loc_res else "Đà Nẵng"
+
+        db.execute_query(
+            "INSERT INTO revenue_history (date, amount, location) VALUES (?,?,?)",
+            (datetime.now().strftime("%Y-%m-%d"), real_price, loc),
+            commit=True,
+        )
+
+        res_cust = db.execute_query(
+            "SELECT customer_id FROM bookings WHERE room_id=? AND status='Stay-in'",
+            (rm_id,),
+            fetchone=True,
+        )
+        guest_id = res_cust[0] if res_cust else None
+
+        if guest_id:
+            db.execute_query(
+                "UPDATE customers SET total_spending = total_spending + ? WHERE customer_id=?",
+                (real_price, guest_id),
+                commit=True,
+            )
+
+        db.execute_query(
+            "UPDATE service_orders SET status='Completed' WHERE id=?",
+            (o_id,),
+            commit=True,
+        )
+
+    @staticmethod
+    def order_cancel(o_id, detail):
+        items = detail.split(", ")
+        for item_str in items:
+            name = item_str.split(" (x")[0]
+            qty = int(item_str.split(" (x")[1].replace(")", ""))
+            db.execute_query(
+                "UPDATE inventory SET stock = stock + ? WHERE item_name = ?",
+                (qty, name),
+                commit=True,
+            )
+
+        db.execute_query(
+            "UPDATE service_orders SET status='Cancelled' WHERE id=?",
+            (o_id,),
+            commit=True,
+        )
+
+    @staticmethod
+    def log_get_all():
+        return db.execute_query(
+            "SELECT id, timestamp, username, action_type, table_name, record_id FROM system_logs ORDER BY id DESC",
+            fetch=True,
+        )
+
+    @staticmethod
+    def log_restore(log_id, username):
+        log_detail = db.execute_query(
+            "SELECT action_type, table_name, record_id, old_data, new_data FROM system_logs WHERE id=?",
+            (log_id,),
+            fetchone=True,
+        )
+        if not log_detail:
+            raise ValueError("Không tìm thấy dòng nhật ký cần khôi phục!")
+
+        action_type, table_name, record_id, old_data, new_data = log_detail
+        col_names = db.get_column_names(table_name)
+        id_col = col_names[0]
+
+        if action_type == "DELETE":
+            vals = json.loads(old_data)
+            db.insert_record(table_name, vals)
+            db.log_action(
+                username, "RESTORE_INSERT", table_name, record_id, None, old_data
+            )
+
+        elif action_type in ["UPDATE", "UPDATE_CSV"]:
+            vals = json.loads(old_data)
+            db.update_record(table_name, col_names, vals, record_id)
+            db.log_action(
+                username,
+                "RESTORE_UPDATE",
+                table_name,
+                record_id,
+                new_data,
+                old_data,
+            )
+
+        elif action_type in ["INSERT", "INSERT_CSV"]:
+            db.delete_record(table_name, id_col, record_id)
+            db.log_action(
+                username, "RESTORE_DELETE", table_name, record_id, new_data, None
+            )
+        else:
+            raise ValueError("Không thể khôi phục thao tác khôi phục hệ thống!")
+
+    @staticmethod
+    def log_clear_all():
+        db.execute_query("DELETE FROM system_logs", commit=True)
+
+    @staticmethod
+    def create_staff_account(name, user, email, phone, pw):
+        import sqlite3
+        hashed_pw = db.hash_password(pw, user)
+        db.execute_query(
+            "INSERT INTO users (full_name, username, email, phone, password, role) VALUES (?, ?, ?, ?, ?, ?)",
+            (name, user, email, phone, hashed_pw, "staff"),
+            commit=True,
+        )
+
+    @staticmethod
+    def grant_voucher(target, code, desc, percent):
+        db.execute_query(
+            "INSERT INTO user_coupons (username, code, description, discount_percent) VALUES (?, ?, ?, ?)",
+            (target, code.upper(), desc, int(percent)),
+            commit=True,
+        )
+
+    @staticmethod
+    def get_customer_list():
+        res_users = db.execute_query(
+            "SELECT username FROM users WHERE role='user'", fetch=True
+        )
+        return [r[0] for r in res_users] if res_users else []
+
+    @staticmethod
+    def profile_get_data(username):
+        user_res = db.execute_query(
+            "SELECT full_name, email, phone, username, role FROM users WHERE username=?",
+            (username,),
+            fetchone=True,
+        )
+        bookings_res = db.execute_query(
+            "SELECT id, room_id, checkin_date, checkout_date, total_price, status FROM bookings WHERE customer_id=?",
+            (username,),
+            fetch=True,
+        )
+        coupons = db.execute_query(
+            "SELECT code, description, discount_percent FROM user_coupons WHERE username=?",
+            (username,),
+            fetch=True,
+        )
+        return {
+            "user_info": user_res,
+            "bookings": bookings_res,
+            "coupons": coupons
+        }
+
+    @staticmethod
+    def profile_update(username, current_fullname, new_fullname, new_email, new_phone, new_password):
+        db.update_user_profile(
+            username,
+            current_fullname,
+            new_fullname,
+            new_email,
+            new_phone,
+            new_password
+        )
+
+    @staticmethod
+    def event_register(curr_username, title):
+        import re
+        import unicodedata
+        text_no_d = title.replace("Đ", "D").replace("đ", "d")
+        text_normalized = "".join(
+            c
+            for c in unicodedata.normalize("NFKD", text_no_d)
+            if not unicodedata.combining(c)
+        )
+        words = text_normalized.split()
+        initials = "".join([w[0] for w in words if w]).upper()
+        clean_initials = re.sub(r"[^\w]", "", initials)
+        code = f"EV_{clean_initials}"
+
+        res_exists = db.execute_query(
+            "SELECT 1 FROM user_coupons WHERE username=? AND code=?",
+            (curr_username, code),
+            fetchone=True,
+        )
+        if res_exists:
+            return False, code
+
+        db.execute_query(
+            "INSERT INTO user_coupons (username, code, description, discount_percent) VALUES (?,?,?,?)",
+            (curr_username, code, f"Voucher qua tang tu su kien: {title}", 15),
+            commit=True,
+        )
+        return True, code
+
+    @staticmethod
+    def book_utility(curr_username, name):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        db.execute_query(
+            "INSERT INTO utility_bookings (customer_id, utility_name, booking_date, status) VALUES (?,?,?,?)",
+            (curr_username, name, now, "Pending"),
+            commit=True,
+        )
+        db.log_action(
+            curr_username,
+            "INSERT",
+            "utility_bookings",
+            name,
+            None,
+            f"Đặt dịch vụ: {name}",
+        )
+
+    @staticmethod
+    def contact_send(name, email, subject, message):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db.execute_query(
+            "INSERT INTO contact_messages (name, email, subject, message, timestamp) VALUES (?,?,?,?,?)",
+            (name, email, subject, message, now),
+            commit=True,
+        )
+
+    @staticmethod
+    def mgmt_get_pms_logs():
+        return db.execute_query(
+            """
+            SELECT b.id, c.full_name, b.room_id, b.checkin_date, b.checkout_date, b.total_price 
+            FROM bookings b
+            JOIN customers c ON b.customer_id = c.customer_id
+            WHERE b.status='Completed' 
+            ORDER BY b.id DESC
+            """,
+            fetch=True,
+        )
+
+    @staticmethod
+    def mgmt_get_fb_orders():
+        return db.execute_query(
+            "SELECT id, room_id, items_detail, order_date, total_price FROM service_orders WHERE status='Completed' ORDER BY id DESC",
+            fetch=True,
+        )
+
+

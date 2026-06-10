@@ -4,7 +4,7 @@ from config import *
 from database import db
 
 
-class UtilityMgmtFrame(ctk.CTkFrame):
+class BookingMgmtFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
         self.tree = None
@@ -14,7 +14,7 @@ class UtilityMgmtFrame(ctk.CTkFrame):
         header.pack(fill="x", pady=(0, 15))
         ctk.CTkLabel(
             header,
-            text="Quản Lý Tiện Ích",
+            text="Quản Lý Đặt Lịch (RES)",
             font=FONT_TITLE,
             text_color=COLOR_TEXT,
         ).pack(side="left")
