@@ -4,7 +4,7 @@ from config import *
 from database import db
 
 
-class ReceptionFrame(ctk.CTkFrame):
+class UtilityMgmtFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color="transparent")
         self.tree = None
@@ -14,7 +14,7 @@ class ReceptionFrame(ctk.CTkFrame):
         header.pack(fill="x", pady=(0, 15))
         ctk.CTkLabel(
             header,
-            text="Quản Lý Lễ Tân (FOS)",
+            text="Quản Lý Tiện Ích",
             font=FONT_TITLE,
             text_color=COLOR_TEXT,
         ).pack(side="left")
@@ -63,35 +63,35 @@ class ReceptionFrame(ctk.CTkFrame):
 
         ctk.CTkButton(
             btn_f,
-            text="NHẬN PHÒNG",
+            text="HOÀN THÀNH",
             fg_color="#27ae60",
             hover_color="#219150",
-            width=120,
+            width=110,
             height=35,
             font=FONT_BODY_BOLD,
-            command=self.check_in,
+            command=self.complete_booking,
         ).pack(side="left", padx=5)
 
         ctk.CTkButton(
             btn_f,
-            text="THANH TOÁN",
+            text="HỦY ĐƠN",
             fg_color=COLOR_GOLD,
             hover_color=COLOR_GOLD_HOVER,
-            width=120,
+            width=100,
             height=35,
             font=FONT_BODY_BOLD,
-            command=self.check_out,
+            command=self.cancel_booking,
         ).pack(side="left", padx=5)
 
         ctk.CTkButton(
             btn_f,
-            text="🗑 HỦY ĐƠN",
+            text="🗑 XÓA LỊCH",
             fg_color="#e74c3c",
             hover_color="#c0392b",
             width=100,
             height=35,
             font=FONT_BODY_BOLD,
-            command=self.cancel_booking,
+            command=self.delete_booking,
         ).pack(side="left", padx=5)
 
         self.setup_treeview()
@@ -108,11 +108,9 @@ class ReceptionFrame(ctk.CTkFrame):
 
         cols = (
             "ID",
-            "Khách Hàng",
-            "Phòng",
-            "Ngày Nhận",
-            "Ngày Trả",
-            "Tổng Tiền",
+            "Mã Khách",
+            "Tên Tiện Ích",
+            "Ngày Đặt",
             "Trạng Thái",
         )
 
@@ -137,24 +135,25 @@ class ReceptionFrame(ctk.CTkFrame):
         self.tree = ttk.Treeview(f, columns=cols, show="headings")
         for c in cols:
             self.tree.heading(c, text=c.upper())
-            self.tree.column(c, width=100, anchor="center")
+            self.tree.column(c, width=120, anchor="center")
         self.tree.pack(fill="both", expand=True, padx=2, pady=2)
 
     def load_data(self):
         from controller import Controller
-        self.all_data = Controller.get_active_bookings()
+        self.all_data = Controller.get_utility_bookings()
         self.display_data(self.all_data)
 
     def display_data(self, data_list):
         for row in self.tree.get_children():
             self.tree.delete(row)
         for row in data_list:
-            b_id, cus, rm, cin, cout, price, status = row
-            cin_f = datetime.strptime(cin, "%Y-%m-%d").strftime("%d/%m/%Y")
-            cout_f = datetime.strptime(cout, "%Y-%m-%d").strftime("%d/%m/%Y")
-            price_f = f"{int(price):,}".replace(",", ".")
+            b_id, cus, name, date, status = row
+            try:
+                date_f = datetime.strptime(date, "%Y-%m-%d %H:%M").strftime("%d/%m/%Y %H:%M")
+            except:
+                date_f = date
             self.tree.insert(
-                "", "end", values=(b_id, cus, rm, cin_f, cout_f, price_f, status)
+                "", "end", values=(b_id, cus, name, date_f, status)
             )
 
     def filter_data(self, *args):
@@ -170,78 +169,67 @@ class ReceptionFrame(ctk.CTkFrame):
     def confirm_booking(self):
         item = self.tree.selection()
         if not item:
-            return messagebox.showwarning("Chú ý", "Hãy chọn đơn cần xác nhận!")
+            return messagebox.showwarning("Chú ý", f"Hãy chọn đơn cần xác nhận!")
         b_id = self.tree.item(item, "values")[0]
-        status = self.tree.item(item, "values")[6]
+        status = self.tree.item(item, "values")[4]
 
         if status != "Pending":
             return messagebox.showerror("Lỗi", "Đơn này đã được xử lý rồi!")
 
         pronoun = get_pronoun(self)
-        if messagebox.askyesno("Xác nhận", f"{pronoun.capitalize()} đồng ý giữ chỗ cho khách này?"):
+        if messagebox.askyesno("Xác nhận", f"{pronoun.capitalize()} đồng ý phê duyệt lịch đặt tiện ích này?"):
             from controller import Controller
-
-            Controller.pms_confirm_booking(b_id)
+            Controller.pms_confirm_utility(b_id)
             self.load_data()
 
-    def check_in(self):
+    def complete_booking(self):
         item = self.tree.selection()
         if not item:
-            return messagebox.showwarning("Chú ý", "Hãy chọn đơn khách đến nhận phòng!")
-        b_id, _, rm_id, _, _, _, status = self.tree.item(item, "values")
+            return messagebox.showwarning("Chú ý", f"Hãy chọn đơn cần hoàn thành!")
+        b_id = self.tree.item(item, "values")[0]
+        status = self.tree.item(item, "values")[4]
 
-        if status == "Stay-in":
-            return messagebox.showerror("Lỗi", "Khách này đã nhận phòng rồi!")
+        if status == "Completed":
+            return messagebox.showerror("Lỗi", "Lịch này đã hoàn thành rồi!")
         if status == "Pending":
-            return messagebox.showerror(
-                "Lỗi", "Đơn chưa XÁC NHẬN, không thể nhận phòng!"
-            )
+            return messagebox.showerror("Lỗi", "Lịch này chưa được XÁC NHẬN!")
+        if status == "Cancelled":
+            return messagebox.showerror("Lỗi", "Lịch này đã bị hủy!")
 
-        if messagebox.askyesno("Xác nhận", f"Cho khách nhận phòng {rm_id}?"):
+        pronoun = get_pronoun(self)
+        if messagebox.askyesno("Xác nhận", f"Xác nhận khách đã sử dụng xong tiện ích này?"):
             from controller import Controller
-
-            Controller.pms_check_in(b_id, rm_id)
+            Controller.pms_complete_utility(b_id)
             self.load_data()
-
-    def check_out(self):
-        item = self.tree.selection()
-        if not item:
-            return messagebox.showwarning("Chú ý", "Hãy chọn lượt cần thanh toán!")
-        b_id, cus, rm_id, _, _, price, status = self.tree.item(item, "values")
-
-        if status != "Stay-in":
-            return messagebox.showerror(
-                "Lỗi", "Chỉ khách đang ở mới có thể thanh toán!"
-            )
-
-        try:
-            unpaid_orders = db.execute_query(
-                "SELECT items_detail, total_price, id FROM service_orders WHERE room_id=? AND status NOT IN ('Completed', 'Cancelled')",
-                (rm_id,),
-                fetch=True,
-            )
-            order_ids = [o[2] for o in unpaid_orders]
-
-            from controller import Controller
-
-            success = Controller.pms_check_out(
-                b_id, rm_id, cus, price, unpaid_orders, order_ids
-            )
-            if success:
-                self.load_data()
-        except Exception as e:
-            messagebox.showerror("Lỗi", str(e))
 
     def cancel_booking(self):
         item = self.tree.selection()
         if not item:
-            return
-        b_id, _, rm_id, _, _, _, _ = self.tree.item(item, "values")
-        pronoun = get_pronoun(self)
-        if messagebox.askyesno("Hủy đơn", f"{pronoun.capitalize()} chắc chắn muốn hủy đơn này?"):
-            from controller import Controller
+            return messagebox.showwarning("Chú ý", f"Hãy chọn đơn cần hủy!")
+        b_id = self.tree.item(item, "values")[0]
+        status = self.tree.item(item, "values")[4]
 
-            Controller.pms_cancel_booking(b_id, rm_id)
+        if status == "Cancelled":
+            return messagebox.showerror("Lỗi", "Lịch này đã hủy rồi!")
+        if status == "Completed":
+            return messagebox.showerror("Lỗi", "Lịch đã hoàn thành, không thể hủy!")
+
+        pronoun = get_pronoun(self)
+        if messagebox.askyesno("Hủy lịch", f"{pronoun.capitalize()} chắc chắn muốn hủy lịch đặt này?"):
+            from controller import Controller
+            Controller.pms_cancel_utility(b_id)
+            self.load_data()
+
+    def delete_booking(self):
+        item = self.tree.selection()
+        if not item:
+            return messagebox.showwarning("Chú ý", f"Hãy chọn lịch đặt cần xóa khỏi hệ thống!")
+        b_id = self.tree.item(item, "values")[0]
+
+        pronoun = get_pronoun(self)
+        if messagebox.askyesno("Xóa lịch đặt", f"{pronoun.capitalize()} chắc chắn muốn xóa vĩnh viễn lịch đặt này khỏi cơ sở dữ liệu?"):
+            from controller import Controller
+            Controller.pms_delete_utility(b_id)
             self.load_data()
 
     def on_hide(self):

@@ -85,8 +85,11 @@ class Header(ctk.CTkFrame):
 
             lbl.bind("<Button-1>", make_click_handler(idx))
 
+        self.user_btn_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.user_btn_frame.pack(side="right", padx=(4, 20))
+
         self.user_btn = ctk.CTkButton(
-            self,
+            self.user_btn_frame,
             text="ĐĂNG NHẬP",
             width=110,
             height=40,
@@ -97,7 +100,7 @@ class Header(ctk.CTkFrame):
             font=FONT_BODY_BOLD,
             command=self.handle_user_click,
         )
-        self.user_btn.pack(side="right", padx=(4, 20))
+        self.user_btn.pack()
 
         self.menu_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.menu_frame.pack(side="right", padx=(0, 0))
@@ -654,15 +657,22 @@ class Header(ctk.CTkFrame):
         self.hide_timer_id = None
 
     def update_user_avatar(self, username):
+        self.user_btn.destroy()
+
         if not username:
-            self.user_btn.configure(
+            self.user_btn = ctk.CTkButton(
+                self.user_btn_frame,
                 text="ĐĂNG NHẬP",
                 width=110,
                 height=40,
                 corner_radius=6,
+                fg_color="white",
+                text_color=COLOR_NAVY,
+                hover_color=COLOR_GOLD,
                 font=FONT_BODY_BOLD,
-                image=None,
+                command=self.handle_user_click,
             )
+            self.user_btn.pack()
             return
 
         avatar_path = os.path.join(IMAGE_DIR, "avatars", f"{username}.png")
@@ -670,29 +680,48 @@ class Header(ctk.CTkFrame):
             try:
                 from PIL import Image
 
-                pil_img = Image.open(avatar_path).convert("RGB")
+                with Image.open(avatar_path) as img:
+                    pil_img = img.convert("RGB")
+                    pil_img.load()
                 ctk_img = ctk.CTkImage(
-                    light_image=pil_img, dark_image=pil_img, size=(34, 34)
+                    light_image=pil_img, dark_image=pil_img, size=(40, 40)
                 )
-                self.user_btn.configure(
-                    image=ctk_img, text="", width=40, height=40, corner_radius=8
-                )
-                self.header_avatar_ref = ctk_img
-            except:
-                self.user_btn.configure(
-                    text="👤",
-                    image=None,
+                self.user_btn = ctk.CTkButton(
+                    self.user_btn_frame,
+                    image=ctk_img,
+                    text="",
                     width=40,
                     height=40,
                     corner_radius=8,
-                    font=FONT_LABEL,
+                    fg_color="white",
+                    hover_color=COLOR_GOLD,
+                    command=self.handle_user_click,
                 )
+                self.user_btn.pack()
+                self.header_avatar_ref = ctk_img
+            except:
+                self.user_btn = ctk.CTkButton(
+                    self.user_btn_frame,
+                    text="👤",
+                    width=40,
+                    height=40,
+                    corner_radius=8,
+                    fg_color="white",
+                    hover_color=COLOR_GOLD,
+                    font=("Segoe UI", 20),
+                    command=self.handle_user_click,
+                )
+                self.user_btn.pack()
         else:
-            self.user_btn.configure(
+            self.user_btn = ctk.CTkButton(
+                self.user_btn_frame,
                 text="👤",
-                image=None,
                 width=40,
                 height=40,
                 corner_radius=8,
-                font=FONT_LABEL,
+                fg_color="white",
+                hover_color=COLOR_GOLD,
+                font=("Segoe UI", 20),
+                command=self.handle_user_click,
             )
+            self.user_btn.pack()

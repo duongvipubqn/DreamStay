@@ -78,57 +78,9 @@ class StatisticsFrame(ctk.CTkFrame):
         loading_lbl.pack(expand=True)
 
         def worker():
-            import sqlite3
-            import os
-            import pandas as pd
-            import numpy as np
-            from config import DB_PATH
-
-            local_conn = sqlite3.connect(DB_PATH)
-            local_cursor = local_conn.cursor()
-
             try:
-                df = pd.read_sql_query(
-                    "SELECT price, status, capacity FROM rooms", local_conn
-                )
-                if df.empty:
-                    stats = {
-                        "total": 0,
-                        "avg_price": 0.0,
-                        "max_price": 0.0,
-                        "status_counts": {},
-                        "capacity_counts": {},
-                    }
-                else:
-                    prices = df["price"].to_numpy()
-                    avg_price = float(np.mean(prices))
-                    max_price = float(np.max(prices))
-                    status_counts = df["status"].value_counts().to_dict()
-                    capacity_counts = df["capacity"].value_counts().to_dict()
-                    stats = {
-                        "total": len(df),
-                        "avg_price": avg_price,
-                        "max_price": max_price,
-                        "status_counts": status_counts,
-                        "capacity_counts": capacity_counts,
-                    }
-
-                local_cursor.execute(
-                    "SELECT location, SUM(amount) FROM revenue_history GROUP BY location"
-                )
-                data = local_cursor.fetchall()
-                locs = [r[0] for r in data] if data else ["Chưa có dữ liệu"]
-                amounts = [r[1] for r in data] if data else [0]
-
-                local_cursor.execute(
-                    "SELECT status, COUNT(*) FROM rooms GROUP BY status"
-                )
-                status_data = local_cursor.fetchall()
-                labels = (
-                    [r[0] for r in status_data] if status_data else ["Không có dữ liệu"]
-                )
-                sizes = [r[1] for r in status_data] if status_data else [1]
-
+                from controller import Controller
+                stats, locs, amounts, labels, sizes = Controller.get_statistics_data()
             except Exception:
                 stats = {
                     "total": 0,
@@ -141,8 +93,6 @@ class StatisticsFrame(ctk.CTkFrame):
                 amounts = [0]
                 labels = ["Không có dữ liệu"]
                 sizes = [1]
-            finally:
-                local_conn.close()
 
             self.after(
                 0,

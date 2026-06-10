@@ -172,3 +172,282 @@ class Controller:
         db.execute_query(
             "UPDATE rooms SET status='Trống' WHERE room_id=?", (rm_id,), commit=True
         )
+
+    @staticmethod
+    def login(username, password):
+        hashed_pw = db.hash_password(password, username)
+        res = db.execute_query(
+            "SELECT username, full_name, role FROM users WHERE username=? AND password=?",
+            (username, hashed_pw),
+            fetchone=True,
+        )
+        if not res:
+            raise ValueError("Tài khoản hoặc mật khẩu không đúng!")
+        return res
+
+    @staticmethod
+    def register(name, username, email, phone, password, confirm):
+        name = name.strip()
+        username = username.strip()
+        email = email.strip()
+        phone = phone.strip()
+
+        if not name or not username or not email or not phone or not password or not confirm:
+            raise ValueError("Vui lòng nhập đầy đủ thông tin!")
+
+        import re
+        email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        if not re.match(email_regex, email):
+            raise ValueError("Email không đúng định dạng!")
+
+        phone_regex = r"^\d{9,11}$"
+        if not re.match(phone_regex, phone):
+            raise ValueError("Số điện thoại phải chỉ chứa số và từ 9 đến 11 ký tự!")
+
+        if len(password) < 6:
+            raise ValueError("Mật khẩu phải chứa ít nhất 6 ký tự!")
+
+        if password != confirm:
+            raise ValueError("Mật khẩu không khớp!")
+
+        import sqlite3
+        try:
+            hashed_pw = db.hash_password(password, username)
+            db.execute_query(
+                "INSERT INTO users (full_name, username, email, phone, password, role) VALUES (?,?,?,?,?,?)",
+                (name, username, email, phone, hashed_pw, "user"),
+                commit=True,
+            )
+        except sqlite3.Error:
+            raise ValueError("Username hoặc Email đã tồn tại!")
+
+    @staticmethod
+    def reset_password(username, email, phone, new_pass, confirm):
+        username = username.strip()
+        email = email.strip()
+        phone = phone.strip()
+
+        if not username or not email or not phone or not new_pass or not confirm:
+            raise ValueError("Vui lòng nhập đầy đủ thông tin!")
+
+        if len(new_pass) < 6:
+            raise ValueError("Mật khẩu mới phải chứa ít nhất 6 ký tự!")
+
+        if new_pass != confirm:
+            raise ValueError("Mật khẩu mới không trùng khớp!")
+
+        res = db.execute_query(
+            "SELECT email, phone FROM users WHERE username=?", (username,), fetchone=True
+        )
+        if not res:
+            raise ValueError("Tên đăng nhập không tồn tại!")
+
+        db_email, db_phone = res
+        if db_email != email or db_phone != phone:
+            raise ValueError("Thông tin xác thực (Email hoặc Số điện thoại) không khớp với tài khoản đã đăng ký!")
+
+        hashed_pw = db.hash_password(new_pass, username)
+        db.execute_query(
+            "UPDATE users SET password=? WHERE username=?", (hashed_pw, username), commit=True
+        )
+
+    @staticmethod
+    def crud_save_record(table_name, col_names, vals, original_id, username):
+        id_col = col_names[0]
+        lookup_id = original_id if original_id else vals[0]
+
+        if db.record_exists(table_name, id_col, lookup_id):
+            old_record = db.execute_query(
+                f"SELECT * FROM {table_name} WHERE {id_col}=?",
+                (lookup_id,),
+                fetchone=True,
+            )
+            old_json = (
+                json.dumps(old_record, ensure_ascii=False) if old_record else None
+            )
+            db.update_record(table_name, col_names, vals, lookup_id)
+            db.log_action(
+                username,
+                "UPDATE",
+                table_name,
+                lookup_id,
+                old_json,
+                json.dumps(vals, ensure_ascii=False),
+            )
+        else:
+            db.insert_record(table_name, vals)
+            db.log_action(
+                username,
+                "INSERT",
+                table_name,
+                vals[0],
+                None,
+                json.dumps(vals, ensure_ascii=False),
+            )
+
+    @staticmethod
+    def crud_import_row(table_name, col_names, row, username):
+        id_col = col_names[0]
+        if db.record_exists(table_name, id_col, row[0]):
+            old_record = db.execute_query(
+                f"SELECT * FROM {table_name} WHERE {id_col}=?",
+                (row[0],),
+                fetchone=True,
+            )
+            old_json = (
+                json.dumps(old_record, ensure_ascii=False) if old_record else None
+            )
+            db.update_record(table_name, col_names, row, row[0])
+            db.log_action(
+                username,
+                "UPDATE_CSV",
+                table_name,
+                row[0],
+                old_json,
+                json.dumps(row, ensure_ascii=False),
+            )
+            return "update"
+        else:
+            db.insert_record(table_name, row)
+            db.log_action(
+                username,
+                "INSERT_CSV",
+                table_name,
+                row[0],
+                None,
+                json.dumps(row, ensure_ascii=False),
+            )
+            return "insert"
+
+    @staticmethod
+    def crud_delete_records(table_name, id_col, row_ids, username):
+        for rid in row_ids:
+            old_record = db.execute_query(
+                f"SELECT * FROM {table_name} WHERE {id_col}=?",
+                (rid,),
+                fetchone=True,
+            )
+            old_json = (
+                json.dumps(old_record, ensure_ascii=False)
+                if old_record
+                else None
+            )
+            db.delete_record(table_name, id_col, rid)
+            db.log_action(
+                username, "DELETE", table_name, rid, old_json, None
+            )
+
+    @staticmethod
+    def get_statistics_data():
+        import sqlite3
+        import pandas as pd
+        import numpy as np
+        from config import DB_PATH
+
+        local_conn = sqlite3.connect(DB_PATH)
+        local_cursor = local_conn.cursor()
+
+        try:
+            df = pd.read_sql_query(
+                "SELECT price, status, capacity FROM rooms", local_conn
+            )
+            if df.empty:
+                stats = {
+                    "total": 0,
+                    "avg_price": 0.0,
+                    "max_price": 0.0,
+                    "status_counts": {},
+                    "capacity_counts": {},
+                }
+            else:
+                prices = df["price"].to_numpy()
+                avg_price = float(np.mean(prices))
+                max_price = float(np.max(prices))
+                status_counts = df["status"].value_counts().to_dict()
+                capacity_counts = df["capacity"].value_counts().to_dict()
+                stats = {
+                    "total": len(df),
+                    "avg_price": avg_price,
+                    "max_price": max_price,
+                    "status_counts": status_counts,
+                    "capacity_counts": capacity_counts,
+                }
+
+            from config import LOCATIONS
+            local_cursor.execute(
+                "SELECT location, SUM(amount) FROM revenue_history GROUP BY location"
+            )
+            data = local_cursor.fetchall()
+            
+            revenue_dict = {loc: 0.0 for loc in LOCATIONS}
+            if data:
+                for loc, amount in data:
+                    revenue_dict[loc] = amount
+            
+            locs = list(revenue_dict.keys())
+            amounts = list(revenue_dict.values())
+
+            local_cursor.execute(
+                "SELECT status, COUNT(*) FROM rooms GROUP BY status"
+            )
+            status_data = local_cursor.fetchall()
+            labels = (
+                [r[0] for r in status_data] if status_data else ["Không có dữ liệu"]
+            )
+            sizes = [r[1] for r in status_data] if status_data else [1]
+
+            return stats, locs, amounts, labels, sizes
+        finally:
+            local_conn.close()
+
+    @staticmethod
+    def get_active_bookings():
+        return db.execute_query(
+            """
+            SELECT b.id, c.full_name, b.room_id, b.checkin_date, b.checkout_date, b.total_price, b.status 
+            FROM bookings b
+            JOIN customers c ON b.customer_id = c.customer_id
+            WHERE b.status NOT IN ('Completed', 'Cancelled')
+            """,
+            fetch=True,
+        )
+
+    @staticmethod
+    def get_utility_bookings():
+        return db.execute_query(
+            "SELECT id, customer_id, utility_name, booking_date, status FROM utility_bookings",
+            fetch=True,
+        )
+
+    @staticmethod
+    def pms_confirm_utility(booking_id):
+        db.execute_query(
+            "UPDATE utility_bookings SET status='Confirmed' WHERE id=?",
+            (booking_id,),
+            commit=True,
+        )
+
+    @staticmethod
+    def pms_complete_utility(booking_id):
+        db.execute_query(
+            "UPDATE utility_bookings SET status='Completed' WHERE id=?",
+            (booking_id,),
+            commit=True,
+        )
+
+    @staticmethod
+    def pms_cancel_utility(booking_id):
+        db.execute_query(
+            "UPDATE utility_bookings SET status='Cancelled' WHERE id=?",
+            (booking_id,),
+            commit=True,
+        )
+
+    @staticmethod
+    def pms_delete_utility(booking_id):
+        db.execute_query(
+            "DELETE FROM utility_bookings WHERE id=?",
+            (booking_id,),
+            commit=True,
+        )
+

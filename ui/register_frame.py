@@ -102,33 +102,9 @@ class RegisterFrame(ctk.CTkFrame):
 
     def submit(self):
         d = {k: v.get() for k, v in self.fields.items()}
-        if "" in d.values():
-            return messagebox.showwarning("Lỗi", "Vui lòng nhập đủ tin!")
-        
-        # Email validation
-        import re
-        email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
-        if not re.match(email_regex, d["email"]):
-            return messagebox.showerror("Lỗi", "Email không đúng định dạng!")
-        
-        # Phone validation (digits only, length 9 to 11)
-        phone_regex = r"^\d{9,11}$"
-        if not re.match(phone_regex, d["phone"]):
-            return messagebox.showerror("Lỗi", "Số điện thoại phải chỉ chứa số và từ 9 đến 11 ký tự!")
-        
-        # Password strength (minimum 6 characters)
-        if len(d["pass"]) < 6:
-            return messagebox.showerror("Lỗi", "Mật khẩu phải chứa ít nhất 6 ký tự!")
-            
-        if d["pass"] != d["confirm"]:
-            return messagebox.showerror("Lỗi", "Mật khẩu không khớp!")
         try:
-            hashed_pw = db.hash_password(d["pass"], d["username"])
-            db.execute_query(
-                "INSERT INTO users (full_name, username, email, phone, password, role) VALUES (?,?,?,?,?,?)",
-                (d["name"], d["username"], d["email"], d["phone"], hashed_pw, "user"),
-                commit=True,
-            )
+            from controller import Controller
+            Controller.register(d["name"], d["username"], d["email"], d["phone"], d["pass"], d["confirm"])
             messagebox.showinfo(
                 "Xong", "Đăng ký thành công! Bạn có thể đăng nhập ngay."
             )
@@ -137,5 +113,5 @@ class RegisterFrame(ctk.CTkFrame):
             func = getattr(app, "show_login", None)
             if callable(func):
                 func()
-        except sqlite3.Error:
-            messagebox.showerror("Lỗi", "Username hoặc Email đã tồn tại!")
+        except ValueError as e:
+            messagebox.showerror("Lỗi", str(e))

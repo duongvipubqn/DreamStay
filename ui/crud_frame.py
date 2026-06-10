@@ -121,10 +121,11 @@ class FormModal(ctk.CTkToplevel):
 
     def submit(self):
         vals = [self.entries[col].get().strip() for col in self.columns]
+        pronoun = get_pronoun(self)
         if any(v == "" for v in vals):
             messagebox.showwarning(
                 "Chú ý",
-                "Mời sếp nhập đầy đủ thông tin, không được để trống trường nào!",
+                f"Mời {pronoun} nhập đầy đủ thông tin, không được để trống trường nào!",
             )
             return
 
@@ -137,7 +138,7 @@ class FormModal(ctk.CTkToplevel):
             except ValueError:
                 messagebox.showerror(
                     "Sai kiểu dữ liệu",
-                    "Mời sếp nhập lại mức giá hợp lệ (phải là số dương lớn hơn 0)!",
+                    f"Mời {pronoun} nhập lại mức giá hợp lệ (phải là số dương lớn hơn 0)!",
                 )
                 return
 
@@ -147,7 +148,7 @@ class FormModal(ctk.CTkToplevel):
             if not phone_val.isdigit():
                 messagebox.showerror(
                     "Sai kiểu dữ liệu",
-                    "Mời sếp nhập lại số điện thoại hợp lệ (chỉ bao gồm các chữ số)!",
+                    f"Mời {pronoun} nhập lại số điện thoại hợp lệ (chỉ bao gồm các chữ số)!",
                 )
                 return
             try:
@@ -157,7 +158,7 @@ class FormModal(ctk.CTkToplevel):
             except ValueError:
                 messagebox.showerror(
                     "Sai kiểu dữ liệu",
-                    "Mời sếp nhập lại mức lương hợp lệ (phải là số dương lớn hơn 0)!",
+                    f"Mời {pronoun} nhập lại mức lương hợp lệ (phải là số dương lớn hơn 0)!",
                 )
                 return
 
@@ -168,13 +169,13 @@ class FormModal(ctk.CTkToplevel):
             if "@" not in email_val or "." not in email_val:
                 messagebox.showerror(
                     "Sai kiểu dữ liệu",
-                    "Mời sếp nhập lại địa chỉ email hợp lệ (phải có định dạng chứa ký tự @ và dấu chấm)!",
+                    f"Mời {pronoun} nhập lại địa chỉ email hợp lệ (phải có định dạng chứa ký tự @ và dấu chấm)!",
                 )
                 return
             if not phone_val.isdigit():
                 messagebox.showerror(
                     "Sai kiểu dữ liệu",
-                    "Mời sếp nhập lại số điện thoại hợp lệ (chỉ chứa chữ số)!",
+                    f"Mời {pronoun} nhập lại số điện thoại hợp lệ (chỉ chứa chữ số)!",
                 )
                 return
             try:
@@ -184,7 +185,7 @@ class FormModal(ctk.CTkToplevel):
             except ValueError:
                 messagebox.showerror(
                     "Sai kiểu dữ liệu",
-                    "Mời sếp nhập lại tổng chi tiêu hợp lệ (phải là số không âm)!",
+                    f"Mời {pronoun} nhập lại tổng chi tiêu hợp lệ (phải là số không âm)!",
                 )
                 return
 
@@ -359,44 +360,14 @@ class CRUDFrame(ctk.CTkFrame):
 
     def save_to_db(self, data_tuple):
         vals, original_id = data_tuple
-        import json
-
         try:
             vals = self.cast_row_types(vals)
             col_names = db.get_column_names(self.table_name)
-            id_col = col_names[0]
-            lookup_id = original_id if original_id else vals[0]
             app = self.winfo_toplevel()
             username = getattr(app, "current_username", "system")
 
-            if db.record_exists(self.table_name, id_col, lookup_id):
-                old_record = db.execute_query(
-                    f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
-                    (lookup_id,),
-                    fetchone=True,
-                )
-                old_json = (
-                    json.dumps(old_record, ensure_ascii=False) if old_record else None
-                )
-                db.update_record(self.table_name, col_names, vals, lookup_id)
-                db.log_action(
-                    username,
-                    "UPDATE",
-                    self.table_name,
-                    lookup_id,
-                    old_json,
-                    json.dumps(vals, ensure_ascii=False),
-                )
-            else:
-                db.insert_record(self.table_name, vals)
-                db.log_action(
-                    username,
-                    "INSERT",
-                    self.table_name,
-                    vals[0],
-                    None,
-                    json.dumps(vals, ensure_ascii=False),
-                )
+            from controller import Controller
+            Controller.crud_save_record(self.table_name, col_names, vals, original_id, username)
             self.load_data()
         except Exception as e:
             messagebox.showerror("Lỗi", str(e))
@@ -410,33 +381,19 @@ class CRUDFrame(ctk.CTkFrame):
         col_names = db.get_column_names(self.table_name)
         id_col = col_names[0]
 
+        pronoun = get_pronoun(self)
         msg = (
-            f"Sếp có chắc muốn xóa vĩnh viễn {len(row_ids)} dòng đã chọn không?"
+            f"{pronoun.capitalize()} có chắc muốn xóa vĩnh viễn {len(row_ids)} dòng đã chọn không?"
             if len(row_ids) > 1
-            else "Sếp có chắc muốn xóa vĩnh viễn dòng này không?"
+            else f"{pronoun.capitalize()} có chắc muốn xóa vĩnh viễn dòng này không?"
         )
 
         if messagebox.askyesno("Xác nhận", msg):
-            import json
-
             try:
                 app = self.winfo_toplevel()
                 username = getattr(app, "current_username", "system")
-                for rid in row_ids:
-                    old_record = db.execute_query(
-                        f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
-                        (rid,),
-                        fetchone=True,
-                    )
-                    old_json = (
-                        json.dumps(old_record, ensure_ascii=False)
-                        if old_record
-                        else None
-                    )
-                    db.delete_record(self.table_name, id_col, rid)
-                    db.log_action(
-                        username, "DELETE", self.table_name, rid, old_json, None
-                    )
+                from controller import Controller
+                Controller.crud_delete_records(self.table_name, id_col, row_ids, username)
                 self.load_data()
             except Exception as e:
                 messagebox.showerror("Lỗi", f"Không thể xóa dữ liệu: {str(e)}")
@@ -647,37 +604,11 @@ class CRUDFrame(ctk.CTkFrame):
 
                         row = self.cast_row_types(row)
 
-                        if db.record_exists(self.table_name, id_col, row[0]):
-                            old_record = db.execute_query(
-                                f"SELECT * FROM {self.table_name} WHERE {id_col}=?",
-                                (row[0],),
-                                fetchone=True,
-                            )
-                            old_json = (
-                                json.dumps(old_record, ensure_ascii=False)
-                                if old_record
-                                else None
-                            )
-                            db.update_record(self.table_name, col_names, row, row[0])
-                            db.log_action(
-                                username,
-                                "UPDATE_CSV",
-                                self.table_name,
-                                row[0],
-                                old_json,
-                                json.dumps(row, ensure_ascii=False),
-                            )
+                        from controller import Controller
+                        action_type = Controller.crud_import_row(self.table_name, col_names, row, username)
+                        if action_type == "update":
                             updated_count += 1
                         else:
-                            db.insert_record(self.table_name, row)
-                            db.log_action(
-                                username,
-                                "INSERT_CSV",
-                                self.table_name,
-                                row[0],
-                                None,
-                                json.dumps(row, ensure_ascii=False),
-                            )
                             inserted_count += 1
 
                 def success_ui():

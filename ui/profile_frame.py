@@ -57,18 +57,25 @@ class ProfileFrame(ctk.CTkFrame):
             corner_radius=10,
             border_width=2,
             border_color=COLOR_GOLD,
+            width=284,
+            height=284,
         )
-        self.avatar_border_frame.pack(pady=(10, 5))
+        self.avatar_border_frame.pack(pady=(5, 5))
+        self.avatar_border_frame.pack_propagate(False)
 
         self.avatar_label = ctk.CTkLabel(
-            self.avatar_border_frame, text="👤", font=FONT_ICON
+            self.avatar_border_frame, text="👤", font=("Segoe UI", 160), width=280, height=280
         )
         self.avatar_label.pack(padx=2, pady=2)
+        self.avatar_label.pack_propagate(False)
+
+        avatar_btn_frame = ctk.CTkFrame(container, fg_color="transparent")
+        avatar_btn_frame.pack(pady=(0, 5))
 
         self.btn_change_avatar = ctk.CTkButton(
-            container,
+            avatar_btn_frame,
             text="ĐỔI ẢNH",
-            width=120,
+            width=100,
             height=32,
             font=("Segoe UI", 14, "bold"),
             fg_color="#3a3a50",
@@ -76,25 +83,43 @@ class ProfileFrame(ctk.CTkFrame):
             hover_color=COLOR_GOLD_HOVER,
             command=self.change_avatar,
         )
-        self.btn_change_avatar.pack(pady=(0, 10))
+        self.btn_change_avatar.pack(side="left", padx=5)
+
+        self.btn_delete_avatar = ctk.CTkButton(
+            avatar_btn_frame,
+            text="XÓA ẢNH",
+            width=100,
+            height=32,
+            font=("Segoe UI", 14, "bold"),
+            fg_color="#e74c3c",
+            hover_color="#c0392b",
+            text_color="white",
+            command=self.delete_avatar,
+        )
+        self.btn_delete_avatar.pack(side="left", padx=5)
 
         self.info_label = ctk.CTkLabel(
-            container, text="Sếp: ...", font=FONT_TITLE, text_color=COLOR_GOLD
+            container, text="Tài khoản: ...", font=FONT_TITLE, text_color=COLOR_GOLD
         )
-        self.info_label.pack(pady=10)
+        self.info_label.pack(pady=(5, 5))
 
         self.email_label = ctk.CTkLabel(
             container, text="Email: ...", font=FONT_BODY, text_color="#aaa"
         )
-        self.email_label.pack()
+        self.email_label.pack(pady=3)
 
         self.phone_label = ctk.CTkLabel(
             container, text="SĐT: ...", font=FONT_BODY, text_color="#aaa"
         )
-        self.phone_label.pack(pady=5)
+        self.phone_label.pack(pady=3)
+
+        self.role_label = ctk.CTkLabel(
+            container, text="Quyền hạn: ...", font=FONT_BODY, text_color="#aaa"
+        )
+        self.role_label.pack(pady=3)
 
         btn_f = ctk.CTkFrame(container, fg_color="transparent")
-        btn_f.pack(pady=30)
+        btn_f.pack(pady=(15, 10))
 
         ctk.CTkButton(
             btn_f,
@@ -158,7 +183,7 @@ class ProfileFrame(ctk.CTkFrame):
             return
 
         user_res = db.execute_query(
-            "SELECT full_name, email, phone, username FROM users WHERE username=?",
+            "SELECT full_name, email, phone, username, role FROM users WHERE username=?",
             (self.app.current_username,),
             fetchone=True,
         )
@@ -166,6 +191,15 @@ class ProfileFrame(ctk.CTkFrame):
             self.info_label.configure(text=f"Tài khoản: {user_res[0].upper()}")
             self.email_label.configure(text=f"Email: {user_res[1]}")
             self.phone_label.configure(text=f"Số điện thoại: {user_res[2]}")
+            
+            role_map = {
+                "manager": "Quản lý",
+                "staff": "Nhân viên",
+                "user": "Khách hàng"
+            }
+            role_name = role_map.get(user_res[4], "Khách hàng")
+            self.role_label.configure(text=f"Quyền hạn: {role_name}")
+            
             username = user_res[3]
 
             self.load_avatar_image()
@@ -224,10 +258,11 @@ class ProfileFrame(ctk.CTkFrame):
 
                     def use_coupon(c_code=code, c_disc=disc):
                         self.app.active_coupon = (c_code, c_disc)
+                        pronoun = get_pronoun(self)
                         messagebox.showinfo(
                             "Kích hoạt thành công",
                             f"Đã kích hoạt mã giảm giá {c_code} (-{c_disc}%)!\n"
-                            f"Hệ thống đang chuyển sếp sang trang Phòng Nghỉ để đặt phòng với giá ưu đãi.",
+                            f"Hệ thống đang chuyển {pronoun} sang trang Phòng Nghỉ để đặt phòng với giá ưu đãi.",
                             parent=self.winfo_toplevel(),
                         )
                         func = getattr(self.app, "switch_page", None)
@@ -333,7 +368,8 @@ class ProfileFrame(ctk.CTkFrame):
                     mgmt_page.update_user(new_name, curr_role)
 
                 modal.destroy()
-                messagebox.showinfo("Thành công", "Đã cập nhật hồ sơ sếp!")
+                pronoun = get_pronoun(self)
+                messagebox.showinfo("Thành công", f"Đã cập nhật hồ sơ {pronoun}!")
             except Exception as err:
                 messagebox.showerror("Lỗi", f"Không thể cập nhật: {str(err)}")
 
@@ -357,16 +393,18 @@ class ProfileFrame(ctk.CTkFrame):
         )
         if os.path.exists(avatar_path):
             try:
-                pil_img = Image.open(avatar_path).convert("RGB")
+                with Image.open(avatar_path) as img:
+                    pil_img = img.convert("RGB")
+                    pil_img.load()
                 ctk_img = ctk.CTkImage(
-                    light_image=pil_img, dark_image=pil_img, size=(300, 300)
+                    light_image=pil_img, dark_image=pil_img, size=(280, 280)
                 )
                 self.avatar_label.configure(image=ctk_img, text="")
                 self.avatar_img_ref = ctk_img
             except:
-                self.avatar_label.configure(text="👤", font=FONT_ICON, image=None)
+                self.avatar_label.configure(image="", text="👤", font=("Segoe UI", 160))
         else:
-            self.avatar_label.configure(text="👤", font=FONT_ICON, image=None)
+            self.avatar_label.configure(image="", text="👤", font=("Segoe UI", 160))
 
     def change_avatar(self):
         file_path = filedialog.askopenfilename(
@@ -394,11 +432,33 @@ class ProfileFrame(ctk.CTkFrame):
                 if header and hasattr(header, "update_user_avatar"):
                     header.update_user_avatar(self.app.current_username)
 
-                messagebox.showinfo("Thành công", "Đã cập nhật ảnh đại diện của sếp!")
+                pronoun = get_pronoun(self)
+                messagebox.showinfo("Thành công", f"Đã cập nhật ảnh đại diện của {pronoun}!")
             except Exception as e:
                 messagebox.showerror("Lỗi", f"Không thể lưu ảnh: {str(e)}")
 
         AvatarCropModal(self, file_path, on_crop_success)
+
+    def delete_avatar(self):
+        if not hasattr(self.app, "current_username") or not self.app.current_username:
+            return
+
+        avatar_path = os.path.join(IMAGE_DIR, "avatars", f"{self.app.current_username}.png")
+        pronoun = get_pronoun(self)
+        if os.path.exists(avatar_path):
+            if messagebox.askyesno("Xác nhận", f"{pronoun.capitalize()} có chắc chắn muốn xóa ảnh đại diện hiện tại không?"):
+                try:
+                    os.remove(avatar_path)
+                    self.load_avatar_image()
+                    app = self.winfo_toplevel()
+                    header = getattr(app, "header", None)
+                    if header and hasattr(header, "update_user_avatar"):
+                        header.update_user_avatar(self.app.current_username)
+                    messagebox.showinfo("Thành công", "Đã xóa ảnh đại diện thành công!")
+                except Exception as e:
+                    messagebox.showerror("Lỗi", f"Không thể xóa ảnh: {str(e)}")
+        else:
+            messagebox.showwarning("Chú ý", f"{pronoun.capitalize()} chưa có ảnh đại diện nào để xóa!")
 
 
 class AvatarCropModal(ctk.CTkToplevel):
@@ -549,6 +609,14 @@ class AvatarCropModal(ctk.CTkToplevel):
         self.canvas.create_rectangle(
             50, 50, 250, 250, outline=COLOR_GOLD, width=2, dash=(5, 3)
         )
+
+    def destroy(self):
+        if hasattr(self, "original_image"):
+            try:
+                self.original_image.close()
+            except:
+                pass
+        super().destroy()
 
     def confirm_crop(self):
         zoom_w = int(self.base_image.width * self.zoom_factor)

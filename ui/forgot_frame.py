@@ -84,39 +84,19 @@ class ForgotFrame(ctk.CTkFrame):
         ).pack(pady=5)
 
     def reset_password(self):
-        u = self.fields["username"].get().strip()
-        email = self.fields["email"].get().strip()
-        phone = self.fields["phone"].get().strip()
+        u = self.fields["username"].get()
+        email = self.fields["email"].get()
+        phone = self.fields["phone"].get()
         p = self.fields["new_pass"].get()
         c = self.fields["confirm"].get()
+        try:
+            from controller import Controller
+            Controller.reset_password(u, email, phone, p, c)
+            messagebox.showinfo("Thành công", "Mật khẩu đã được thay đổi thành công!")
 
-        if u == "" or email == "" or phone == "" or p == "" or c == "":
-            return messagebox.showwarning("Lỗi", "Vui lòng nhập đầy đủ thông tin!")
-
-        if len(p) < 6:
-            return messagebox.showerror("Lỗi", "Mật khẩu mới phải chứa ít nhất 6 ký tự!")
-
-        if p != c:
-            return messagebox.showerror("Lỗi", "Mật khẩu mới không trùng khớp!")
-
-        res = db.execute_query(
-            "SELECT email, phone FROM users WHERE username=?", (u,), fetchone=True
-        )
-        if not res:
-            return messagebox.showerror("Lỗi", "Tên đăng nhập không tồn tại!")
-
-        db_email, db_phone = res
-        if db_email != email or db_phone != phone:
-            return messagebox.showerror("Lỗi", "Thông tin xác thực (Email hoặc Số điện thoại) không khớp với tài khoản đã đăng ký!")
-
-        hashed_pw = db.hash_password(p, u)
-        db.execute_query(
-            "UPDATE users SET password=? WHERE username=?", (hashed_pw, u), commit=True
-        )
-        messagebox.showinfo("Thành công", "Mật khẩu đã được thay đổi thành công!")
-
-        app = self.winfo_toplevel()
-        func = getattr(app, "show_login", None)
-        if callable(func):
-            func()
-        return None
+            app = self.winfo_toplevel()
+            func = getattr(app, "show_login", None)
+            if callable(func):
+                func()
+        except ValueError as e:
+            messagebox.showerror("Lỗi", str(e))

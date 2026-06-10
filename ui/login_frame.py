@@ -27,7 +27,7 @@ class LoginFrame(ctk.CTkFrame):
             self.panel, text="Chào mừng bạn trở lại!", font=FONT_BODY, text_color="#aaa"
         ).pack(pady=(0, 30))
 
-        self.user_entry = self.create_input("Tài khoản nhân viên")
+        self.user_entry = self.create_input("Tài khoản")
         self.pass_entry = self.create_input("Mật khẩu", is_password=True)
 
         self.user_entry.bind("<Return>", lambda e: self.login())
@@ -110,16 +110,21 @@ class LoginFrame(ctk.CTkFrame):
 
     def login(self):
         u, p = self.user_entry.get(), self.pass_entry.get()
-        hashed_pw = db.hash_password(p, u)
-        res = db.execute_query(
-            "SELECT username, full_name, role FROM users WHERE username=? AND password=?",
-            (u, hashed_pw),
-            fetchone=True,
-        )
-        if res:
+        try:
+            from controller import Controller
+            res = Controller.login(u, p)
             app = self.winfo_toplevel()
             func = getattr(app, "login_success", None)
             if callable(func):
                 func(res[0], res[1], res[2])
-        else:
-            messagebox.showerror("Từ chối", "Tài khoản hoặc mật khẩu không đúng!")
+        except ValueError as e:
+            messagebox.showerror("Từ chối", str(e))
+
+    def on_show(self):
+        self.user_entry.delete(0, "end")
+        self.pass_entry.delete(0, "end")
+        self.user_entry.configure(placeholder_text="Tài khoản")
+        self.pass_entry.configure(placeholder_text="Mật khẩu")
+        if hasattr(self, "show_pass_check"):
+            self.show_pass_check.deselect()
+            self.pass_entry.configure(show="*")

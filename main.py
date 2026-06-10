@@ -79,6 +79,7 @@ class HotelApp(ctk.CTk):
         super().__init__()
         self.title("DreamStay")
         self.geometry("1300x850")
+        self.minsize(1200, 750)
         try:
             self.state("zoomed")
         except:

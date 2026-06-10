@@ -10,6 +10,7 @@ from ui.crud_frame import CRUDFrame
 from ui.statistics import StatisticsFrame
 from ui.log_frame import LogFrame
 from ui.mgmt_log_frame import MgmtLogFrame
+from ui.utility_mgmt_frame import UtilityMgmtFrame
 from tkinter import messagebox
 from database import db
 
@@ -34,6 +35,7 @@ class MainFrame(ctk.CTkFrame):
         self.frames = {
             "Lễ Tân": ReceptionFrame(self.content),
             "Đơn Hàng": OrderMgmtFrame(self.content),
+            "Tiện Ích": UtilityMgmtFrame(self.content),
             "Phòng Nghỉ": CRUDFrame(
                 self.content,
                 "Quản Lý Phòng Nghỉ (PMS)",
@@ -97,18 +99,6 @@ class MainFrame(ctk.CTkFrame):
                     "Chủ Đề",
                     "Nội Dung",
                     "Thời Gian",
-                ],
-            ),
-            "Đặt Tiện Ích": CRUDFrame(
-                self.content,
-                "Quản Lý Đặt Tiện Ích",
-                "utility_bookings",
-                [
-                    "ID",
-                    "Mã Khách",
-                    "Tên Tiện Ích",
-                    "Ngày Đặt",
-                    "Trạng Thái",
                 ],
             ),
             "Nhật Ký Hệ Thống": LogFrame(self.content),
