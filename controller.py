@@ -261,33 +261,43 @@ class Controller:
     @staticmethod
     def crud_save_record(table_name, col_names, vals, original_id, username):
         id_col = col_names[0]
-        lookup_id = original_id if original_id else vals[0]
-
-        if db.record_exists(table_name, id_col, lookup_id):
+        
+        if original_id:
+            if not db.record_exists(table_name, id_col, original_id):
+                raise ValueError("Bản ghi cần cập nhật không còn tồn tại trong hệ thống (có thể đã bị xóa bởi người dùng khác)!")
+            
+            new_id = vals[0]
+            if new_id != original_id and db.record_exists(table_name, id_col, new_id):
+                raise ValueError(f"Mã ID mới '{new_id}' đã tồn tại ở một bản ghi khác, không thể đổi sang mã này!")
+                
             old_record = db.execute_query(
                 f"SELECT * FROM {table_name} WHERE {id_col}=?",
-                (lookup_id,),
+                (original_id,),
                 fetchone=True,
             )
             old_json = (
                 json.dumps(old_record, ensure_ascii=False) if old_record else None
             )
-            db.update_record(table_name, col_names, vals, lookup_id)
+            db.update_record(table_name, col_names, vals, original_id)
             db.log_action(
                 username,
                 "UPDATE",
                 table_name,
-                lookup_id,
+                original_id,
                 old_json,
                 json.dumps(vals, ensure_ascii=False),
             )
         else:
+            new_id = vals[0]
+            if db.record_exists(table_name, id_col, new_id):
+                raise ValueError(f"Mã ID '{new_id}' đã tồn tại trong hệ thống, không thể thêm mới trùng lặp!")
+                
             db.insert_record(table_name, vals)
             db.log_action(
                 username,
                 "INSERT",
                 table_name,
-                vals[0],
+                new_id,
                 None,
                 json.dumps(vals, ensure_ascii=False),
             )
@@ -329,6 +339,9 @@ class Controller:
     @staticmethod
     def crud_delete_records(table_name, id_col, row_ids, username):
         for rid in row_ids:
+            if not db.record_exists(table_name, id_col, rid):
+                raise ValueError(f"Không tìm thấy bản ghi có ID '{rid}' để thực hiện thao tác xóa (có thể đã bị xóa trước đó)!")
+                
             old_record = db.execute_query(
                 f"SELECT * FROM {table_name} WHERE {id_col}=?",
                 (rid,),
@@ -467,6 +480,16 @@ class Controller:
 
     @staticmethod
     def order_confirm(o_id):
+        current = db.execute_query(
+            "SELECT status FROM service_orders WHERE id=?",
+            (o_id,),
+            fetchone=True,
+        )
+        if not current:
+            raise ValueError("Không tìm thấy đơn hàng cần xác nhận!")
+        if current[0] != "Chờ xử lý":
+            raise ValueError("Đơn hàng này đã được xác nhận hoặc hủy trước đó!")
+
         db.execute_query(
             "UPDATE service_orders SET status='Đã xác nhận' WHERE id=?",
             (o_id,),
@@ -475,6 +498,16 @@ class Controller:
 
     @staticmethod
     def order_deliver(o_id):
+        current = db.execute_query(
+            "SELECT status FROM service_orders WHERE id=?",
+            (o_id,),
+            fetchone=True,
+        )
+        if not current:
+            raise ValueError("Không tìm thấy đơn hàng cần giao!")
+        if current[0] != "Đã xác nhận":
+            raise ValueError("Chỉ đơn hàng đã xác nhận mới có thể chuyển trạng thái giao hàng!")
+
         db.execute_query(
             "UPDATE service_orders SET status='Đang giao' WHERE id=?",
             (o_id,),
@@ -483,6 +516,16 @@ class Controller:
 
     @staticmethod
     def order_pay(o_id, rm_id, total):
+        current = db.execute_query(
+            "SELECT status FROM service_orders WHERE id=?",
+            (o_id,),
+            fetchone=True,
+        )
+        if not current:
+            raise ValueError("Không tìm thấy đơn hàng cần thanh toán!")
+        if current[0] != "Đang giao":
+            raise ValueError("Chỉ đơn hàng đang giao mới có thể thanh toán!")
+
         import re
         real_price = float(re.sub(r"[^\d]", "", total))
         loc_res = db.execute_query(
@@ -520,6 +563,16 @@ class Controller:
 
     @staticmethod
     def order_cancel(o_id, detail):
+        current = db.execute_query(
+            "SELECT status FROM service_orders WHERE id=?",
+            (o_id,),
+            fetchone=True,
+        )
+        if not current:
+            raise ValueError("Không tìm thấy đơn hàng cần hủy!")
+        if current[0] in ["Completed", "Cancelled"]:
+            raise ValueError("Đơn hàng đã hoàn thành hoặc đã hủy trước đó!")
+
         items = detail.split(", ")
         for item_str in items:
             name = item_str.split(" (x")[0]

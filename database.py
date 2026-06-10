@@ -313,7 +313,7 @@ class Database:
                             conn = self.get_connection()
                             cursor = conn.cursor()
                             cursor.executemany(
-                                "INSERT INTO rooms VALUES (?,?,?,?,?,?)", seed_data
+                                "INSERT INTO rooms (room_id, location, room_type, status, capacity, price) VALUES (?,?,?,?,?,?)", seed_data
                             )
                             conn.commit()
                             conn.close()
@@ -350,7 +350,7 @@ class Database:
                             conn = self.get_connection()
                             cursor = conn.cursor()
                             cursor.executemany(
-                                "INSERT INTO customers VALUES (?,?,?,?,?,?)", seed_data
+                                "INSERT INTO customers (customer_id, full_name, email, phone_number, city, total_spending) VALUES (?,?,?,?,?,?)", seed_data
                             )
                             conn.commit()
                             conn.close()
@@ -388,7 +388,7 @@ class Database:
                             conn = self.get_connection()
                             cursor = conn.cursor()
                             cursor.executemany(
-                                "INSERT INTO employees VALUES (?,?,?,?,?,?,?)",
+                                "INSERT INTO employees (employee_id, full_name, position, location, phone_number, base_salary, status) VALUES (?,?,?,?,?,?,?)",
                                 seed_data,
                             )
                             conn.commit()
@@ -419,7 +419,7 @@ class Database:
                             conn = self.get_connection()
                             cursor = conn.cursor()
                             cursor.executemany(
-                                "INSERT INTO inventory VALUES (?,?,?,?,?)", seed_data
+                                "INSERT INTO inventory (id, category, item_name, price, stock) VALUES (?,?,?,?,?)", seed_data
                             )
                             conn.commit()
                             conn.close()
