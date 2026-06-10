@@ -487,7 +487,7 @@ class MainFrame(ctk.CTkFrame):
             time.sleep(1.0)
             try:
                 response = requests.get(
-                    "https://open.er-api.com/v6/latest/USD", timeout=5
+                    EXCHANGE_RATE_API_URL, timeout=5
                 )
                 if response.status_code == 401:
                     raise PermissionError("Unauthorized access (401)")

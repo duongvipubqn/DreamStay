@@ -91,7 +91,14 @@ class Controller:
         )
 
     @staticmethod
-    def pms_check_out(b_id, rm_id, cus, price, unpaid_orders, order_ids):
+    def pms_check_out(b_id, rm_id, cus, price):
+        unpaid_orders = db.execute_query(
+            "SELECT items_detail, total_price, id FROM service_orders WHERE room_id=? AND status NOT IN ('Completed', 'Cancelled')",
+            (rm_id,),
+            fetch=True,
+        )
+        order_ids = [o[2] for o in unpaid_orders]
+
         room_charge = float(re.sub(r"[^\d]", "", price))
         services_charge = 0
         order_details = []

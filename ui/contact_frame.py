@@ -361,7 +361,7 @@ class ContactFrame(ctk.CTkFrame):
             )
 
     def _open_google_maps(self):
-        url = "https://www.google.com/maps/place/21.0336,106.7725"
+        url = GOOGLE_MAPS_URL
         webbrowser.open(url)
 
     def load_data(self):

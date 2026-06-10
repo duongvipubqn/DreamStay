@@ -21,6 +21,8 @@ from config import (
     GEMINI_API_KEY,
     GEMINI_MODEL,
     DREAMER_SYSTEM_PROMPT,
+    API_KEY_SALT,
+    GEMINI_API_URL_TEMPLATE,
 )
 
 
@@ -186,7 +188,7 @@ class ChatWindow(ctk.CTkToplevel):
 
         full_system_prompt = f"{DREAMER_SYSTEM_PROMPT}\n[BỐI CẢNH PHÂN QUYỀN AN TOÀN HIỆN TẠI]: {context}\n[BỐI CẢNH NHẠC THỜI GIAN THỰC HIỆN TẠI]: {music_context}\n[BỐI CẢNH CÁC PHÒNG NGHỈ THỜI GIAN THỰC HIỆN TẠI]: {rooms_context}\n[BỐI CẢNH THỰC ĐƠN & KHO HÀNG F&B THỰC TẾ]: {services_context}\n[BỐI CẢNH 9 TIỆN ÍCH CAO CẤP]: {utilities_context}"
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={self.api_key}"
+        url = GEMINI_API_URL_TEMPLATE.format(model=GEMINI_MODEL, key=self.api_key)
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": self.history,
@@ -377,11 +379,11 @@ class ChatWindow(ctk.CTkToplevel):
 
     def encrypt_key(self, raw_key):
         from config import xor_crypt
-        return xor_crypt(raw_key, "DreamStayKeySalt2026")
+        return xor_crypt(raw_key, API_KEY_SALT)
 
     def decrypt_key(self, encrypted_b64):
         from config import xor_decrypt
-        return xor_decrypt(encrypted_b64, "DreamStayKeySalt2026")
+        return xor_decrypt(encrypted_b64, API_KEY_SALT)
 
     def load_api_key(self):
         if os.path.exists("api_key.enc"):
