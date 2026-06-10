@@ -61,7 +61,7 @@ class AboutFrame(ctk.CTkScrollableFrame):
 
         desc = (
             "Tọa lạc tại vị trí đắc địa, DreamStay là sự giao thoa hoàn hảo giữa kiến trúc cổ điển và tiện nghi hiện đại. "
-            "Chúng tôi mang đến một không gian nghỉ dưỡng sang trọng, ấm cúng và tinh tế, cam kết đem lại cho sếp một kỳ nghỉ khó quên."
+            "Chúng tôi mang đến một không gian nghỉ dưỡng sang trọng, ấm cúng và tinh tế, cam kết đem lại cho quý khách một kỳ nghỉ khó quên."
         )
 
         ctk.CTkLabel(

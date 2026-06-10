@@ -288,7 +288,7 @@ class RoomDetailFrame(ctk.CTkScrollableFrame):
         curr_user = getattr(app, "current_user", None)
         if not curr_user:
             return messagebox.showwarning(
-                "Thông báo", "Sếp vui lòng đăng nhập để đặt phòng!"
+                "Thông báo", f"{get_pronoun(self).capitalize()} vui lòng đăng nhập để đặt phòng!"
             )
 
         total = self.calculate_total()

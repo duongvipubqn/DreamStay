@@ -84,7 +84,7 @@ class UtilityDetailFrame(ctk.CTkScrollableFrame):
                 messagebox.showinfo(
                     "Thành công",
                     f"Đã đặt chỗ dịch vụ trải nghiệm '{name}' thành công!\n"
-                    f"Yêu cầu của sếp đã được gửi đến lễ tân và lưu vào hệ thống.",
+                    f"Yêu cầu của {get_pronoun(self)} đã được gửi đến lễ tân và lưu vào hệ thống.",
                     parent=self.winfo_toplevel(),
                 )
             except Exception as e:

@@ -196,12 +196,14 @@ class HotelApp(ctk.CTk):
         if os.path.exists("session.txt"):
             os.remove("session.txt")
 
+        pronoun = get_pronoun(self)
+
         self.current_user = None
         self.current_role = None
         self.header.update_user_avatar(None)
         self.header.update_menu(False, None)
         self.switch_page("Trang chủ")
-        messagebox.showinfo("Thông báo", "Sếp đã đăng xuất an toàn!")
+        messagebox.showinfo("Thông báo", f"{pronoun.capitalize()} đã đăng xuất an toàn!")
 
     def switch_page(self, name):
         for page_name, page in self.pages.items():

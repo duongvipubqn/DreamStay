@@ -186,11 +186,12 @@ def get_cached_image(img_name, size):
 def get_pronoun(widget):
     try:
         app = widget.winfo_toplevel()
-        if getattr(app, "current_role", None) == "manager":
+        role = getattr(app, "current_role", None)
+        if role in ["manager", "staff"]:
             return "sếp"
     except:
         pass
-    return "bạn"
+    return "quý khách"
 
 
 EXCHANGE_RATE_API_URL = "https://open.er-api.com/v6/latest/USD"

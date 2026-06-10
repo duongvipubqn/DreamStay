@@ -304,7 +304,7 @@ class RoomView(ctk.CTkScrollableFrame):
         if not rooms_db:
             ctk.CTkLabel(
                 self.grid_frame,
-                text="Rất tiếc, không tìm thấy phòng phù hợp với yêu cầu của sếp!",
+                text=f"Rất tiếc, không tìm thấy phòng phù hợp với yêu cầu của {get_pronoun(self)}!",
                 font=FONT_LABEL,
                 text_color=COLOR_GOLD,
             ).pack(pady=50)
@@ -509,7 +509,7 @@ class RoomView(ctk.CTkScrollableFrame):
         current_user = getattr(app, "current_user", None)
         if not current_user:
             return messagebox.showwarning(
-                "Thông báo", "Sếp vui lòng đăng nhập để đặt phòng!"
+                "Thông báo", f"{get_pronoun(self).capitalize()} vui lòng đăng nhập để đặt phòng!"
             )
 
         modal = ctk.CTkToplevel(self)

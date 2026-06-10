@@ -23,6 +23,7 @@ from config import (
     DREAMER_SYSTEM_PROMPT,
     API_KEY_SALT,
     GEMINI_API_URL_TEMPLATE,
+    get_pronoun,
 )
 
 
@@ -159,11 +160,12 @@ class ChatWindow(ctk.CTkToplevel):
 
     def call_gemini_api(self):
         if not self.api_key:
+            pronoun = get_pronoun(self)
             self.after(
                 0,
                 lambda: self.display_message(
                     "bot",
-                    "Sếp ơi, vui lòng cấu hình API Key ở nút góc trên để em có thể hoạt động hỗ trợ sếp nhé!",
+                    f"{pronoun.capitalize()} ơi, vui lòng cấu hình API Key ở nút góc trên để em có thể hoạt động hỗ trợ {pronoun} nhé!",
                 ),
             )
             self.after(0, lambda: self.send_btn.configure(state="normal"))
@@ -246,9 +248,10 @@ class ChatWindow(ctk.CTkToplevel):
             pass
 
     def clear_history(self):
+        pronoun = get_pronoun(self)
         if messagebox.askyesno(
             "Xác nhận",
-            "Sếp có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện không?",
+            f"{pronoun.capitalize()} có chắc chắn muốn xóa toàn bộ lịch sử trò chuyện không?",
             parent=self,
         ):
             if os.path.exists("chat_history.json"):
